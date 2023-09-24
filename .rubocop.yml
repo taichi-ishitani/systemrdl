@@ -23,6 +23,11 @@ Layout/MultilineMethodCallIndentation:
 Lint/AmbiguousOperatorPrecedence:
   Enabled: false
 
+Metrics/BlockLength:
+  AllowedMethods:
+    - define_parser
+    - define_transformer
+
 Metrics/ClassLength:
   Max: 150
 

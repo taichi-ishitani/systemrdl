@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require 'systemrdl'
+require 'parslet/rig/rspec'
+require_relative 'support/helper_methods'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -13,13 +14,17 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 
-  if ENV.key?('COVERAGE')
-    require 'simplecov'
-    SimpleCov.start
+  config.include SystemRDL::HelerMethods
+end
 
-    if ENV.key?('CI')
-      require 'simplecov-cobertura'
-      SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
-    end
+if ENV.key?('COVERAGE')
+  require 'simplecov'
+  SimpleCov.start
+
+  if ENV.key?('CI')
+    require 'simplecov-cobertura'
+    SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
   end
 end
+
+require 'systemrdl'
