@@ -3,8 +3,6 @@
 module SystemRDL
   class Parser
     class << self
-      include Parslet
-
       def parser
         @parser ||= Class.new(Parslet::Parser)
       end

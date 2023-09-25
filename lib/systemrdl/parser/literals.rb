@@ -7,11 +7,11 @@ module SystemRDL
     #
     define_parser do
       rule(:true_literal) do
-        keyword('true').as(:true_literal)
+        kw_true.as(:true_literal)
       end
 
       rule(:false_literal) do
-        keyword('false').as(:false_literal)
+        kw_false.as(:false_literal)
       end
 
       rule(:boolean_literal) do
@@ -127,7 +127,7 @@ module SystemRDL
     #
     define_parser do
       rule(:accesstype_literal) do
-        keywords('na', 'rw1', 'w1', 'rw', 'wr', 'r', 'w')
+        (kw_rw1 | kw_na | kw_rw | kw_w1 | kw_wr | kw_r | kw_w)
           .as(:accesstype_literal) >> spaces?
       end
     end
@@ -143,7 +143,7 @@ module SystemRDL
     #
     define_parser do
       rule(:onreadtype_literal) do
-        keywords('rclr', 'rset', 'ruser')
+        (kw_rclr | kw_rset | kw_ruser)
           .as(:onreadtype_literal) >> spaces?
       end
     end
@@ -159,7 +159,10 @@ module SystemRDL
     #
     define_parser do
       rule(:onwritetype_literal) do
-        keywords('woset', 'woclr', 'wot', 'wzs', 'wzc', 'wzt', 'wclr', 'wset', 'wuser')
+        (
+          kw_woset | kw_woclr | kw_wot | kw_wzs | kw_wzc |
+          kw_wzt | kw_wclr | kw_wset | kw_wuser
+        )
           .as(:onwritetype_literal) >> spaces?
       end
     end
@@ -175,7 +178,7 @@ module SystemRDL
     #
     define_parser do
       rule(:addressingtype_literal) do
-        keywords('compact', 'regalign', 'fullalign')
+        (kw_compact | kw_regalign | kw_fullalign)
           .as(:addressingtype_literal) >> spaces?
       end
     end
@@ -191,7 +194,7 @@ module SystemRDL
     #
     define_parser do
       rule(:precedencetype_literal) do
-        keywords('hw', 'sw').as(:precedencetype_literal) >> spaces?
+        (kw_hw | kw_sw).as(:precedencetype_literal) >> spaces?
       end
     end
 
