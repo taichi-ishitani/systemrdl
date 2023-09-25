@@ -6,9 +6,6 @@ module SystemRDL
     # Boolean literal
     #
     define_parser do
-      #
-      # Boolean literal
-      #
       rule(:true_literal) do
         keyword('true').as(:true_literal)
       end
@@ -122,6 +119,85 @@ module SystemRDL
     define_transformer do
       rule(string_literal: simple(:s)) do
         AST::StringLiteral.new(s.position, s.str[1..-2].gsub('\\"', '"'))
+      end
+    end
+
+    #
+    # Accesstype literal
+    #
+    define_parser do
+      rule(:accesstype_literal) do
+        keywords('na', 'rw1', 'w1', 'rw', 'wr', 'r', 'w')
+          .as(:accesstype_literal) >> spaces?
+      end
+    end
+
+    define_transformer do
+      rule(accesstype_literal: simple(:t)) do
+        AST::AccesstypeLiteral.new(t.position, t.str.to_sym)
+      end
+    end
+
+    #
+    # Onreadtype literal
+    #
+    define_parser do
+      rule(:onreadtype_literal) do
+        keywords('rclr', 'rset', 'ruser')
+          .as(:onreadtype_literal) >> spaces?
+      end
+    end
+
+    define_transformer do
+      rule(onreadtype_literal: simple(:t)) do
+        AST::OnreadtypeLiteral.new(t.position, t.str.to_sym)
+      end
+    end
+
+    #
+    # Onwritetype literal
+    #
+    define_parser do
+      rule(:onwritetype_literal) do
+        keywords('woset', 'woclr', 'wot', 'wzs', 'wzc', 'wzt', 'wclr', 'wset', 'wuser')
+          .as(:onwritetype_literal) >> spaces?
+      end
+    end
+
+    define_transformer do
+      rule(onwritetype_literal: simple(:t)) do
+        AST::OnwritetypeLiteral.new(t.position, t.str.to_sym)
+      end
+    end
+
+    #
+    # Addressingtype literal
+    #
+    define_parser do
+      rule(:addressingtype_literal) do
+        keywords('compact', 'regalign', 'fullalign')
+          .as(:addressingtype_literal) >> spaces?
+      end
+    end
+
+    define_transformer do
+      rule(addressingtype_literal: simple(:t)) do
+        AST::AddressingtypeLiteral.new(t.position, t.str.to_sym)
+      end
+    end
+
+    #
+    # Precedencetype literal
+    #
+    define_parser do
+      rule(:precedencetype_literal) do
+        keywords('hw', 'sw').as(:precedencetype_literal) >> spaces?
+      end
+    end
+
+    define_transformer do
+      rule(precedencetype_literal: simple(:t)) do
+        AST::PrecedencetypeLiteral.new(t.position, t.str.to_sym)
       end
     end
   end

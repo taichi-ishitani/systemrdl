@@ -52,7 +52,7 @@ RSpec.describe SystemRDL::Parser do
       expect(parser).to parse('32\'h0000beaf', trace: true).as(&number_literal(0x0000beaf, width: 32))
     end
 
-    specify 'number portion can contain multiple _ character at any position, except the width and first position' do
+    specify 'number portion can contain multiple _ character at any position, expect the width and first position' do
       expect(parser).to parse('4_0', trace: true).as(&number_literal(40))
       expect(parser).not_to parse('_4', trace: true)
       expect(parser).not_to parse('_40', trace: true)
@@ -101,6 +101,110 @@ RSpec.describe SystemRDL::Parser do
     specify 'double quote within a string should be escaped by \\' do
       s = 'This third string contains a \\"double quote\\"'
       expect(parser).to parse("\"#{s}\"", trace: true).as(&string_literal(s.tr('\\', '')))
+    end
+  end
+
+  describe 'accesstype literal' do
+    let(:parser) do
+      SystemRDL::Parser.new(:accesstype_literal)
+    end
+
+    it 'should be parsed by :accesstype_literal' do
+      expect(parser).to parse('na', trace: true).as(&accesstype_literal(:na))
+      expect(parser).to parse('rw', trace: true).as(&accesstype_literal(:rw))
+      expect(parser).to parse('wr', trace: true).as(&accesstype_literal(:wr))
+      expect(parser).to parse('r', trace: true).as(&accesstype_literal(:r))
+      expect(parser).to parse('w', trace: true).as(&accesstype_literal(:w))
+      expect(parser).to parse('rw1', trace: true).as(&accesstype_literal(:rw1))
+      expect(parser).to parse('w1', trace: true).as(&accesstype_literal(:w1))
+    end
+
+    it 'should be case sensitive' do
+      ['na', 'rw', 'wr', 'r', 'w', 'rw1', 'w1'].each do |type|
+        expect(parser).not_to parse(type.upcase, trace: true)
+        expect(parser).not_to parse(upcase_randomly(type), trace: true)
+      end
+    end
+  end
+
+  describe 'onreadtype literal' do
+    let(:parser) do
+      SystemRDL::Parser.new(:onreadtype_literal)
+    end
+
+    it 'should be parsed by :onreadtype_literal parser' do
+      expect(parser).to parse('rclr', trace: true).as(&onreadtype_literal(:rclr))
+      expect(parser).to parse('rset', trace: true).as(&onreadtype_literal(:rset))
+      expect(parser).to parse('ruser', trace: true).as(&onreadtype_literal(:ruser))
+    end
+
+    it 'should be case sensitive' do
+      ['rclr', 'rset', 'ruser'].each do |type|
+        expect(parser).not_to parse(type.upcase, trace: true)
+        expect(parser).not_to parse(upcase_randomly(type), trace: true)
+      end
+    end
+  end
+
+  describe 'onwritetype literal' do
+    let(:parser) do
+      SystemRDL::Parser.new(:onwritetype_literal)
+    end
+
+    it 'should be parsed by :onwritetype_literal parser' do
+      expect(parser).to parse('woset', trace: true).as(&onwritetype_literal(:woset))
+      expect(parser).to parse('woclr', trace: true).as(&onwritetype_literal(:woclr))
+      expect(parser).to parse('wot', trace: true).as(&onwritetype_literal(:wot))
+      expect(parser).to parse('wzs', trace: true).as(&onwritetype_literal(:wzs))
+      expect(parser).to parse('wzc', trace: true).as(&onwritetype_literal(:wzc))
+      expect(parser).to parse('wzt', trace: true).as(&onwritetype_literal(:wzt))
+      expect(parser).to parse('wclr', trace: true).as(&onwritetype_literal(:wclr))
+      expect(parser).to parse('wset', trace: true).as(&onwritetype_literal(:wset))
+      expect(parser).to parse('wuser', trace: true).as(&onwritetype_literal(:wuser))
+    end
+
+    it 'should be case sensitive' do
+      ['woset', 'woclr', 'wot', 'wzs', 'wzc', 'wzt', 'wclr', 'wset', 'wuser'].each do |type|
+        expect(parser).not_to parse(type.upcase, trace: true)
+        expect(parser).not_to parse(upcase_randomly(type), trace: true)
+      end
+    end
+  end
+
+  describe 'addressingtype literal' do
+    let(:parser) do
+      SystemRDL::Parser.new(:addressingtype_literal)
+    end
+
+    it 'should be parsed by :addressingtype_literal parser' do
+      expect(parser).to parse('compact', trace: true).as(&addressingtype_literal(:compact))
+      expect(parser).to parse('regalign', trace: true).as(&addressingtype_literal(:regalign))
+      expect(parser).to parse('fullalign', trace: true).as(&addressingtype_literal(:fullalign))
+    end
+
+    it 'should be case sensitive' do
+      ['compact', 'regalign', 'fullalign'].each do |type|
+        expect(parser).not_to parse(type.upcase, trace: true)
+        expect(parser).not_to parse(upcase_randomly(type), trace: true)
+      end
+    end
+  end
+
+  describe 'precedencetype literal' do
+    let(:parser) do
+      SystemRDL::Parser.new(:precedencetype_literal)
+    end
+
+    it 'should be parsed by :precedencetype_literal parser' do
+      expect(parser).to parse('hw', trace: true).as(&precedencetype_literal(:hw))
+      expect(parser).to parse('sw', trace: true).as(&precedencetype_literal(:sw))
+    end
+
+    it 'should be case sensitive' do
+      ['hw', 'sw'].each do |type|
+        expect(parser).not_to parse(type.upcase, trace: true)
+        expect(parser).not_to parse(upcase_randomly(type), trace: true)
+      end
     end
   end
 end

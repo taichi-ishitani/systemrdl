@@ -32,5 +32,50 @@ module SystemRDL
 
       attr_reader :string
     end
+
+    class AccesstypeLiteral < Base
+      def initialize(position, accesstype)
+        assign_properties(accesstype: accesstype)
+        super(:accesstype_literal, position)
+      end
+
+      attr_reader :accesstype
+    end
+
+    class OnreadtypeLiteral < Base
+      def initialize(position, onreadtype)
+        assign_properties(onreadtype: onreadtype)
+        super(:onreadtype_literal, position)
+      end
+
+      attr_reader :onreadtype
+    end
+
+    class OnwritetypeLiteral < Base
+      def initialize(position, onwritetype)
+        assign_properties(onwritetype: onwritetype)
+        super(:onwritetype_literal, position)
+      end
+
+      attr_reader :onwritetype
+    end
+
+    class AddressingtypeLiteral < Base
+      def initialize(position, addressingtype)
+        assign_properties(addressingtype: addressingtype)
+        super(:addressingtype_literal, position)
+      end
+
+      attr_reader :addressingtype
+    end
+
+    class PrecedencetypeLiteral < Base
+      def initialize(position, precedencetype)
+        assign_properties(precedencetype: precedencetype)
+        super(:precedencetype_literal, position)
+      end
+
+      attr_reader :precedencetype
+    end
   end
 end
