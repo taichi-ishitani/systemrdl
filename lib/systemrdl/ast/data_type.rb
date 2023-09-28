@@ -8,6 +8,8 @@ module SystemRDL
         super(:data_type, position)
       end
 
+      attr_reader :data_type
+
       PRIMARY_TYPES = [
         :bit, :longint, :boolean, :string,
         :accesstype, :addressingtype, :onreadtype, :onwritetype
@@ -21,10 +23,6 @@ module SystemRDL
 
       def user_defined?
         PRIMARY_TYPES.none? { |type| match_type?(type) }
-      end
-
-      def data_type
-        user_defined? && @data_type.id || @data_type
       end
 
       private

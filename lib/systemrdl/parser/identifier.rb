@@ -19,7 +19,7 @@ module SystemRDL
 
     define_transformer do
       rule(identifer: simple(:id)) do
-        AST::ID.new(id.position, id.str)
+        AST::ID.new(id.position, id.str.to_sym)
       end
     end
   end

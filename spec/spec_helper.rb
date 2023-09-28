@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'parslet/rig/rspec'
+require_relative 'support/matchers'
 require_relative 'support/helper_methods'
 
 RSpec.configure do |config|
