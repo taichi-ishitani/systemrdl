@@ -34,12 +34,12 @@ module SystemRDL
     private
 
     def parser
-      parser = self.class.parser.new
-      @root && parser.__send__(@root) || parser
+      @parser ||= self.class.parser.new
+      @root && @parser.__send__(@root) || @parser
     end
 
     def transformer
-      self.class.transformer.new
+      @transformer ||= self.class.transformer.new
     end
   end
 end
