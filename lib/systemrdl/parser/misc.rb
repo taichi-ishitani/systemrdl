@@ -3,12 +3,26 @@
 module SystemRDL
   class Parser
     define_parser do
+      rule(:space) do
+        match('[ \t\n\r]')
+      end
+
       rule(:spaces) do
-        match('[ \t\n\r]').repeat(1)
+        space.repeat(1).ignore
       end
 
       rule(:spaces?) do
-        spaces.maybe
+        space.maybe.ignore
+      end
+
+      private
+
+      def spaced(string)
+        str(string) >> spaces?
+      end
+
+      def bracketed(atom, bra = '(', cket = ')')
+        str(bra).ignore >> spaces? >> atom >> spaces? >> str(cket).ignore >> spaces?
       end
     end
   end

@@ -74,4 +74,14 @@ RSpec.describe SystemRDL::Parser do
       end
     end
   end
+
+  describe 'this keyword' do
+    let(:parser) do
+      SystemRDL::Parser.new(:this_keyword)
+    end
+
+    it 'should be parsed by :this_keyword parser' do
+      expect(parser).to parse('this').as(this_keyword)
+    end
+  end
 end

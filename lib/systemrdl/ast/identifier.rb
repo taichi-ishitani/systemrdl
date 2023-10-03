@@ -10,5 +10,11 @@ module SystemRDL
 
       attr_reader :id
     end
+
+    class ThisKeyword < Base
+      def initialize(position)
+        super(:this_keyword, position)
+      end
+    end
   end
 end

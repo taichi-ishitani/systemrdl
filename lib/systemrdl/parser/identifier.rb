@@ -15,11 +15,19 @@ module SystemRDL
       rule(:id) do
         (simple_identifier | escaped_identifier).as(:identifer)
       end
+
+      rule(:this_keyword) do
+        kw_this.as(:this_keyword) >> spaces?
+      end
     end
 
     define_transformer do
       rule(identifer: simple(:id)) do
         AST::ID.new(id.position, id.str.to_sym)
+      end
+
+      rule(this_keyword: simple(:t)) do
+        AST::ThisKeyword.new(t.position)
       end
     end
   end
