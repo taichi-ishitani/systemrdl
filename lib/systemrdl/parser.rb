@@ -2,23 +2,21 @@
 
 module SystemRDL
   class Parser
+    class Parser < Parslet::Parser
+    end
+
+    class Transformer < Parslet::Transform
+    end
+
     class << self
-      def parser
-        @parser ||= Class.new(Parslet::Parser)
-      end
-
-      def transformer
-        @transformer ||= Class.new(Parslet::Transform)
-      end
-
       private
 
       def define_parser(&body)
-        parser.class_exec(&body)
+        Parser.class_exec(&body)
       end
 
       def define_transformer(&body)
-        transformer.class_exec(&body)
+        Transformer.class_exec(&body)
       end
     end
 
@@ -31,15 +29,19 @@ module SystemRDL
       transformer.apply(tree)
     end
 
+    def inspect
+      parser.inspect
+    end
+
     private
 
     def parser
-      @parser ||= self.class.parser.new
+      @parser ||= Parser.new
       @root && @parser.__send__(@root) || @parser
     end
 
     def transformer
-      @transformer ||= self.class.transformer.new
+      @transformer ||= Transformer.new
     end
   end
 end

@@ -123,5 +123,29 @@ module SystemRDL
     end
 
     alias_method :c_op, :conditional_operation
+
+    def property_assignment(lhs, rhs = nil, default: false)
+      if default
+        be_instance_of(AST::PropertyAssignment)
+          .and have_attributes(lhs: lhs, rhs: rhs)
+          .and be_default
+      else
+        be_instance_of(AST::PropertyAssignment)
+          .and have_attributes(lhs: lhs, rhs: rhs)
+          .and be_not_default
+      end
+    end
+
+    def property_modifier(id, modifier, default: false)
+      if default
+        be_instance_of(AST::PropertyModifier)
+          .and have_attributes(id: id, modifier: modifier)
+          .and be_default
+      else
+        be_instance_of(AST::PropertyModifier)
+          .and have_attributes(id: id, modifier: modifier)
+          .and be_not_default
+      end
+    end
   end
 end

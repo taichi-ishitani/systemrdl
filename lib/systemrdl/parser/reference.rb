@@ -15,8 +15,14 @@ module SystemRDL
       end
 
       rule(:property_ref) do
+        define_property_ref(id)
+      end
+
+      private
+
+      def define_property_ref(property_atom)
         (
-          instance_ref >> spaced('->') >> id.as(:property)
+          instance_ref >> spaced('->') >> property_atom.as(:property)
         ).as(:property_ref) >> spaces?
       end
     end
