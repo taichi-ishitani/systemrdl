@@ -78,14 +78,15 @@ module SystemRDL
       be_instance_of(AST::ThisKeyword)
     end
 
-    def reference_element(id)
+    def reference_element(id, *array)
       id_matcher = id.is_a?(String) && identifer(id) || id
-      be_instance_of(AST::ReferenceElement).and have_attributes(id: id_matcher)
+      be_instance_of(AST::ReferenceElement)
+        .and have_attributes(id: id_matcher, array: match(array))
     end
 
     def reference(*elements, property: nil)
       instance_refernce_matcher =
-        match(elements.map { |e| reference_element(e) })
+        match(elements.map { |e| reference_element(*Array(e)) })
       property_matcher =
         case property
         when NilClass then be_nil

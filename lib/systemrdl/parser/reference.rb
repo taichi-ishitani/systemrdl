@@ -4,7 +4,9 @@ module SystemRDL
   class Parser
     define_parser do
       rule(:instance_ref_element) do
-        id.as(:instance_ref_element) >> spaces?
+        (
+          (id.as(:id) >> spaces? >> array.as(:array)) | id.as(:id)
+        ).as(:instance_ref_element) >> spaces?
       end
 
       rule(:instance_ref) do
@@ -28,8 +30,12 @@ module SystemRDL
     end
 
     define_transformer do
-      rule(instance_ref_element: simple(:id)) do
-        AST::ReferenceElement.new(id.position, id)
+      rule(instance_ref_element: { id: simple(:id) }) do
+        AST::ReferenceElement.new(id.position, id, [])
+      end
+
+      rule(instance_ref_element: { id: simple(:id), array: sequence(:array) }) do
+        AST::ReferenceElement.new(id.position, id, array)
       end
 
       rule(instance_ref: simple(:inst)) do
