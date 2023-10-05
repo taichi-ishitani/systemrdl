@@ -12,7 +12,7 @@ module SystemRDL
       end
 
       rule(:spaces?) do
-        space.maybe.ignore
+        space.repeat.ignore
       end
 
       private
@@ -23,6 +23,21 @@ module SystemRDL
 
       def bracketed(atom, bra = '(', cket = ')')
         str(bra).ignore >> spaces? >> atom >> spaces? >> str(cket).ignore >> spaces?
+      end
+    end
+
+    define_transformer do
+      private
+
+      def fetch_values(hash, *keys)
+        hash.fetch_values(*keys) { nil }
+      end
+
+      def to_array(obj)
+        case obj
+        when Array then obj
+        when AST::Base then [obj]
+        end
       end
     end
   end

@@ -2,6 +2,10 @@
 
 module SystemRDL
   module HelerMethods
+    def rspec_matcher?(v)
+      v.is_a?(RSpec::Matchers::BuiltIn::BaseMatcher)
+    end
+
     def data_type(type)
       builtin_types = [
         :bit, :longint, :boolean, :string, :accesstype,
@@ -27,7 +31,11 @@ module SystemRDL
     end
 
     def number_literal(number, width: nil)
-      be_instance_of(AST::NumberLiteral).and have_attributes(number: number, width: width)
+      if rspec_matcher?(number)
+        number
+      else
+        be_instance_of(AST::NumberLiteral).and have_attributes(number: number, width: width)
+      end
     end
 
     alias_method :number, :number_literal
@@ -69,7 +77,11 @@ module SystemRDL
     alias_method :precedencetype, :precedencetype_literal
 
     def identifer(id)
-      be_instance_of(AST::ID).and have_attributes(id: id.to_sym)
+      if id.is_a?(RSpec::Matchers::BuiltIn::BaseMatcher)
+        id
+      else
+        be_instance_of(AST::ID).and have_attributes(id: id.to_sym)
+      end
     end
 
     alias_method :id, :identifer
@@ -79,9 +91,8 @@ module SystemRDL
     end
 
     def reference_element(id, *array)
-      id_matcher = id.is_a?(String) && identifer(id) || id
       be_instance_of(AST::ReferenceElement)
-        .and have_attributes(id: id_matcher, array: match(array))
+        .and have_attributes(id: identifer(id), array: match(array))
     end
 
     def reference(*elements, property: nil)
@@ -147,6 +158,88 @@ module SystemRDL
           .and have_attributes(id: id, modifier: modifier)
           .and be_not_default
       end
+    end
+
+    ComponentInstances = Struct.new(:id, :type, :alias_id, :insts) do
+      def inst(item)
+        self.insts ||= []
+        self.insts << item
+      end
+    end
+
+    ComponentDefinition = Struct.new(:id, :body, :insts) do
+      def initialize(id)
+        self.id = id
+      end
+
+      alias_method :__body, :body
+
+      def body(item = nil)
+        if item.nil?
+          self.__body
+        else
+          self.body ||= []
+          self.body << item
+        end
+      end
+
+      alias_method :__insts, :insts
+
+      def insts
+        if block_given?
+          self.insts ||= ComponentInstances.new
+          yield(__insts)
+        else
+          __insts
+        end
+      end
+    end
+
+    def component_definition(component_ast, id)
+      definition = ComponentDefinition.new(id)
+      yield definition if block_given?
+
+      id_matcher = definition.id && identifer(definition.id)
+      body_mathcher = definition.body && match(definition.body)
+      insts_matcher = definition.insts && component_instances(definition.insts)
+      be_instance_of(component_ast)
+        .and have_attributes(id: id_matcher, body: body_mathcher, insts: insts_matcher)
+    end
+
+    def component_instances(insts)
+      id_matcher = insts.id && identifer(insts.id)
+      type_matcher = insts.type && identifer(insts.type)
+      alias_id_matcher = insts.alias_id && identifer(insts.alias_id)
+      insts_matcher = insts.insts&.map(&method(:component_instance))&.then(&method(:match))
+
+      be_instance_of(AST::ComponentInstances)
+        .and have_attributes(
+          id: id_matcher, inst_type: type_matcher,
+          alias_id: alias_id_matcher, insts: insts_matcher
+        )
+    end
+
+    def component_instance(inst)
+      id_matcher = identifer(inst[:id])
+      array_matcher = inst[:array]&.map(&method(:number))&.then(&method(:match))
+      range_matcher = inst[:range]&.map(&method(:number))&.then(&method(:match))
+      assignment_matcher = inst[:assignment]&.map(&method(:instnace_assignment))&.then(&method(:match))
+
+      be_instance_of(AST::ComponentInstance)
+        .and have_attributes(
+          id: id_matcher, array: array_matcher,
+          range: range_matcher, assignment: assignment_matcher
+        )
+    end
+
+    def instnace_assignment(assignment)
+      operator, operand = assignment
+      be_instance_of(AST::InstanceAssignment)
+        .and have_attributes(operator: operator, operand: number(operand))
+    end
+
+    def field_difinition(id = nil, &b)
+      component_definition(AST::FieldDefinition, id, &b)
     end
   end
 end
