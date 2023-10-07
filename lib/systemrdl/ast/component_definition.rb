@@ -2,23 +2,6 @@
 
 module SystemRDL
   module AST
-    class ComponentDefinition < Base
-      def initialize(type, position, id, body, insts)
-        assign_properties(id: id, body: body, insts: insts)
-        super(type, position)
-      end
-
-      attr_reader :id
-      attr_reader :body
-      attr_reader :insts
-    end
-
-    class FieldDefinition < ComponentDefinition
-      def initialize(position, id, body, inst)
-        super(:field_difinition, position, id, body, inst)
-      end
-    end
-
     class ComponentInstances < Base
       def initialize(position, id, inst_type, alias_id, insts)
         assign_properties(
@@ -55,6 +38,29 @@ module SystemRDL
 
       attr_reader :operator
       attr_reader :operand
+    end
+
+    class ComponentDefinition < Base
+      def initialize(type, position, id, body, insts)
+        assign_properties(id: id, body: body, insts: insts)
+        super(type, position)
+      end
+
+      attr_reader :id
+      attr_reader :body
+      attr_reader :insts
+    end
+
+    class FieldDefinition < ComponentDefinition
+      def initialize(position, id, body, insts)
+        super(:field_difinition, position, id, body, insts)
+      end
+    end
+
+    class RegisterDefinition < ComponentDefinition
+      def initialize(position, id, body, insts)
+        super(:register_definition, position, id, body, insts)
+      end
     end
   end
 end

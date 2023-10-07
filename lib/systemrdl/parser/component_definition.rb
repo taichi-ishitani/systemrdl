@@ -31,10 +31,17 @@ module SystemRDL
       rule(:component_body) do
         element =
           (
-            component_definition | property_assignment
+            component_definition | explicit_component_inst | property_assignment
           ) >> spaces?
         bracketed(element.repeat(1), '{', '}').as(:component_body) |
-          bracketed(spaces?, '{', '}')
+          bracketed(nil, '{', '}')
+      end
+
+      rule(:explicit_component_inst) do
+        (
+          component_inst_type.as(:inst_type).maybe >> id.as(:type_id) >>
+            spaces >> component_insts
+        ).as(:explicit_component_inst) >> spaces? >> spaced(';')
       end
 
       rule(:component_insts) do
@@ -47,14 +54,14 @@ module SystemRDL
         inst_id = (
           id.as(:id) >> spaces? >> array.as(:array) |
           id.as(:id) >> spaces? >> range.as(:range) |
-          id.as(:id) >> spaces?
+          id.as(:id)
         ).as(:component_inst_id)
         assignments = (
-          inst_operation('=') >> inst_operation('@') >>
-          inst_operation('+=') >> inst_operation('%=')
+          component_assignment(:'=') >> component_assignment(:'@') >>
+          component_assignment(:'+=') >> component_assignment(:'%=')
         ).as(:component_inst_assignments)
 
-        inst_id >> assignments >> spaces?
+        inst_id >> spaces? >> assignments >> spaces?
       end
 
       private
@@ -70,21 +77,26 @@ module SystemRDL
         ).as(:component_inst_type) >> spaces
       end
 
-      def inst_operation(operator)
+      def component_assignment(operator)
         (
-          spaced(operator).as(:operator) >>
-          constant_expression.as(:operand)
-        ).as(:inst_operation).maybe
+          spaced(operator.to_s).as(:component_assignment_operator) >>
+          constant_expression.as(:component_assignment_operand)
+        ).as(operator).maybe
       end
     end
 
     define_transformer do
-      # rule(
-      #   component_def: subtree(:component_def),
-      #   component_inst_type: simple(:inst_type),
-      #   component_insts: subtree(:component_insts)
-      # ) do
-      # end
+      rule(
+        component_def: subtree(:component_def),
+        component_inst_type: simple(:inst_type),
+        component_insts: subtree(:component_insts)
+      ) do
+        type, id, body =
+          fetch_values(component_def, :component_type, :component_id, :component_body)
+        insts = untyped_component_insts(component_insts, inst_type)
+
+        component_definition(type).new(type.position, id, to_array(body), insts)
+      end
 
       rule(
         component_def: subtree(:component_def),
@@ -112,33 +124,44 @@ module SystemRDL
         component_definition(type).new(type.position, id, body, nil)
       end
 
+      rule(explicit_component_inst: subtree(:inst)) do
+        inst_type, type_id, insts =
+          fetch_values(inst, :inst_type, :type_id, :component_insts)
+        position = (inst_type || type_id).position
+        AST::ComponentInstances.new(position, type_id, inst_type, nil, to_array(insts))
+      end
+
       rule(
         component_inst_id: subtree(:id),
         component_inst_assignments: subtree(:assignments)
       ) do
         inst_id, array, range = fetch_values(id, :id, :array, :range)
-        assignment_list = to_array(assignments)
+        assignment_list = !assignments.empty? && assignments.values || nil
         AST::ComponentInstance
           .new(inst_id.position, inst_id, array, range, assignment_list)
       end
 
-      rule(inst_operation: { operator: simple(:oprator), operand: simple(:operand) }) do
+      rule(
+        component_assignment_operator: simple(:operator),
+        component_assignment_operand: simple(:operand)
+      ) do
         AST::InstanceAssignment
-          .new(oprator.position, oprator.str.to_sym, operand)
+          .new(operator.position, operator.str.to_sym, operand)
       end
 
       private
 
       def component_definition(component_type)
         {
-          'field' => AST::FieldDefinition
+          'field' => AST::FieldDefinition,
+          'reg' => AST::RegisterDefinition
         }[component_type.str]
       end
 
       def untyped_component_insts(insts, inst_type)
         inst_list = to_array(insts)
         position = inst_list.first.position
-        AST::ComponentInstances.new(position, nil, inst_type, nil, inst_list)
+        AST::ComponentInstances.new(position, nil, inst_type&.str&.to_sym, nil, inst_list)
       end
     end
   end

@@ -161,6 +161,17 @@ module SystemRDL
     end
 
     ComponentInstances = Struct.new(:id, :type, :alias_id, :insts) do
+      def external
+        self.type = :external
+      end
+
+      alias_method :__id, :id
+
+      def id(item = nil)
+        item && self.id = item
+        self.__id
+      end
+
       def inst(item)
         self.insts ||= []
         self.insts << item
@@ -193,6 +204,10 @@ module SystemRDL
           __insts
         end
       end
+
+      def inst(item)
+        insts { |i| i.inst item }
+      end
     end
 
     def component_definition(component_ast, id)
@@ -206,9 +221,14 @@ module SystemRDL
         .and have_attributes(id: id_matcher, body: body_mathcher, insts: insts_matcher)
     end
 
-    def component_instances(insts)
+    def component_instances(insts = nil)
+      if block_given?
+        insts = ComponentInstances.new
+        yield(insts)
+      end
+
       id_matcher = insts.id && identifer(insts.id)
-      type_matcher = insts.type && identifer(insts.type)
+      type_matcher = insts.type
       alias_id_matcher = insts.alias_id && identifer(insts.alias_id)
       insts_matcher = insts.insts&.map(&method(:component_instance))&.then(&method(:match))
 
@@ -238,8 +258,12 @@ module SystemRDL
         .and have_attributes(operator: operator, operand: number(operand))
     end
 
-    def field_difinition(id = nil, &b)
+    def field_definition(id = nil, &b)
       component_definition(AST::FieldDefinition, id, &b)
+    end
+
+    def register_definition(id = nil, &b)
+      component_definition(AST::RegisterDefinition, id, &b)
     end
   end
 end

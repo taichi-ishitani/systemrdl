@@ -22,7 +22,10 @@ module SystemRDL
       end
 
       def bracketed(atom, bra = '(', cket = ')')
-        str(bra).ignore >> spaces? >> atom >> spaces? >> str(cket).ignore >> spaces?
+        b = str(bra).ignore >> spaces?
+        c = str(cket).ignore >> spaces?
+
+        atom && (b >> atom >> c) || b >> c
       end
     end
 

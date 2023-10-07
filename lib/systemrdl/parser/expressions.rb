@@ -8,7 +8,7 @@ module SystemRDL
           number_literal, string_literal, boolean_literal, accesstype_literal,
           onreadtype_literal, onwritetype_literal, addressingtype_literal, this_keyword,
           property_ref, instance_ref, bracketed(constant_expression)
-        ].inject(:|)
+        ].inject(:|) >> spaces?
       end
 
       rule(:cast_operation) do
@@ -26,7 +26,8 @@ module SystemRDL
       end
 
       rule(:binary_operation) do
-        infix_expression(unary_operation, *binary_operator) >> spaces?
+        infix_expression(unary_operation, *binary_operator) >> spaces? |
+          unary_operation
       end
 
       rule(:condition_operation) do
