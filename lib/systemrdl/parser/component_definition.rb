@@ -39,7 +39,7 @@ module SystemRDL
 
       rule(:explicit_component_inst) do
         (
-          component_inst_type.as(:inst_type).maybe >> id.as(:type_id) >>
+          component_inst_type.maybe >> id.as(:type_id) >>
             spaces >> component_insts
         ).as(:explicit_component_inst) >> spaces? >> spaced(';')
       end
@@ -119,9 +119,10 @@ module SystemRDL
 
       rule(explicit_component_inst: subtree(:inst)) do
         inst_type, type_id, insts =
-          fetch_values(inst, :inst_type, :type_id, :component_insts)
+          fetch_values(inst, :component_inst_type, :type_id, :component_insts)
         position = (inst_type || type_id).position
-        AST::ComponentInstances.new(position, type_id, inst_type, nil, to_array(insts))
+        AST::ComponentInstances
+          .new(position, type_id, inst_type&.to_sym, nil, to_array(insts))
       end
 
       rule(
@@ -139,7 +140,7 @@ module SystemRDL
         component_assignment_operand: simple(:operand)
       ) do
         AST::InstanceAssignment
-          .new(operator.position, operator.str.to_sym, operand)
+          .new(operator.position, operator.to_sym, operand)
       end
 
       private
@@ -148,14 +149,15 @@ module SystemRDL
         {
           'field' => AST::FieldDefinition,
           'reg' => AST::RegisterDefinition,
-          'mem' => AST::MemoryDefinition
+          'mem' => AST::MemoryDefinition,
+          'regfile' => AST::RegisterFileDefinition
         }[component_type.str]
       end
 
       def untyped_component_insts(insts, inst_type)
         inst_list = to_array(insts)
         position = inst_list.first.position
-        AST::ComponentInstances.new(position, nil, inst_type&.str&.to_sym, nil, inst_list)
+        AST::ComponentInstances.new(position, nil, inst_type&.to_sym, nil, inst_list)
       end
     end
   end

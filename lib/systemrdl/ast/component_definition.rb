@@ -52,20 +52,26 @@ module SystemRDL
     end
 
     class FieldDefinition < ComponentDefinition
-      def initialize(position, id, body, insts)
-        super(:field_definition, position, id, body, insts)
+      def initialize(...)
+        super(:field_definition, ...)
       end
     end
 
     class RegisterDefinition < ComponentDefinition
-      def initialize(position, id, body, insts)
-        super(:register_definition, position, id, body, insts)
+      def initialize(...)
+        super(:register_definition, ...)
       end
     end
 
     class MemoryDefinition < ComponentDefinition
-      def initialize(position, id, body, insts)
-        super(:memory_definition, position, id, body, insts)
+      def initialize(...)
+        super(:memory_definition, ...)
+      end
+    end
+
+    class RegisterFileDefinition < ComponentDefinition
+      def initialize(...)
+        super(:register_file_definition, ...)
       end
     end
   end

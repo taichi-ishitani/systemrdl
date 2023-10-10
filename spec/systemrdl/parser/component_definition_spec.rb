@@ -197,4 +197,43 @@ RSpec.describe SystemRDL::Parser do
         end)
     end
   end
+
+  describe 'register file component' do
+    it 'should be parsed by :component_definition parser' do
+      register_file = <<~'RF'
+        regfile fifo_rfile {
+          alignment = 8;
+          reg {field {} a;} a;
+          reg {field {} a;} b;
+        };
+      RF
+      expect(parser).to parse(register_file)
+        .as(register_file_definition('fifo_rfile') do |rf|
+          rf.body property_assignment(id('alignment'), number(8))
+          rf.body(register_definition do |r|
+            r.body field_definition { |f| f.inst id: 'a' }
+            r.inst id: 'a'
+          end)
+          rf.body(register_definition do |r|
+            r.body field_definition { |f| f.inst id: 'a' }
+            r.inst id: 'b'
+          end)
+        end)
+
+      register_file = <<~'RF'
+        regfile {
+          external fifo_rfile fifo_a;
+          external fifo_rfile fifo_b[64];
+          sharedextbus;
+        } top_regfile;
+      RF
+      expect(parser).to parse(register_file)
+        .as(register_file_definition do |rf|
+          rf.body component_instances { |i| i.external; i.id 'fifo_rfile'; i.inst id: 'fifo_a' }
+          rf.body component_instances { |i| i.external; i.id 'fifo_rfile'; i.inst id: 'fifo_b', array: [64] }
+          rf.body property_assignment(id('sharedextbus'))
+          rf.inst id: 'top_regfile'
+        end)
+    end
+  end
 end

@@ -269,5 +269,9 @@ module SystemRDL
     def memory_definition(id = nil, &b)
       component_definition(AST::MemoryDefinition, id, &b)
     end
+
+    def register_file_definition(id = nil, &b)
+      component_definition(AST::RegisterFileDefinition, id, &b)
+    end
   end
 end
