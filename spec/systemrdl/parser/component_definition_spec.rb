@@ -236,4 +236,72 @@ RSpec.describe SystemRDL::Parser do
         end)
     end
   end
+
+  describe 'address map component' do
+    it 'should be parsed by :component_definition parser' do
+      address_map = <<~'AM'
+        addrmap some_bridge {
+          desc="overlapping address maps with both shared register space and orthogonal register space";
+          bridge;
+          reg status {
+            shared;
+            field {
+              hw=rw;
+              sw=r;
+            } stat1 = 1'b0;
+          };
+          reg some_axi_reg {
+            field {
+              desc="credits on the AXI interface";
+            } credits[4] = 4'h7;
+          };
+          reg some_ahb_reg {
+            field {
+              desc="credits on the AHB Interface";
+            } credits[8] = 8'b00000011;
+          };
+
+          addrmap {
+            littleendian;
+            some_ahb_reg ahb_credits;
+            status ahb_stat @0x20;
+            ahb_stat.stat1->desc = "bar";
+          } ahb;
+        };
+      AM
+      expect(parser).to parse(address_map)
+        .as(address_map_definition('some_bridge') do |am|
+          am.body property_assignment(id('desc'), string('overlapping address maps with both shared register space and orthogonal register space'))
+          am.body property_assignment(id('bridge'))
+          am.body register_definition('status') { |r|
+            r.body property_assignment(id('shared'))
+            r.body field_definition { |f|
+              f.body property_assignment(id('hw'), accesstype(:rw))
+              f.body property_assignment(id('sw'), accesstype(:r))
+              f.inst id: 'stat1', assignment: [[:'=', number(0, width: 1)]]
+            }
+          }
+          am.body register_definition('some_axi_reg') { |r|
+            r.body field_definition { |f|
+              f.body property_assignment(id('desc'), string('credits on the AXI interface'))
+              f.inst id: 'credits', array: [4], assignment: [[:'=', number(7, width: 4)]]
+            }
+          }
+          am.body register_definition('some_ahb_reg') { |r|
+            r.body field_definition { |f|
+              f.body property_assignment(id('desc'), string('credits on the AHB Interface'))
+              f.inst id: 'credits', array: [8], assignment: [[:'=', number(3, width: 8)]]
+            }
+          }
+
+          am.body address_map_definition { |am_ahb|
+            am_ahb.body property_assignment(id('littleendian'))
+            am_ahb.body component_instances { |i| i.id 'some_ahb_reg'; i.inst id: 'ahb_credits' }
+            am_ahb.body component_instances { |i| i.id 'status'; i.inst id: 'ahb_stat', assignment: [[:'@', number(0x20)]] }
+            am_ahb.body property_assignment(reference('ahb_stat', 'stat1', property: 'desc'), string('bar'))
+            am_ahb.inst id: 'ahb'
+          }
+        end)
+    end
+  end
 end

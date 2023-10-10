@@ -74,5 +74,11 @@ module SystemRDL
         super(:register_file_definition, ...)
       end
     end
+
+    class AddressMapDefinition < ComponentDefinition
+      def initialize(...)
+        super(:address_map_definition, ...)
+      end
+    end
   end
 end

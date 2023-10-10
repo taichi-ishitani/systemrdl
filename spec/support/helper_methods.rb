@@ -273,5 +273,9 @@ module SystemRDL
     def register_file_definition(id = nil, &b)
       component_definition(AST::RegisterFileDefinition, id, &b)
     end
+
+    def address_map_definition(id = nil, &b)
+      component_definition(AST::AddressMapDefinition, id, &b)
+    end
   end
 end

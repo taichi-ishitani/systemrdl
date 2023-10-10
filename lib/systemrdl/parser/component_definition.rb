@@ -150,7 +150,8 @@ module SystemRDL
           'field' => AST::FieldDefinition,
           'reg' => AST::RegisterDefinition,
           'mem' => AST::MemoryDefinition,
-          'regfile' => AST::RegisterFileDefinition
+          'regfile' => AST::RegisterFileDefinition,
+          'addrmap' => AST::AddressMapDefinition
         }[component_type.str]
       end
 
