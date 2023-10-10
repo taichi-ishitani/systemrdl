@@ -62,5 +62,11 @@ module SystemRDL
         super(:register_definition, position, id, body, insts)
       end
     end
+
+    class MemoryDefinition < ComponentDefinition
+      def initialize(position, id, body, insts)
+        super(:memory_definition, position, id, body, insts)
+      end
+    end
   end
 end

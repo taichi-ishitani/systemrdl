@@ -147,4 +147,54 @@ RSpec.describe SystemRDL::Parser do
         end)
     end
   end
+
+  describe 'memory component' do
+    it 'should be parsed by :component_definition parser' do
+      memory = <<~'M'
+        mem fifo_mem {
+          mementries = 1024;
+          memwidth = 32;
+        };
+      M
+      expect(parser).to parse(memory)
+        .as(memory_definition('fifo_mem') do |m|
+          m.body property_assignment(id('mementries'), number(1024))
+          m.body property_assignment(id('memwidth'), number(32))
+        end)
+
+      memory = <<~'M'
+        external mem fifo_mem {
+          mementries = 1024;
+          memwidth = 32;
+        } mem_a, mem_b;
+      M
+      expect(parser).to parse(memory)
+        .as(memory_definition('fifo_mem') do |m|
+          m.body property_assignment(id('mementries'), number(1024))
+          m.body property_assignment(id('memwidth'), number(32))
+          m.insts do |i|
+            i.external
+            i.inst id: 'mem_a'
+            i.inst id: 'mem_b'
+          end
+        end)
+
+      memory = <<~'M'
+        mem {
+          mementries = 1024;
+          memwidth = 32;
+        } external mem_a, mem_b;
+      M
+      expect(parser).to parse(memory)
+        .as(memory_definition do |m|
+          m.body property_assignment(id('mementries'), number(1024))
+          m.body property_assignment(id('memwidth'), number(32))
+          m.insts do |i|
+            i.external
+            i.inst id: 'mem_a'
+            i.inst id: 'mem_b'
+          end
+        end)
+    end
+  end
 end

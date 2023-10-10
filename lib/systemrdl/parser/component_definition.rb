@@ -109,13 +109,6 @@ module SystemRDL
         component_definition(type).new(type.position, id, to_array(body), insts)
       end
 
-      # rule(
-      #   component_inst_type: simple(:inst_type),
-      #   component_def: subtree(:component_def),
-      #   component_insts: subtree(:component_insts)
-      # ) do
-      # end
-
       rule(
         component_def: subtree(:component_def)
       ) do
@@ -154,7 +147,8 @@ module SystemRDL
       def component_definition(component_type)
         {
           'field' => AST::FieldDefinition,
-          'reg' => AST::RegisterDefinition
+          'reg' => AST::RegisterDefinition,
+          'mem' => AST::MemoryDefinition
         }[component_type.str]
       end
 
