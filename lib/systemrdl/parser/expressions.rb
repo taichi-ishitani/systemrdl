@@ -73,12 +73,12 @@ module SystemRDL
       end
 
       rule(unary_operator: simple(:operator), operand: simple(:operand)) do
-        AST::UnaryOperation.new(operator.position, operator.str.to_sym, operand)
+        AST::UnaryOperation.new(operator.position, operator.to_sym, operand)
       end
 
       rule(l: simple(:l), o: simple(:o), r: simple(:r)) do
         AST::BinaryOperation
-          .new(o.position, o.str.to_sym, l, r)
+          .new(o.position, o.to_sym, l, r)
       end
 
       rule(

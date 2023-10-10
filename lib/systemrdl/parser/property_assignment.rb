@@ -66,7 +66,7 @@ module SystemRDL
 
     define_transformer do
       rule(prop_keyword: simple(:k)) do
-        AST::ID.new(k.position, k.str.to_sym)
+        AST::ID.new(k.position, k.to_sym)
       end
 
       rule(prop_default: simple(:d), prop_lhs: simple(:l)) do
@@ -86,11 +86,11 @@ module SystemRDL
       end
 
       rule(prop_default: simple(:d), prop_mod: simple(:m), prop_id: simple(:i)) do
-        AST::PropertyModifier.new(d.position, i, m.str.to_sym, true)
+        AST::PropertyModifier.new(d.position, i, m.to_sym, true)
       end
 
       rule(prop_mod: simple(:m), prop_id: simple(:i)) do
-        AST::PropertyModifier.new(m.position, i, m.str.to_sym, false)
+        AST::PropertyModifier.new(m.position, i, m.to_sym, false)
       end
     end
   end

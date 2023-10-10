@@ -134,7 +134,7 @@ module SystemRDL
 
     define_transformer do
       rule(accesstype_literal: simple(:t)) do
-        AST::AccesstypeLiteral.new(t.position, t.str.to_sym)
+        AST::AccesstypeLiteral.new(t.position, t.to_sym)
       end
     end
 
@@ -150,7 +150,7 @@ module SystemRDL
 
     define_transformer do
       rule(onreadtype_literal: simple(:t)) do
-        AST::OnreadtypeLiteral.new(t.position, t.str.to_sym)
+        AST::OnreadtypeLiteral.new(t.position, t.to_sym)
       end
     end
 
@@ -169,7 +169,7 @@ module SystemRDL
 
     define_transformer do
       rule(onwritetype_literal: simple(:t)) do
-        AST::OnwritetypeLiteral.new(t.position, t.str.to_sym)
+        AST::OnwritetypeLiteral.new(t.position, t.to_sym)
       end
     end
 
@@ -185,7 +185,7 @@ module SystemRDL
 
     define_transformer do
       rule(addressingtype_literal: simple(:t)) do
-        AST::AddressingtypeLiteral.new(t.position, t.str.to_sym)
+        AST::AddressingtypeLiteral.new(t.position, t.to_sym)
       end
     end
 
@@ -200,7 +200,7 @@ module SystemRDL
 
     define_transformer do
       rule(precedencetype_literal: simple(:t)) do
-        AST::PrecedencetypeLiteral.new(t.position, t.str.to_sym)
+        AST::PrecedencetypeLiteral.new(t.position, t.to_sym)
       end
     end
   end
