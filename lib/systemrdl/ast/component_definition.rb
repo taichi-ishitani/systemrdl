@@ -53,7 +53,7 @@ module SystemRDL
 
     class FieldDefinition < ComponentDefinition
       def initialize(position, id, body, insts)
-        super(:field_difinition, position, id, body, insts)
+        super(:field_definition, position, id, body, insts)
       end
     end
 
