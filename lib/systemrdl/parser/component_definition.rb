@@ -18,8 +18,19 @@ module SystemRDL
 
       rule(:component_named_def) do
         (
-          component_type >> spaces >> id.as(:component_id) >> spaces? >> component_body
+          component_type >> spaces >> id.as(:component_id) >> spaces? >>
+          parameter_definitions.maybe >> component_body
         ).as(:component_def)
+      end
+
+      rule(:parameter_definitions) do
+        list = (paraemter_definition >> spaced(',')).repeat >> paraemter_definition
+        bracketed(list, '#(', ')').as(:parameter_definitions) >> spaces?
+      end
+
+      rule(:paraemter_definition) do
+        data_type.as(:parameter_type) >> spaces >> id.as(:parameter_id) >> spaces? >>
+          ((spaced('=') >> constant_expression.as(:parameter_default_value))).maybe
       end
 
       rule(:component_anon_def) do
@@ -40,8 +51,18 @@ module SystemRDL
       rule(:explicit_component_inst) do
         (
           component_inst_type.maybe >> id.as(:type_id) >>
-            spaces >> component_insts
+          ((spaces? >> parameter_assignments) | spaces) >> component_insts
         ).as(:explicit_component_inst) >> spaces? >> spaced(';')
+      end
+
+      rule(:parameter_assignments) do
+        list = (parameter_assignment >> spaced(',')).repeat >> parameter_assignment
+        bracketed(list, '#(', ')').as(:parameter_assignments) >> spaces?
+      end
+
+      rule(:parameter_assignment) do
+        spaced('.') >> id.as(:parametr_id) >> spaces? >>
+          bracketed(constant_expression, '(', ')').as(:parameter_value) >> spaces?
       end
 
       rule(:component_insts) do
@@ -91,38 +112,77 @@ module SystemRDL
         component_inst_type: simple(:inst_type),
         component_insts: subtree(:component_insts)
       ) do
-        type, id, body =
-          fetch_values(component_def, :component_type, :component_id, :component_body)
+        type, id, parameter_definitions, body =
+          fetch_values(
+            component_def,
+            :component_type, :component_id, :parameter_definitions, :component_body
+          )
         insts = untyped_component_insts(component_insts, inst_type)
 
-        component_definition(type).new(type.position, id, to_array(body), insts)
+        component_definition(type)
+          .new(type.position, id, to_array(parameter_definitions), to_array(body), insts)
       end
 
       rule(
         component_def: subtree(:component_def),
         component_insts: subtree(:component_insts)
       ) do
-        type, id, body =
-          fetch_values(component_def, :component_type, :component_id, :component_body)
+        type, id, parameter_definitions, body =
+          fetch_values(
+            component_def,
+            :component_type, :component_id, :parameter_definitions, :component_body
+          )
         insts = untyped_component_insts(component_insts, nil)
 
-        component_definition(type).new(type.position, id, to_array(body), insts)
+        component_definition(type)
+          .new(type.position, id, to_array(parameter_definitions), to_array(body), insts)
       end
 
       rule(
         component_def: subtree(:component_def)
       ) do
-        type, id, body =
-          fetch_values(component_def, :component_type, :component_id, :component_body)
-        component_definition(type).new(type.position, id, body, nil)
+        type, id, parameter_definitions, body =
+          fetch_values(
+            component_def,
+            :component_type, :component_id, :parameter_definitions, :component_body
+          )
+        component_definition(type)
+          .new(type.position, id, to_array(parameter_definitions), body, nil)
+      end
+
+      rule(
+        parameter_type: simple(:type),
+        parameter_id: simple(:id),
+        parameter_default_value: simple(:value)
+      ) do
+        AST::ParameterDefinition.new(type.position, id, type, value)
+      end
+
+      rule(
+        parameter_type: simple(:type),
+        parameter_id: simple(:id)
+      ) do
+        AST::ParameterDefinition.new(type.position, id, type, nil)
       end
 
       rule(explicit_component_inst: subtree(:inst)) do
-        inst_type, type_id, insts =
-          fetch_values(inst, :component_inst_type, :type_id, :component_insts)
+        inst_type, type_id, parameter_assignments, insts =
+          fetch_values(
+            inst, :component_inst_type, :type_id, :parameter_assignments, :component_insts
+          )
         position = (inst_type || type_id).position
         AST::ComponentInstances
-          .new(position, type_id, inst_type&.to_sym, nil, to_array(insts))
+          .new(
+            position, type_id, inst_type&.to_sym, nil,
+            to_array(parameter_assignments), to_array(insts)
+          )
+      end
+
+      rule(
+        parametr_id: simple(:id),
+        parameter_value: simple(:value)
+      ) do
+        AST::ParameterAssignment.new(id.position, id, value)
       end
 
       rule(
@@ -158,7 +218,7 @@ module SystemRDL
       def untyped_component_insts(insts, inst_type)
         inst_list = to_array(insts)
         position = inst_list.first.position
-        AST::ComponentInstances.new(position, nil, inst_type&.to_sym, nil, inst_list)
+        AST::ComponentInstances.new(position, nil, inst_type&.to_sym, nil, nil, inst_list)
       end
     end
   end

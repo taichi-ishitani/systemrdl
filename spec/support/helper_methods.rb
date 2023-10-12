@@ -160,7 +160,7 @@ module SystemRDL
       end
     end
 
-    ComponentInstances = Struct.new(:id, :type, :alias_id, :insts) do
+    ComponentInstances = Struct.new(:id, :type, :alias_id, :parameter_assignments, :insts) do
       def external
         self.type = :external
       end
@@ -172,15 +172,22 @@ module SystemRDL
         self.__id
       end
 
+      def parameter_assignment(item)
+        (self.parameter_assignments ||= []) << item
+      end
+
       def inst(item)
-        self.insts ||= []
-        self.insts << item
+        (self.insts ||= []) << item
       end
     end
 
-    ComponentDefinition = Struct.new(:id, :body, :insts) do
+    ComponentDefinition = Struct.new(:id, :parameter_definitions, :body, :insts) do
       def initialize(id)
         self.id = id
+      end
+
+      def paraemter_definition(item)
+        (self.parameter_definitions ||= []) << item
       end
 
       alias_method :__body, :body
@@ -215,10 +222,27 @@ module SystemRDL
       yield definition if block_given?
 
       id_matcher = definition.id && identifer(definition.id)
+      param_matcher = parameter_definitions(definition.parameter_definitions)
       body_mathcher = definition.body && match(definition.body)
-      insts_matcher = definition.insts && component_instances(definition.insts)
+      insts_matcher = component_instances(definition.insts)
       be_instance_of(component_ast)
-        .and have_attributes(id: id_matcher, body: body_mathcher, insts: insts_matcher)
+        .and have_attributes(
+          id: id_matcher, parameter_definitions: param_matcher,
+          body: body_mathcher, insts: insts_matcher
+        )
+    end
+
+    def parameter_definitions(definitions)
+      return nil unless definitions
+
+      matchers = definitions.map do |definition|
+        be_instance_of(AST::ParameterDefinition)
+          .and have_attributes(
+            id: identifer(definition[:id]),
+            data_type: data_type(definition[:data_type]), default: definition[:default]
+          )
+      end
+      match(matchers)
     end
 
     def component_instances(insts = nil)
@@ -227,16 +251,29 @@ module SystemRDL
         yield(insts)
       end
 
+      return nil unless insts
+
       id_matcher = insts.id && identifer(insts.id)
       type_matcher = insts.type
       alias_id_matcher = insts.alias_id && identifer(insts.alias_id)
+      param_matcher = parameter_assignments(insts.parameter_assignments)
       insts_matcher = insts.insts&.map(&method(:component_instance))&.then(&method(:match))
 
       be_instance_of(AST::ComponentInstances)
         .and have_attributes(
           id: id_matcher, inst_type: type_matcher,
-          alias_id: alias_id_matcher, insts: insts_matcher
+          alias_id: alias_id_matcher, parameter_assignments: param_matcher, insts: insts_matcher
         )
+    end
+
+    def parameter_assignments(assignments)
+      return nil unless assignments
+
+      matchers = assignments.map do |assignment|
+        be_instance_of(AST::ParameterAssignment)
+          .and have_attributes(id: identifer(assignment[:id]), value: assignment[:value])
+      end
+      match(matchers)
     end
 
     def component_instance(inst)

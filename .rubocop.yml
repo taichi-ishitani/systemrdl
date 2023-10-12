@@ -35,6 +35,9 @@ Metrics/BlockLength:
 
 Metrics/ClassLength:
   Max: 150
+  CountAsOne:
+    - array
+    - method_call
 
 Metrics/MethodLength:
   Max: 15

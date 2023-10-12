@@ -304,4 +304,88 @@ RSpec.describe SystemRDL::Parser do
         end)
     end
   end
+
+  describe 'component parameters' do
+    specify 'definitive component types may be parameterized' do
+      reg = <<~'REG'
+        reg myReg #(
+          longint unsigned  SIZE  = 32
+        ) {
+          regwidth = SIZE;
+          field {} data[SIZE-1];
+        };
+      REG
+      expect(parser).to parse(reg)
+        .as(register_definition('myReg') do |r|
+          r.paraemter_definition id: 'SIZE', data_type: :longint, default: number(32)
+          r.body property_assignment(id('regwidth'), reference('SIZE'))
+          r.body field_definition { |f| f.inst id: 'data', array: [b_op(:'-', reference('SIZE'), number(1))]}
+        end)
+
+      reg = <<~'REG'
+        reg myReg #(
+          longint unsigned  SIZE    = 32,
+          boolean           SHARED
+        ) {
+          regwidth = SIZE;
+          shared = SHARED;
+          field {} data[SIZE-1];
+        };
+      REG
+      expect(parser).to parse(reg)
+        .as(register_definition('myReg') do |r|
+          r.paraemter_definition id: 'SIZE', data_type: :longint, default: number(32)
+          r.paraemter_definition id: 'SHARED', data_type: :boolean
+          r.body property_assignment(id('regwidth'), reference('SIZE'))
+          r.body property_assignment(id('shared'), reference('SHARED'))
+          r.body field_definition { |f| f.inst id: 'data', array: [b_op(:'-', reference('SIZE'), number(1))]}
+        end)
+
+      address_map = <<~'AM'
+        addrmap myAmap {
+          myReg #(.SIZE(16)) reg16;
+          myReg #(.SIZE(8), .SHARED(false)) reg8;
+        };
+      AM
+      expect(parser).to parse(address_map)
+        .as(address_map_definition('myAmap') do |am|
+          am.body component_instances { |i|
+            i.id 'myReg'
+            i.parameter_assignment id: 'SIZE', value: number(16)
+            i.inst id: 'reg16'
+          }
+          am.body component_instances { |i|
+            i.id 'myReg'
+            i.parameter_assignment id: 'SIZE', value: number(8)
+            i.parameter_assignment id: 'SHARED', value: boolean(false)
+            i.inst id: 'reg8'
+          }
+        end)
+    end
+
+    specify 'anonymous component types cannt be parameterized' do
+      reg = <<~'REG'
+        reg #(
+          longint unsigned  SIZE  = 32
+        ) {
+        } reg_a;
+      REG
+      expect(parser).not_to parse(reg)
+    end
+
+    specify 'empty parameter lists are not allowed' do
+      reg = <<~'REG'
+        reg myReg #() {
+        };
+      REG
+      expect(parser).not_to parse(reg)
+
+      address_map = <<~'AM'
+        addrmap myAmap {
+          myReg #() reg_a;
+        };
+      AM
+      expect(parser).not_to parse(address_map)
+    end
+  end
 end

@@ -3,9 +3,10 @@
 module SystemRDL
   module AST
     class ComponentInstances < Base
-      def initialize(position, id, inst_type, alias_id, insts)
+      def initialize(position, id, inst_type, alias_id, parameter_assignments, insts)
         assign_properties(
-          id: id, inst_type: inst_type, alias_id: alias_id, insts: insts
+          id: id, inst_type: inst_type, alias_id: alias_id,
+          parameter_assignments: parameter_assignments, insts: insts
         )
         super(:component_instances, position)
       end
@@ -13,7 +14,18 @@ module SystemRDL
       attr_reader :id
       attr_reader :inst_type
       attr_reader :alias_id
+      attr_reader :parameter_assignments
       attr_reader :insts
+    end
+
+    class ParameterAssignment < Base
+      def initialize(position, id, value)
+        assign_properties(id: id, value: value)
+        super(:parameter_assignment, position)
+      end
+
+      attr_reader :id
+      attr_reader :value
     end
 
     class ComponentInstance < Base
@@ -40,13 +52,28 @@ module SystemRDL
       attr_reader :operand
     end
 
+    class ParameterDefinition < Base
+      def initialize(position, id, data_type, default)
+        assign_properties(id: id, data_type: data_type, default: default)
+        super(:paraemter_definition, position)
+      end
+
+      attr_reader :id
+      attr_reader :data_type
+      attr_reader :default
+    end
+
     class ComponentDefinition < Base
-      def initialize(type, position, id, body, insts)
-        assign_properties(id: id, body: body, insts: insts)
+      def initialize(type, position, id, parameter_definitions, body, insts)
+        assign_properties(
+          id: id, parameter_definitions: parameter_definitions,
+          body: body, insts: insts
+        )
         super(type, position)
       end
 
       attr_reader :id
+      attr_reader :parameter_definitions
       attr_reader :body
       attr_reader :insts
     end
