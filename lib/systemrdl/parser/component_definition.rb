@@ -24,8 +24,8 @@ module SystemRDL
       end
 
       rule(:parameter_definitions) do
-        list = (paraemter_definition >> spaced(',')).repeat >> paraemter_definition
-        bracketed(list, '#(', ')').as(:parameter_definitions) >> spaces?
+        bracketed(listed(paraemter_definition), '#(', ')')
+          .as(:parameter_definitions) >> spaces?
       end
 
       rule(:paraemter_definition) do
@@ -56,8 +56,8 @@ module SystemRDL
       end
 
       rule(:parameter_assignments) do
-        list = (parameter_assignment >> spaced(',')).repeat >> parameter_assignment
-        bracketed(list, '#(', ')').as(:parameter_assignments) >> spaces?
+        bracketed(listed(parameter_assignment), '#(', ')')
+          .as(:parameter_assignments) >> spaces?
       end
 
       rule(:parameter_assignment) do
@@ -66,9 +66,7 @@ module SystemRDL
       end
 
       rule(:component_insts) do
-        (
-          (component_inst >> spaced(',')).repeat >> component_inst
-        ).as(:component_insts)
+        listed(component_inst).as(:component_insts)
       end
 
       rule(:component_inst) do

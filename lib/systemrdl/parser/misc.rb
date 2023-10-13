@@ -27,6 +27,10 @@ module SystemRDL
 
         atom && (b >> atom >> c) || b >> c
       end
+
+      def listed(atom, separator = ',')
+        (atom >> spaced(separator)).repeat >> atom
+      end
     end
 
     define_transformer do
