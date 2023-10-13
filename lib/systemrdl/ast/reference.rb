@@ -3,9 +3,9 @@
 module SystemRDL
   module AST
     class ReferenceElement < Base
-      def initialize(position, id, array)
+      def initialize(id, array)
         assign_properties(id: id, array: array)
-        super(:reference_element, position)
+        super(:reference_element, id)
       end
 
       attr_reader :id
@@ -13,9 +13,9 @@ module SystemRDL
     end
 
     class Reference < Base
-      def initialize(position, instance_refernce, property)
+      def initialize(instance_refernce, property)
         assign_properties(instance_refernce: instance_refernce, property: property)
-        super(:reference, position)
+        super(:reference, instance_refernce)
       end
 
       attr_reader :instance_refernce

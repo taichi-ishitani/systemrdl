@@ -3,12 +3,12 @@
 module SystemRDL
   module AST
     class ComponentInstances < Base
-      def initialize(position, id, inst_type, alias_id, parameter_assignments, insts)
+      def initialize(id, inst_type, alias_id, parameter_assignments, insts)
         assign_properties(
-          id: id, inst_type: inst_type, alias_id: alias_id,
-          parameter_assignments: parameter_assignments, insts: insts
+          id: id, inst_type: to_symbol(inst_type), alias_id: alias_id,
+          parameter_assignments: to_array(parameter_assignments), insts: to_array(insts)
         )
-        super(:component_instances, position)
+        super(:component_instances, id, inst_type, insts)
       end
 
       attr_reader :id
@@ -19,9 +19,9 @@ module SystemRDL
     end
 
     class ParameterAssignment < Base
-      def initialize(position, id, value)
+      def initialize(id, value)
         assign_properties(id: id, value: value)
-        super(:parameter_assignment, position)
+        super(:parameter_assignment, id)
       end
 
       attr_reader :id
@@ -29,23 +29,32 @@ module SystemRDL
     end
 
     class ComponentInstance < Base
-      def initialize(position, id, array, range, assignment)
+      def initialize(id, array, range, assignments)
         assign_properties(
-          id: id, array: array, range: range, assignment: assignment
+          id: id, array: array, range: range,
+          assignments: extract_assignments(assignments)
         )
-        super(:component_instance, position)
+        super(:component_instance, id)
       end
 
       attr_reader :id
       attr_reader :array
       attr_reader :range
-      attr_reader :assignment
+      attr_reader :assignments
+
+      private
+
+      def extract_assignments(assignments)
+        return nil if assignments.empty?
+
+        assignments.values
+      end
     end
 
     class InstanceAssignment < Base
-      def initialize(position, operator, operand)
-        assign_properties(operator: operator, operand: operand)
-        super(:instnace_assignment, position)
+      def initialize(operator, operand)
+        assign_properties(operator: operator.to_sym, operand: operand)
+        super(:instnace_assignment, operator)
       end
 
       attr_reader :operator
@@ -53,9 +62,9 @@ module SystemRDL
     end
 
     class ParameterDefinition < Base
-      def initialize(position, id, data_type, default)
+      def initialize(id, data_type, default)
         assign_properties(id: id, data_type: data_type, default: default)
-        super(:paraemter_definition, position)
+        super(:paraemter_definition, data_type)
       end
 
       attr_reader :id
@@ -64,12 +73,12 @@ module SystemRDL
     end
 
     class ComponentDefinition < Base
-      def initialize(type, position, id, parameter_definitions, body, insts)
+      def initialize(component_type, id, parameter_definitions, body, insts)
         assign_properties(
-          id: id, parameter_definitions: parameter_definitions,
-          body: body, insts: insts
+          id: id, parameter_definitions: to_array(parameter_definitions),
+          body: to_array(body), insts: insts
         )
-        super(type, position)
+        super(:"#{component_type}_definition", component_type)
       end
 
       attr_reader :id
@@ -79,33 +88,18 @@ module SystemRDL
     end
 
     class FieldDefinition < ComponentDefinition
-      def initialize(...)
-        super(:field_definition, ...)
-      end
     end
 
     class RegisterDefinition < ComponentDefinition
-      def initialize(...)
-        super(:register_definition, ...)
-      end
     end
 
     class MemoryDefinition < ComponentDefinition
-      def initialize(...)
-        super(:memory_definition, ...)
-      end
     end
 
     class RegisterFileDefinition < ComponentDefinition
-      def initialize(...)
-        super(:register_file_definition, ...)
-      end
     end
 
     class AddressMapDefinition < ComponentDefinition
-      def initialize(...)
-        super(:address_map_definition, ...)
-      end
     end
   end
 end

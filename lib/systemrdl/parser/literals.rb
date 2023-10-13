@@ -20,12 +20,12 @@ module SystemRDL
     end
 
     define_transformer do
-      rule(true_literal: simple(:x)) do
-        AST::TrueLiteral.new(x.position)
+      rule(true_literal: simple(:v)) do
+        AST::TrueLiteral.new(v)
       end
 
-      rule(false_literal: simple(:x)) do
-        AST::FalseLiteral.new(x.position)
+      rule(false_literal: simple(:v)) do
+        AST::FalseLiteral.new(v)
       end
     end
 
@@ -85,23 +85,23 @@ module SystemRDL
 
     define_transformer do
       rule(verilg_hexadecimal: { width: simple(:w), number: simple(:n) }) do
-        AST::NumberLiteral.new(w.position, n.str.to_i(16), w.to_i)
+        AST::NumberLiteral.new(n, 16, w)
       end
 
       rule(verilg_decimal: { width: simple(:w), number: simple(:n) }) do
-        AST::NumberLiteral.new(w.position, n.str.to_i(10), w.to_i)
+        AST::NumberLiteral.new(n, 10, w)
       end
 
       rule(verilg_binary: { width: simple(:w), number: simple(:n) }) do
-        AST::NumberLiteral.new(w.position, n.str.to_i(2), w.to_i)
+        AST::NumberLiteral.new(n, 2, w)
       end
 
       rule(simple_hexadecimal: simple(:n)) do
-        AST::NumberLiteral.new(n.position, n.str.to_i(16), nil)
+        AST::NumberLiteral.new(n, 16, nil)
       end
 
       rule(simple_decimal: simple(:n)) do
-        AST::NumberLiteral.new(n.position, n.str.to_i(10), nil)
+        AST::NumberLiteral.new(n, 10, nil)
       end
     end
 
@@ -118,7 +118,7 @@ module SystemRDL
 
     define_transformer do
       rule(string_literal: simple(:s)) do
-        AST::StringLiteral.new(s.position, s.str[1..-2].gsub('\\"', '"'))
+        AST::StringLiteral.new(s)
       end
     end
 
@@ -134,7 +134,7 @@ module SystemRDL
 
     define_transformer do
       rule(accesstype_literal: simple(:t)) do
-        AST::AccesstypeLiteral.new(t.position, t.to_sym)
+        AST::AccesstypeLiteral.new(t)
       end
     end
 
@@ -150,7 +150,7 @@ module SystemRDL
 
     define_transformer do
       rule(onreadtype_literal: simple(:t)) do
-        AST::OnreadtypeLiteral.new(t.position, t.to_sym)
+        AST::OnreadtypeLiteral.new(t)
       end
     end
 
@@ -169,7 +169,7 @@ module SystemRDL
 
     define_transformer do
       rule(onwritetype_literal: simple(:t)) do
-        AST::OnwritetypeLiteral.new(t.position, t.to_sym)
+        AST::OnwritetypeLiteral.new(t)
       end
     end
 
@@ -185,7 +185,7 @@ module SystemRDL
 
     define_transformer do
       rule(addressingtype_literal: simple(:t)) do
-        AST::AddressingtypeLiteral.new(t.position, t.to_sym)
+        AST::AddressingtypeLiteral.new(t)
       end
     end
 
@@ -200,7 +200,7 @@ module SystemRDL
 
     define_transformer do
       rule(precedencetype_literal: simple(:t)) do
-        AST::PrecedencetypeLiteral.new(t.position, t.to_sym)
+        AST::PrecedencetypeLiteral.new(t)
       end
     end
   end

@@ -280,12 +280,12 @@ module SystemRDL
       id_matcher = identifer(inst[:id])
       array_matcher = inst[:array]&.map(&method(:number))&.then(&method(:match))
       range_matcher = inst[:range]&.map(&method(:number))&.then(&method(:match))
-      assignment_matcher = inst[:assignment]&.map(&method(:instnace_assignment))&.then(&method(:match))
+      assignments_matcher = inst[:assignments]&.map(&method(:instnace_assignment))&.then(&method(:match))
 
       be_instance_of(AST::ComponentInstance)
         .and have_attributes(
           id: id_matcher, array: array_matcher,
-          range: range_matcher, assignment: assignment_matcher
+          range: range_matcher, assignments: assignments_matcher
         )
     end
 

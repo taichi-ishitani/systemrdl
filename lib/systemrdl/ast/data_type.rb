@@ -3,9 +3,9 @@
 module SystemRDL
   module AST
     class DataType < Base
-      def initialize(position, data_type)
-        assign_properties(data_type: data_type)
-        super(:data_type, position)
+      def initialize(data_type, type_symbol)
+        assign_properties(data_type: type_symbol || to_symbol(data_type))
+        super(:data_type, position || data_type)
       end
 
       attr_reader :data_type

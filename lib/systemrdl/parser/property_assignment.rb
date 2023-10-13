@@ -66,31 +66,31 @@ module SystemRDL
 
     define_transformer do
       rule(prop_keyword: simple(:k)) do
-        AST::ID.new(k.position, k.to_sym)
+        AST::ID.new(k)
       end
 
       rule(prop_default: simple(:d), prop_lhs: simple(:l)) do
-        AST::PropertyAssignment.new(d.position, l, nil, true)
+        AST::PropertyAssignment.new(l, nil, d)
       end
 
       rule(prop_lhs: simple(:l)) do
-        AST::PropertyAssignment.new(l.position, l, nil, false)
+        AST::PropertyAssignment.new(l, nil, nil)
       end
 
       rule(prop_default: simple(:d), prop_lhs: simple(:l), prop_rhs: simple(:r)) do
-        AST::PropertyAssignment.new(d.position, l, r, true)
+        AST::PropertyAssignment.new(l, r, d)
       end
 
       rule(prop_lhs: simple(:l), prop_rhs: simple(:r)) do
-        AST::PropertyAssignment.new(l.position, l, r, false)
+        AST::PropertyAssignment.new(l, r, nil)
       end
 
       rule(prop_default: simple(:d), prop_mod: simple(:m), prop_id: simple(:i)) do
-        AST::PropertyModifier.new(d.position, i, m.to_sym, true)
+        AST::PropertyModifier.new(i, m, d)
       end
 
       rule(prop_mod: simple(:m), prop_id: simple(:i)) do
-        AST::PropertyModifier.new(m.position, i, m.to_sym, false)
+        AST::PropertyModifier.new(i, m, nil)
       end
     end
   end

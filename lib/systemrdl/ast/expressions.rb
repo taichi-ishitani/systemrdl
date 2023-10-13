@@ -3,9 +3,9 @@
 module SystemRDL
   module AST
     class CastOperation < Base
-      def initialize(position, casting_type, expression)
+      def initialize(casting_type, expression)
         assign_properties(casting_type: casting_type, expression: expression)
-        super(:cast_operation, position)
+        super(:cast_operation, casting_type)
       end
 
       attr_reader :casting_type
@@ -13,9 +13,9 @@ module SystemRDL
     end
 
     class UnaryOperation < Base
-      def initialize(position, operator, operand)
-        assign_properties(operator: operator, operand: operand)
-        super(:unary_operation, position)
+      def initialize(operator, operand)
+        assign_properties(operator: operator.to_sym, operand: operand)
+        super(:unary_operation, operator)
       end
 
       attr_reader :operator
@@ -23,9 +23,11 @@ module SystemRDL
     end
 
     class BinaryOperation < Base
-      def initialize(position, operator, l_operand, r_operand)
-        assign_properties(operator: operator, l_operand: l_operand, r_operand: r_operand)
-        super(:binary_operation, position)
+      def initialize(operator, l_operand, r_operand)
+        assign_properties(
+          operator: operator.to_sym, l_operand: l_operand, r_operand: r_operand
+        )
+        super(:binary_operation, operator)
       end
 
       attr_reader :operator
@@ -34,12 +36,12 @@ module SystemRDL
     end
 
     class ConditionalOperation < Base
-      def initialize(position, condition, true_operand, false_operand)
+      def initialize(operator, condition, true_operand, false_operand)
         assign_properties(
           condition: condition,
           true_operand: true_operand, false_operand: false_operand
         )
-        super(:conditional_operation, position)
+        super(:conditional_operation, operator)
       end
 
       attr_reader :condition

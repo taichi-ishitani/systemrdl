@@ -3,17 +3,17 @@
 module SystemRDL
   module AST
     class ID < Base
-      def initialize(position, id)
-        assign_properties(id: id)
-        super(:id, position)
+      def initialize(id)
+        assign_properties(id: id.to_sym)
+        super(:id, id)
       end
 
       attr_reader :id
     end
 
     class ThisKeyword < Base
-      def initialize(position)
-        super(:this_keyword, position)
+      def initialize(id)
+        super(:this_keyword, id)
       end
     end
   end

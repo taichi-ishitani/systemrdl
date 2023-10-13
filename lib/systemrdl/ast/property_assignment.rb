@@ -3,9 +3,9 @@
 module SystemRDL
   module AST
     class PropertyAssignment < Base
-      def initialize(position, lhs, rhs, default)
-        assign_properties(lhs: lhs, rhs: rhs, default: default)
-        super(:property_assignment, position)
+      def initialize(lhs, rhs, default)
+        assign_properties(lhs: lhs, rhs: rhs, default: !default.nil?)
+        super(:property_assignment, default, lhs)
       end
 
       attr_reader :lhs
@@ -17,9 +17,9 @@ module SystemRDL
     end
 
     class PropertyModifier < Base
-      def initialize(position, id, modifier, default)
-        assign_properties(id: id, modifier: modifier, default: default)
-        super(:property_modifier, position)
+      def initialize(id, modifier, default)
+        assign_properties(id: id, modifier: modifier.to_sym, default: !default.nil?)
+        super(:property_modifier, default, modifier)
       end
 
       attr_reader :id

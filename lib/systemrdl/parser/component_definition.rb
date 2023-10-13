@@ -119,8 +119,7 @@ module SystemRDL
           )
         insts = untyped_component_insts(component_insts, inst_type)
 
-        component_definition(type)
-          .new(type.position, id, to_array(parameter_definitions), to_array(body), insts)
+        component_definition(type).new(type, id, parameter_definitions, body, insts)
       end
 
       rule(
@@ -134,8 +133,7 @@ module SystemRDL
           )
         insts = untyped_component_insts(component_insts, nil)
 
-        component_definition(type)
-          .new(type.position, id, to_array(parameter_definitions), to_array(body), insts)
+        component_definition(type).new(type, id, parameter_definitions, body, insts)
       end
 
       rule(
@@ -146,8 +144,7 @@ module SystemRDL
             component_def,
             :component_type, :component_id, :parameter_definitions, :component_body
           )
-        component_definition(type)
-          .new(type.position, id, to_array(parameter_definitions), body, nil)
+        component_definition(type).new(type, id, parameter_definitions, body, nil)
       end
 
       rule(
@@ -155,14 +152,14 @@ module SystemRDL
         parameter_id: simple(:id),
         parameter_default_value: simple(:value)
       ) do
-        AST::ParameterDefinition.new(type.position, id, type, value)
+        AST::ParameterDefinition.new(id, type, value)
       end
 
       rule(
         parameter_type: simple(:type),
         parameter_id: simple(:id)
       ) do
-        AST::ParameterDefinition.new(type.position, id, type, nil)
+        AST::ParameterDefinition.new(id, type, nil)
       end
 
       rule(explicit_component_inst: subtree(:inst)) do
@@ -170,19 +167,15 @@ module SystemRDL
           fetch_values(
             inst, :component_inst_type, :type_id, :parameter_assignments, :component_insts
           )
-        position = (inst_type || type_id).position
         AST::ComponentInstances
-          .new(
-            position, type_id, inst_type&.to_sym, nil,
-            to_array(parameter_assignments), to_array(insts)
-          )
+          .new(type_id, inst_type, nil, parameter_assignments, insts)
       end
 
       rule(
         parametr_id: simple(:id),
         parameter_value: simple(:value)
       ) do
-        AST::ParameterAssignment.new(id.position, id, value)
+        AST::ParameterAssignment.new(id, value)
       end
 
       rule(
@@ -190,17 +183,14 @@ module SystemRDL
         component_inst_assignments: subtree(:assignments)
       ) do
         inst_id, array, range = fetch_values(id, :id, :array, :range)
-        assignment_list = !assignments.empty? && assignments.values || nil
-        AST::ComponentInstance
-          .new(inst_id.position, inst_id, array, range, assignment_list)
+        AST::ComponentInstance.new(inst_id, array, range, assignments)
       end
 
       rule(
         component_assignment_operator: simple(:operator),
         component_assignment_operand: simple(:operand)
       ) do
-        AST::InstanceAssignment
-          .new(operator.position, operator.to_sym, operand)
+        AST::InstanceAssignment.new(operator, operand)
       end
 
       private
@@ -216,9 +206,7 @@ module SystemRDL
       end
 
       def untyped_component_insts(insts, inst_type)
-        inst_list = to_array(insts)
-        position = inst_list.first.position
-        AST::ComponentInstances.new(position, nil, inst_type&.to_sym, nil, nil, inst_list)
+        AST::ComponentInstances.new(nil, inst_type, nil, nil, insts)
       end
     end
   end

@@ -68,24 +68,23 @@ module SystemRDL
     define_transformer do
       rule(casting_type: sequence(:t), expression: simple(:e)) do
         t.reverse.inject(e) do |expression, type|
-          AST::CastOperation.new(type.position, type, expression)
+          AST::CastOperation.new(type, expression)
         end
       end
 
       rule(unary_operator: simple(:operator), operand: simple(:operand)) do
-        AST::UnaryOperation.new(operator.position, operator.to_sym, operand)
+        AST::UnaryOperation.new(operator, operand)
       end
 
       rule(l: simple(:l), o: simple(:o), r: simple(:r)) do
-        AST::BinaryOperation
-          .new(o.position, o.to_sym, l, r)
+        AST::BinaryOperation.new(o, l, r)
       end
 
       rule(
         condition: simple(:c), operator: simple(:o),
         true_operand: simple(:t), false_operand: simple(:f)
       ) do
-        AST::ConditionalOperation.new(t.position, c, t, f)
+        AST::ConditionalOperation.new(o, c, t, f)
       end
     end
   end

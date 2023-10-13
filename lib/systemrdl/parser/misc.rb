@@ -35,13 +35,6 @@ module SystemRDL
       def fetch_values(hash, *keys)
         hash.fetch_values(*keys) { nil }
       end
-
-      def to_array(obj)
-        case obj
-        when Array then obj
-        when AST::Base then [obj]
-        end
-      end
     end
   end
 end

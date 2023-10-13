@@ -57,19 +57,19 @@ module SystemRDL
 
     define_transformer do
       rule(primary_data_type: simple(:t)) do
-        AST::DataType.new(t.position, t.to_sym)
+        AST::DataType.new(t, nil)
       end
 
       rule(bit_type: simple(:t)) do
-        AST::DataType.new(t.position, :bit)
+        AST::DataType.new(t, :bit)
       end
 
       rule(longint_type: simple(:t)) do
-        AST::DataType.new(t.position, :longint)
+        AST::DataType.new(t, :longint)
       end
 
       rule(user_defined_type: simple(:t)) do
-        AST::DataType.new(t.position, t)
+        AST::DataType.new(t, nil)
       end
     end
   end

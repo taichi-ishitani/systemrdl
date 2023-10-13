@@ -41,13 +41,13 @@ RSpec.describe SystemRDL::Parser do
 
       expect(parser).to parse('field {} b=0;')
         .as(field_definition do |f|
-          f.inst id: 'b', assignment: [[:'=', 0]]
+          f.inst id: 'b', assignments: [[:'=', 0]]
         end)
 
       expect(parser).to parse('field { anded;} a[4]=0; ')
         .as(field_definition do |f|
           f.body property_assignment(id('anded'))
-          f.inst id: 'a', array: [4], assignment: [[:'=', 0]]
+          f.inst id: 'a', array: [4], assignments: [[:'=', 0]]
         end)
 
       field = <<~'F'
@@ -60,7 +60,7 @@ RSpec.describe SystemRDL::Parser do
         .as(field_definition do |f|
           f.body property_assignment(id('desc'), string('A Packet with a CRC Error has been received'))
           f.body property_modifier(id('intr'), :level)
-          f.inst id: 'crc_error', assignment: [[:'=', 0]]
+          f.inst id: 'crc_error', assignments: [[:'=', 0]]
         end)
     end
   end
@@ -82,17 +82,17 @@ RSpec.describe SystemRDL::Parser do
 
       expect(parser).to parse('reg myReg {} reg_a @ 0x10;')
         .as(register_definition('myReg') do |r|
-          r.inst id: 'reg_a', assignment: [[:'@', number(0x10)]]
+          r.inst id: 'reg_a', assignments: [[:'@', number(0x10)]]
         end)
 
       expect(parser).to parse('reg myReg {} reg_b[10] @0x100 += 0x10;')
         .as(register_definition('myReg') do |r|
-          r.inst id: 'reg_b', array: [10], assignment: [[:'@', number(0x100)], [:'+=', number(0x10)]]
+          r.inst id: 'reg_b', array: [10], assignments: [[:'@', number(0x100)], [:'+=', number(0x10)]]
         end)
 
       expect(parser).to parse('reg myReg {} reg_a %= 0x10;')
         .as(register_definition('myReg') do |r|
-          r.inst id: 'reg_a', assignment: [[:'%=', number(0x10)]]
+          r.inst id: 'reg_a', assignments: [[:'%=', number(0x10)]]
         end)
 
       expect(parser).to parse('reg {} external reg_a , reg_b;')
@@ -142,8 +142,8 @@ RSpec.describe SystemRDL::Parser do
         .as(register_definition('my32bitReg') do |r|
           r.body property_assignment(id('regwidth'), number(32))
           r.body property_assignment(id('accesswidth'), number(16))
-          r.body field_definition { |f| f.inst id: 'a', array: [16], assignment: [[:'=', 0]] }
-          r.body field_definition { |f| f.inst id: 'b', array: [16], assignment: [[:'=', 0]] }
+          r.body field_definition { |f| f.inst id: 'a', array: [16], assignments: [[:'=', 0]] }
+          r.body field_definition { |f| f.inst id: 'b', array: [16], assignments: [[:'=', 0]] }
         end)
     end
   end
@@ -278,26 +278,26 @@ RSpec.describe SystemRDL::Parser do
             r.body field_definition { |f|
               f.body property_assignment(id('hw'), accesstype(:rw))
               f.body property_assignment(id('sw'), accesstype(:r))
-              f.inst id: 'stat1', assignment: [[:'=', number(0, width: 1)]]
+              f.inst id: 'stat1', assignments: [[:'=', number(0, width: 1)]]
             }
           }
           am.body register_definition('some_axi_reg') { |r|
             r.body field_definition { |f|
               f.body property_assignment(id('desc'), string('credits on the AXI interface'))
-              f.inst id: 'credits', array: [4], assignment: [[:'=', number(7, width: 4)]]
+              f.inst id: 'credits', array: [4], assignments: [[:'=', number(7, width: 4)]]
             }
           }
           am.body register_definition('some_ahb_reg') { |r|
             r.body field_definition { |f|
               f.body property_assignment(id('desc'), string('credits on the AHB Interface'))
-              f.inst id: 'credits', array: [8], assignment: [[:'=', number(3, width: 8)]]
+              f.inst id: 'credits', array: [8], assignments: [[:'=', number(3, width: 8)]]
             }
           }
 
           am.body address_map_definition { |am_ahb|
             am_ahb.body property_assignment(id('littleendian'))
             am_ahb.body component_instances { |i| i.id 'some_ahb_reg'; i.inst id: 'ahb_credits' }
-            am_ahb.body component_instances { |i| i.id 'status'; i.inst id: 'ahb_stat', assignment: [[:'@', number(0x20)]] }
+            am_ahb.body component_instances { |i| i.id 'status'; i.inst id: 'ahb_stat', assignments: [[:'@', number(0x20)]] }
             am_ahb.body property_assignment(reference('ahb_stat', 'stat1', property: 'desc'), string('bar'))
             am_ahb.inst id: 'ahb'
           }

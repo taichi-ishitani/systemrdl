@@ -31,27 +31,27 @@ module SystemRDL
 
     define_transformer do
       rule(instance_ref_element: { id: simple(:id) }) do
-        AST::ReferenceElement.new(id.position, id, [])
+        AST::ReferenceElement.new(id, [])
       end
 
       rule(instance_ref_element: { id: simple(:id), array: sequence(:array) }) do
-        AST::ReferenceElement.new(id.position, id, array)
+        AST::ReferenceElement.new(id, array)
       end
 
       rule(instance_ref: simple(:inst)) do
-        AST::Reference.new(inst.position, [inst], nil)
+        AST::Reference.new([inst], nil)
       end
 
       rule(instance_ref: sequence(:inst)) do
-        AST::Reference.new(inst.first.position, inst, nil)
+        AST::Reference.new(inst, nil)
       end
 
       rule(property_ref: { instance_ref: simple(:inst), property: simple(:prop) }) do
-        AST::Reference.new(inst.position, [inst], prop)
+        AST::Reference.new([inst], prop)
       end
 
       rule(property_ref: { instance_ref: sequence(:inst), property: simple(:prop) }) do
-        AST::Reference.new(inst.first.position, inst, prop)
+        AST::Reference.new(inst, prop)
       end
     end
   end
