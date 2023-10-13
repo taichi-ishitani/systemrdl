@@ -3,8 +3,16 @@
 module SystemRDL
   class Parser
     define_parser do
+      rule(:single_line_comment) do
+        str('//') >> match('[^\\n]').repeat >> str("\n")
+      end
+
+      rule(:block_comment) do
+        str('/*') >> (str('*/').absent? >> any).repeat >> str('*/')
+      end
+
       rule(:space) do
-        match('[ \t\n\r]')
+        single_line_comment | block_comment | match('[ \t\n\r]')
       end
 
       rule(:spaces) do
