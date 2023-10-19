@@ -6,26 +6,14 @@ module SystemRDL
     # Boolean literal
     #
     define_parser do
-      rule(:true_literal) do
-        kw_true.as(:true_literal)
-      end
-
-      rule(:false_literal) do
-        kw_false.as(:false_literal)
-      end
-
       rule(:boolean_literal) do
-        (true_literal | false_literal) >> spaces?
+        (kw_true | kw_false).as(:boolean_literal) >> spaces?
       end
     end
 
     define_transformer do
-      rule(true_literal: simple(:v)) do
-        AST::TrueLiteral.new(v)
-      end
-
-      rule(false_literal: simple(:v)) do
-        AST::FalseLiteral.new(v)
+      rule(boolean_literal: simple(:v)) do
+        AST::BooleanLiteral.new(v)
       end
     end
 

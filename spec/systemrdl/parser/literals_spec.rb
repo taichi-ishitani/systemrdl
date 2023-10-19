@@ -17,8 +17,8 @@ RSpec.describe SystemRDL::Parser do
     end
 
     it 'should be parsed by :boolean_literal parser' do
-      expect(parser).to parse('true').as(true_literal)
-      expect(parser).to parse('false').as(false_literal)
+      expect(parser).to parse('true').as(boolean_literal(true))
+      expect(parser).to parse('false').as(boolean_literal(false))
     end
 
     it 'should be case sensitive' do

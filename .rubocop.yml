@@ -47,6 +47,7 @@ Metrics/ModuleLength:
 
 Naming/VariableNumber:
   EnforcedStyle: snake_case
+  CheckSymbols: false
 
 Style/AccessorGrouping:
   EnforcedStyle: separated

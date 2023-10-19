@@ -18,17 +18,11 @@ module SystemRDL
       end
     end
 
-    def true_literal
-      be_instance_of(AST::TrueLiteral)
+    def boolean_literal(value)
+      be_instance_of(AST::BooleanLiteral).and have_attributes(value: value)
     end
 
-    def false_literal
-      be_instance_of(AST::FalseLiteral)
-    end
-
-    def boolean(value)
-      value && true_literal || false_literal
-    end
+    alias_method :boolean, :boolean_literal
 
     def number_literal(number, width: nil)
       if rspec_matcher?(number)
@@ -313,6 +307,30 @@ module SystemRDL
 
     def address_map_definition(id = nil, &b)
       component_definition(AST::AddressMapDefinition, id, &b)
+    end
+
+    def elaborate(context: nil, **input)
+      parser, source = input.first
+      node = Parser.new(parser).parse(source)
+      Elaborator.new.process(node, context)
+    end
+
+    def raise_elaboration_error(message)
+      raise_error(ElaborationError, match(/#{message}/))
+    end
+
+    def match_value(value, data_type:)
+      value_matcher =
+        if rspec_matcher?(value)
+          value
+        else
+          eq(value)
+        end
+      value_matcher.and have_attributes(data_type: data_type)
+    end
+
+    def match_number(number, data_type:, width: nil)
+      eq(number).and have_attributes(width: width, data_type: data_type)
     end
   end
 end

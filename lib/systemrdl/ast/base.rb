@@ -2,6 +2,12 @@
 
 module SystemRDL
   module AST
+    Position = Struct.new(:line, :column) do
+      def to_s
+        "line: #{line} column: #{column}"
+      end
+    end
+
     class Base < ::AST::Node
       def initialize(type, *position_nodes)
         assign_properties(position: extract_position(position_nodes))
@@ -13,7 +19,10 @@ module SystemRDL
       private
 
       def extract_position(position_nodes)
-        position_nodes.compact.flatten.first.position
+        case (node = position_nodes.compact.flatten.first)
+        when Base then node.position
+        else Position.new(*node.line_and_column)
+        end
       end
 
       def to_symbol(obj)

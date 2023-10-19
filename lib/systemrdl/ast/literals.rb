@@ -2,26 +2,34 @@
 
 module SystemRDL
   module AST
-    class TrueLiteral < Base
+    class BooleanLiteral < Base
       def initialize(value)
-        super(:true_literal, value)
+        assign_properties(value: value.to_s == 'true')
+        super(:boolean_literal, value)
       end
-    end
 
-    class FalseLiteral < Base
-      def initialize(value)
-        super(:false_literal, value)
-      end
+      attr_reader :value
     end
 
     class NumberLiteral < Base
       def initialize(number, base, width)
-        assign_properties(number: number.str.to_i(base), width: width&.to_i)
+        assign_properties(number: number.str.to_i(base), base: base, width: width&.to_i)
         super(:number_literal, width, number)
       end
 
       attr_reader :number
+      attr_reader :base
       attr_reader :width
+
+      def verilog_number
+        pattern =
+          case base
+          when 2 then '%d\'b%b'
+          when 10 then '%d\'d%d'
+          when 16 then '%d\'h%x'
+          end
+        format(pattern, width, number)
+      end
     end
 
     class StringLiteral < Base

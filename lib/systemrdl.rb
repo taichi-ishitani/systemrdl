@@ -2,8 +2,10 @@
 
 require 'ast'
 require 'parslet'
+require 'delegate'
 
 require_relative 'systemrdl/version'
+require_relative 'systemrdl/error'
 require_relative 'systemrdl/ast/base'
 require_relative 'systemrdl/ast/identifier'
 require_relative 'systemrdl/ast/literals'
@@ -24,3 +26,6 @@ require_relative 'systemrdl/parser/expressions'
 require_relative 'systemrdl/parser/property_assignment'
 require_relative 'systemrdl/parser/component_definition'
 require_relative 'systemrdl/parser/root'
+require_relative 'systemrdl/element/value'
+require_relative 'systemrdl/elaborator'
+require_relative 'systemrdl/elaborator/literals'
