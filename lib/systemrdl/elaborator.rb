@@ -4,7 +4,11 @@ module SystemRDL
   class Elaborator
     def process(node, context)
       handler = :"on_#{node.type}"
-      __send__(handler, node, context)
+      if respond_to?(handler, true)
+        __send__(handler, node, context)
+      else
+        node
+      end
     end
 
     private

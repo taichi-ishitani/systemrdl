@@ -3,21 +3,57 @@
 module SystemRDL
   module Element
     class Value < ::SimpleDelegator
-      def initialize(data_type, value)
+      def initialize(value, data_type, position = nil)
         super(value)
         @data_type = data_type
+        @position = position
       end
 
       attr_reader :data_type
+      attr_reader :position
     end
 
-    class NumberValue < Value
-      def initialize(data_type, value, width)
-        super(data_type, value)
+    class BooleanValue < Value
+      def initialize(value, position = nil)
+        super(value, :boolean, position)
+      end
+
+      def to_i
+        __getobj__ ? 1 : 0
+      end
+
+      def to_boolean
+        __getobj__
+      end
+    end
+
+    class LongintValue < Value
+      def initialize(value, position = nil)
+        super(value[0, 64], :longint, position)
+      end
+
+      def to_boolean
+        !zero?
+      end
+    end
+
+    class BitValue < Value
+      def initialize(value, width, position = nil)
+        super(value[0, width], :bit, position)
         @width = width
       end
 
       attr_reader :width
+
+      def to_boolean
+        !zero?
+      end
+    end
+
+    class StringValue < Value
+      def initialize(value, position = nil)
+        super(value, :string, position)
+      end
     end
 
     class TypeEnumValue < Value
@@ -44,8 +80,8 @@ module SystemRDL
     end
 
     class AccessTypeValue < TypeEnumValue
-      def initialize(value)
-        super(:accesstype, value)
+      def initialize(value, position = nil)
+        super(value, :accesstype, position)
       end
 
       define_type_checkers [:na, :r, :w, :rw1, :w1]
@@ -58,16 +94,16 @@ module SystemRDL
     end
 
     class OnreadtypeValue < TypeEnumValue
-      def initialize(value)
-        super(:onreadtype, value)
+      def initialize(value, position = nil)
+        super(value, :onreadtype, position)
       end
 
       define_type_checkers [:rclr, :rset, :ruser]
     end
 
     class OnwritetypeValue < TypeEnumValue
-      def initialize(value)
-        super(:onwritetype, value)
+      def initialize(value, position = nil)
+        super(value, :onwritetype, position)
       end
 
       define_type_checkers [
@@ -77,16 +113,16 @@ module SystemRDL
     end
 
     class AddressingtypeValue < TypeEnumValue
-      def initialize(value)
-        super(:addressingtype, value)
+      def initialize(value, position = nil)
+        super(value, :addressingtype, position)
       end
 
       define_type_checkers [:compact, :regalign, :fullalign]
     end
 
     class PrecedencetypeValue < TypeEnumValue
-      def initialize(value)
-        super(:precedencetype, value)
+      def initialize(value, position = nil)
+        super(value, :precedencetype, position)
       end
 
       define_type_checkers [:hw, :sw]

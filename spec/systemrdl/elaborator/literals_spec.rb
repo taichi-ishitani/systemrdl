@@ -12,11 +12,11 @@ RSpec.describe SystemRDL::Elaborator do
 
   context 'when a number literal is given' do
     it 'should be elaborate a number value' do
-      expect(elaborate(number_literal: '0')).to match_number(0, data_type: :longint)
-      expect(elaborate(number_literal: '0x45')).to match_number(0x45, data_type: :longint)
-      expect(elaborate(number_literal: '4\'d1')).to match_number(1, data_type: :bit, width: 4)
-      expect(elaborate(number_literal: '3\'b101')).to match_number(0b101, data_type: :bit, width: 3)
-      expect(elaborate(number_literal: '32\'hdeadbeaf')).to match_number(0xdeadbeaf, data_type: :bit, width: 32)
+      expect(elaborate(number_literal: '0')).to match_number(0)
+      expect(elaborate(number_literal: '0x45')).to match_number(0x45)
+      expect(elaborate(number_literal: '4\'d1')).to match_number(1, width: 4)
+      expect(elaborate(number_literal: '3\'b101')).to match_number(0b101, width: 3)
+      expect(elaborate(number_literal: '32\'hdeadbeaf')).to match_number(0xdeadbeaf, width: 32)
     end
 
     context 'and the value of a Verilog-style number does not fit within the specified bit-width' do

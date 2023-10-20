@@ -10,6 +10,10 @@ module SystemRDL
 
       attr_reader :data_type
 
+      def match_type?(type)
+        @data_type == type
+      end
+
       PRIMARY_TYPES = [
         :bit, :longint, :boolean, :string,
         :accesstype, :addressingtype, :onreadtype, :onwritetype
@@ -23,12 +27,6 @@ module SystemRDL
 
       def user_defined?
         PRIMARY_TYPES.none? { |type| match_type?(type) }
-      end
-
-      private
-
-      def match_type?(type)
-        @data_type == type
       end
     end
   end
