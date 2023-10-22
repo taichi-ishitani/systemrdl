@@ -27,19 +27,9 @@ module SystemRDL
       end
     end
 
-    class LongintValue < Value
-      def initialize(value, position = nil)
-        super(value[0, 64], :longint, position)
-      end
-
-      def to_boolean
-        !zero?
-      end
-    end
-
-    class BitValue < Value
+    class NumberValue < Value
       def initialize(value, width, position = nil)
-        super(value[0, width], :bit, position)
+        super(value[0, width], :number, position)
         @width = width
       end
 

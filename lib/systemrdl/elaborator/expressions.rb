@@ -19,13 +19,11 @@ module SystemRDL
     def type_based_cast(type, expression)
       case [type.data_type, expression.data_type]
       in [:boolean, _]
-        Element::BooleanValue.new(expression.to_boolean)
+        Element::BooleanValue.new(expression.to_boolean, type.position)
       in [:longint, _]
-        Element::LongintValue.new(expression.to_i)
+        Element::NumberValue.new(expression.to_i, 64, type.position)
       in [_, :boolean]
-        Element::BitValue.new(expression.to_i, 1)
-      in [_, :longint]
-        Element::BitValue.new(expression.to_i, 64)
+        Element::NumberValue.new(expression.to_i, 1, type.position)
       else
         expression
       end
@@ -38,11 +36,11 @@ module SystemRDL
       width.to_boolean ||
         (error 'the specified bit width should not be 0', width.position)
 
-      Element::BitValue.new(expression.to_i, width.to_i)
+      Element::NumberValue.new(expression.to_i, width.to_i, width.position)
     end
 
     def check_integral_type(data_type, position)
-      return if [:boolean, :bit, :longint].include?(data_type)
+      return if [:boolean, :number].include?(data_type)
 
       message =
         if block_given?

@@ -329,12 +329,8 @@ module SystemRDL
       value_matcher.and have_attributes(data_type: data_type)
     end
 
-    def match_number(number, width: nil)
-      if width
-        eq(number).and have_attributes(width: width, data_type: :bit)
-      else
-        eq(number).and have_attributes(data_type: :longint)
-      end
+    def match_number(number, width: 64)
+      eq(number).and have_attributes(width: width, data_type: :number)
     end
   end
 end

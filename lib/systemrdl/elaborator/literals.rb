@@ -11,9 +11,9 @@ module SystemRDL
     def on_number_literal(node, _context)
       if node.width
         check_literal_bit_length(node)
-        Element::BitValue.new(node.number, node.width, node.position)
+        Element::NumberValue.new(node.number, node.width, node.position)
       else
-        Element::LongintValue.new(node.number, node.position)
+        Element::NumberValue.new(node.number, 64, node.position)
       end
     end
 
