@@ -34,7 +34,7 @@ Metrics/BlockLength:
     - define_transformer
 
 Metrics/ClassLength:
-  Max: 150
+  Max: 200
   CountAsOne:
     - array
     - method_call

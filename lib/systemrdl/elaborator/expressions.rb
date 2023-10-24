@@ -96,8 +96,102 @@ module SystemRDL
         .inject(initial_value, operator)
     end
 
+    def on_binary_operation(node, context)
+      operands =
+        [node.l_operand, node.r_operand].map { |o| process(o, context) }
+
+      unless [:'==', :'!='].include?(node.operator)
+        operands.each do |o|
+          check_integral_type(o.data_type, o.position) do |data_type|
+            "the given operand should be an integral value: #{data_type}"
+          end
+        end
+      end
+      do_binary_operation(node.operator, operands, node.position)
+    end
+
+    def do_binary_operation(operator, operands, position)
+      case operator
+      when :'&&', :'||'
+        binary_logical_operation(operator, operands, position)
+      when :<, :>, :'<=', :'>='
+        binary_relational_operation(operator, operands, position)
+      when :'==', :'!='
+        binary_equality_operation(operator, operands, position)
+      when :<<, :>>
+        binary_shift_operation(operator, operands, position)
+      when :&, :|, :^, :'~^', :'^~'
+        binary_bitwise_operation(operator, operands, position)
+      else
+        binary_arithmetic_operation(operator, operands, position)
+      end
+    end
+
+    def binary_logical_operation(operator, operands, position)
+      op_l, op_r = operands.map(&:to_boolean)
+      if operator == :'&&'
+        Element::BooleanValue.new(op_l && op_r, position)
+      else
+        Element::BooleanValue.new(op_l || op_r, position)
+      end
+    end
+
+    def binary_relational_operation(operator, operands, position)
+      op_l, op_r = operands.map(&method(:to_number))
+      result = op_l.__send__(operator, op_r)
+      Element::BooleanValue.new(result, position)
+    end
+
+    def binary_equality_operation(operator, operands, position)
+      op_l, op_r =
+        if operands.all? { |o| integral_type?(o.data_type) }
+          operands.map(&method(:to_number))
+        else
+          operands.map(&:__getobj__)
+        end
+      result = op_l.__send__(operator, op_r)
+      Element::BooleanValue.new(result, position)
+    end
+
+    def binary_shift_operation(operator, operands, position)
+      op_l, op_r = operands.map(&method(:to_number))
+      result = op_l.__send__(operator, op_r)
+      Element::NumberValue.new(result, op_l.width, position)
+    end
+
+    def binary_bitwise_operation(operator, operands, position)
+      op_l, op_r = operands.map(&method(:to_number))
+      result =
+        if [:'^~', :'~^'].include?(operator)
+          ~(op_l ^ op_r)
+        else
+          op_l.__send__(operator, op_r)
+        end
+      width = [op_l.width, op_r.width].max
+      Element::NumberValue.new(result, width, position)
+    end
+
+    def binary_arithmetic_operation(operator, operands, position)
+      op_l, op_r = operands.map(&method(:to_number))
+      result = op_l.__send__(operator, op_r)
+      width =
+        if operator == :**
+          op_l.width
+        else
+          [op_l.width, op_r.width].max
+        end
+      Element::NumberValue.new(result, width, position)
+    rescue ZeroDivisionError
+      message = "the second operand for the #{operator} operation should not 0"
+      error message, op_r.position
+    end
+
+    def integral_type?(data_type)
+      [:boolean, :number].include?(data_type)
+    end
+
     def check_integral_type(data_type, position)
-      return if [:boolean, :number].include?(data_type)
+      return if integral_type?(data_type)
 
       message =
         if block_given?
