@@ -561,4 +561,114 @@ RSpec.describe SystemRDL::Elaborator do
       end
     end
   end
+
+  context 'a conditional operation is given' do
+    def ignored_operand
+      [
+        'true', 'false', '0xdead_beaf', "32'hdead_beaf",
+        '""', 'na', 'rclr', 'woset', 'compact'
+      ].sample
+    end
+
+    def true_condition
+      ['true', "1'd1", '1'].sample
+    end
+
+    def false_condition
+      ['false', "1'd0", '0'].sample
+    end
+
+    context 'and the condition operand is true' do
+      it 'should return the true side operand' do
+        expression = "#{true_condition} ? true : #{ignored_operand}"
+        expect(elaborate(constant_expression: expression))
+          .to match_value(true, data_type: :boolean)
+
+        expression = "#{true_condition} ? false : #{ignored_operand}"
+        expect(elaborate(constant_expression: expression))
+          .to match_value(false, data_type: :boolean)
+
+        expression = "#{true_condition} ? 0xcafe_abcd : #{ignored_operand}"
+        expect(elaborate(constant_expression: expression))
+          .to match_number(0xcafe_abcd)
+
+        expression = "#{true_condition} ? 32'hcafe_abcd : #{ignored_operand}"
+        expect(elaborate(constant_expression: expression))
+          .to match_number(0xcafe_abcd, width: 32)
+
+        expression = "#{true_condition} ? \"this is a string\" : #{ignored_operand}"
+        expect(elaborate(constant_expression: expression))
+          .to match_value('this is a string', data_type: :string)
+
+        expression = "#{true_condition} ? rw : #{ignored_operand}"
+        expect(elaborate(constant_expression: expression))
+          .to match_value(:rw, data_type: :accesstype)
+
+        expression = "#{true_condition} ? rset : #{ignored_operand}"
+        expect(elaborate(constant_expression: expression))
+          .to match_value(:rset, data_type: :onreadtype)
+
+        expression = "#{true_condition} ? woclr : #{ignored_operand}"
+        expect(elaborate(constant_expression: expression))
+          .to match_value(:woclr, data_type: :onwritetype)
+
+        expression = "#{true_condition} ? regalign : #{ignored_operand}"
+        expect(elaborate(constant_expression: expression))
+          .to match_value(:regalign, data_type: :addressingtype)
+      end
+    end
+
+    context 'and the condition operand is false' do
+      it 'should return the false side operand' do
+        expression = "#{false_condition} ? #{ignored_operand} : true"
+        expect(elaborate(constant_expression: expression))
+          .to match_value(true, data_type: :boolean)
+
+        expression = "#{false_condition} ? #{ignored_operand} : false"
+        expect(elaborate(constant_expression: expression))
+          .to match_value(false, data_type: :boolean)
+
+        expression = "#{false_condition} ? #{ignored_operand} : 0xcafe_abcd"
+        expect(elaborate(constant_expression: expression))
+          .to match_number(0xcafe_abcd)
+
+        expression = "#{false_condition} ? #{ignored_operand} : 32'hcafe_abcd"
+        expect(elaborate(constant_expression: expression))
+          .to match_number(0xcafe_abcd, width: 32)
+
+        expression = "#{false_condition} ? #{ignored_operand} : \"this is a string\""
+        expect(elaborate(constant_expression: expression))
+          .to match_value('this is a string', data_type: :string)
+
+        expression = "#{false_condition} ? #{ignored_operand} : rw"
+        expect(elaborate(constant_expression: expression))
+          .to match_value(:rw, data_type: :accesstype)
+
+        expression = "#{false_condition} ? #{ignored_operand} : rset"
+        expect(elaborate(constant_expression: expression))
+          .to match_value(:rset, data_type: :onreadtype)
+
+        expression = "#{false_condition} ? #{ignored_operand} : woclr"
+        expect(elaborate(constant_expression: expression))
+          .to match_value(:woclr, data_type: :onwritetype)
+
+        expression = "#{false_condition} ? #{ignored_operand} : regalign"
+        expect(elaborate(constant_expression: expression))
+          .to match_value(:regalign, data_type: :addressingtype)
+      end
+    end
+
+    context 'and the condition operand is not an integral value' do
+      it 'should raise ElaborationError' do
+        {
+          string: '"this is a string"',
+          accesstype: 'na', addressingtype: 'compact', onreadtype: 'rclr', onwritetype: 'woset'
+        }.each do |type, value|
+          expect {
+            elaborate(constant_expression: "#{value} ? true : false")
+          }.to raise_elaboration_error "the given condition operand should be an integral value: #{type}"
+        end
+      end
+    end
+  end
 end

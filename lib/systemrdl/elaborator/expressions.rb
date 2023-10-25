@@ -186,6 +186,23 @@ module SystemRDL
       error message, op_r.position
     end
 
+    def on_conditional_operation(node, context)
+      if evaluate_condition(node.condition, context)
+        process(node.true_operand, context)
+      else
+        process(node.false_operand, context)
+      end
+    end
+
+    def evaluate_condition(condition_node, context)
+      condition = process(condition_node, context)
+      check_integral_type(condition.data_type, condition.position) do |data_type|
+        "the given condition operand should be an integral value: #{data_type}"
+      end
+
+      condition.to_boolean
+    end
+
     def integral_type?(data_type)
       [:boolean, :number].include?(data_type)
     end
