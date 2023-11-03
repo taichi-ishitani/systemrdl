@@ -8,18 +8,18 @@ module SystemRDL
       end
 
       rule(:prop_assignment) do
-        prop_default >> prop_lhs.as(:prop_lhs) >> spaces? >>
+        prop_default >> local_property_ref(prop_lhs).as(:prop_lhs) >> spaces? >>
           (spaced('=') >> prop_rhs.as(:prop_rhs)).maybe >> spaced(';')
       end
 
       rule(:encode_assignment) do
-        prop_default >> prop_encode_lhs.as(:prop_lhs) >> spaces? >>
+        prop_default >> local_property_ref(prop_encode_lhs).as(:prop_lhs) >> spaces? >>
           spaced('=') >> prop_encode_rhs.as(:prop_rhs) >> spaced(';')
       end
 
       rule(:prop_modifier) do
         prop_default >> prop_mod.as(:prop_mod) >>
-          id.as(:prop_id) >> spaces? >> spaced(';')
+          local_property_ref(id).as(:prop_id) >> spaces? >> spaced(';')
       end
 
       rule(:post_prop_assignment) do

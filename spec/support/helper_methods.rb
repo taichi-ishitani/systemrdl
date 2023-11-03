@@ -91,7 +91,11 @@ module SystemRDL
 
     def reference(*elements, property: nil)
       instance_refernce_matcher =
-        match(elements.map { |e| reference_element(*Array(e)) })
+        if elements.empty?
+          be_nil
+        else
+          match(elements.map { |e| reference_element(*Array(e)) })
+        end
       property_matcher =
         case property
         when NilClass then be_nil

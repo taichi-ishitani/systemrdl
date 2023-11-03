@@ -29,13 +29,13 @@ RSpec.describe SystemRDL::Parser do
 
       expect(parser).to parse('field f { sw = rw; hw = rw; };')
         .as(field_definition('f') do |f|
-          f.body property_assignment(id('sw'), accesstype(:rw))
-          f.body property_assignment(id('hw'), accesstype(:rw))
+          f.body property_assignment(reference(property: 'sw'), accesstype(:rw))
+          f.body property_assignment(reference(property: 'hw'), accesstype(:rw))
         end)
 
       expect(parser).to parse('field { reset = 1\'b1; } a;')
         .as(field_definition do |f|
-          f.body property_assignment(id('reset'), number(1, width: 1))
+          f.body property_assignment(reference(property: 'reset'), number(1, width: 1))
           f.inst id: 'a'
         end)
 
@@ -46,7 +46,7 @@ RSpec.describe SystemRDL::Parser do
 
       expect(parser).to parse('field { anded;} a[4]=0; ')
         .as(field_definition do |f|
-          f.body property_assignment(id('anded'))
+          f.body property_assignment(reference(property: 'anded'))
           f.inst id: 'a', array: [4], assignments: [[:'=', 0]]
         end)
 
@@ -58,8 +58,8 @@ RSpec.describe SystemRDL::Parser do
       F
       expect(parser).to parse(field)
         .as(field_definition do |f|
-          f.body property_assignment(id('desc'), string('A Packet with a CRC Error has been received'))
-          f.body property_modifier(id('intr'), :level)
+          f.body property_assignment(reference(property: 'desc'), string('A Packet with a CRC Error has been received'))
+          f.body property_modifier(reference(property: 'intr'), :level)
           f.inst id: 'crc_error', assignments: [[:'=', 0]]
         end)
     end
@@ -140,8 +140,8 @@ RSpec.describe SystemRDL::Parser do
       R
       expect(parser).to parse(reg)
         .as(register_definition('my32bitReg') do |r|
-          r.body property_assignment(id('regwidth'), number(32))
-          r.body property_assignment(id('accesswidth'), number(16))
+          r.body property_assignment(reference(property: 'regwidth'), number(32))
+          r.body property_assignment(reference(property: 'accesswidth'), number(16))
           r.body field_definition { |f| f.inst id: 'a', array: [16], assignments: [[:'=', 0]] }
           r.body field_definition { |f| f.inst id: 'b', array: [16], assignments: [[:'=', 0]] }
         end)
@@ -158,8 +158,8 @@ RSpec.describe SystemRDL::Parser do
       M
       expect(parser).to parse(memory)
         .as(memory_definition('fifo_mem') do |m|
-          m.body property_assignment(id('mementries'), number(1024))
-          m.body property_assignment(id('memwidth'), number(32))
+          m.body property_assignment(reference(property: 'mementries'), number(1024))
+          m.body property_assignment(reference(property: 'memwidth'), number(32))
         end)
 
       memory = <<~'M'
@@ -170,8 +170,8 @@ RSpec.describe SystemRDL::Parser do
       M
       expect(parser).to parse(memory)
         .as(memory_definition('fifo_mem') do |m|
-          m.body property_assignment(id('mementries'), number(1024))
-          m.body property_assignment(id('memwidth'), number(32))
+          m.body property_assignment(reference(property: 'mementries'), number(1024))
+          m.body property_assignment(reference(property: 'memwidth'), number(32))
           m.insts do |i|
             i.external
             i.inst id: 'mem_a'
@@ -187,8 +187,8 @@ RSpec.describe SystemRDL::Parser do
       M
       expect(parser).to parse(memory)
         .as(memory_definition do |m|
-          m.body property_assignment(id('mementries'), number(1024))
-          m.body property_assignment(id('memwidth'), number(32))
+          m.body property_assignment(reference(property: 'mementries'), number(1024))
+          m.body property_assignment(reference(property: 'memwidth'), number(32))
           m.insts do |i|
             i.external
             i.inst id: 'mem_a'
@@ -209,7 +209,7 @@ RSpec.describe SystemRDL::Parser do
       RF
       expect(parser).to parse(register_file)
         .as(register_file_definition('fifo_rfile') do |rf|
-          rf.body property_assignment(id('alignment'), number(8))
+          rf.body property_assignment(reference(property: 'alignment'), number(8))
           rf.body(register_definition do |r|
             r.body field_definition { |f| f.inst id: 'a' }
             r.inst id: 'a'
@@ -231,7 +231,7 @@ RSpec.describe SystemRDL::Parser do
         .as(register_file_definition do |rf|
           rf.body component_instances { |i| i.external; i.id 'fifo_rfile'; i.inst id: 'fifo_a' }
           rf.body component_instances { |i| i.external; i.id 'fifo_rfile'; i.inst id: 'fifo_b', array: [64] }
-          rf.body property_assignment(id('sharedextbus'))
+          rf.body property_assignment(reference(property: 'sharedextbus'))
           rf.inst id: 'top_regfile'
         end)
     end
@@ -271,31 +271,31 @@ RSpec.describe SystemRDL::Parser do
       AM
       expect(parser).to parse(address_map)
         .as(address_map_definition('some_bridge') do |am|
-          am.body property_assignment(id('desc'), string('overlapping address maps with both shared register space and orthogonal register space'))
-          am.body property_assignment(id('bridge'))
+          am.body property_assignment(reference(property: 'desc'), string('overlapping address maps with both shared register space and orthogonal register space'))
+          am.body property_assignment(reference(property: 'bridge'))
           am.body register_definition('status') { |r|
-            r.body property_assignment(id('shared'))
+            r.body property_assignment(reference(property: 'shared'))
             r.body field_definition { |f|
-              f.body property_assignment(id('hw'), accesstype(:rw))
-              f.body property_assignment(id('sw'), accesstype(:r))
+              f.body property_assignment(reference(property: 'hw'), accesstype(:rw))
+              f.body property_assignment(reference(property: 'sw'), accesstype(:r))
               f.inst id: 'stat1', assignments: [[:'=', number(0, width: 1)]]
             }
           }
           am.body register_definition('some_axi_reg') { |r|
             r.body field_definition { |f|
-              f.body property_assignment(id('desc'), string('credits on the AXI interface'))
+              f.body property_assignment(reference(property: 'desc'), string('credits on the AXI interface'))
               f.inst id: 'credits', array: [4], assignments: [[:'=', number(7, width: 4)]]
             }
           }
           am.body register_definition('some_ahb_reg') { |r|
             r.body field_definition { |f|
-              f.body property_assignment(id('desc'), string('credits on the AHB Interface'))
+              f.body property_assignment(reference(property: 'desc'), string('credits on the AHB Interface'))
               f.inst id: 'credits', array: [8], assignments: [[:'=', number(3, width: 8)]]
             }
           }
 
           am.body address_map_definition { |am_ahb|
-            am_ahb.body property_assignment(id('littleendian'))
+            am_ahb.body property_assignment(reference(property: 'littleendian'))
             am_ahb.body component_instances { |i| i.id 'some_ahb_reg'; i.inst id: 'ahb_credits' }
             am_ahb.body component_instances { |i| i.id 'status'; i.inst id: 'ahb_stat', assignments: [[:'@', number(0x20)]] }
             am_ahb.body property_assignment(reference('ahb_stat', 'stat1', property: 'desc'), string('bar'))
@@ -318,7 +318,7 @@ RSpec.describe SystemRDL::Parser do
       expect(parser).to parse(reg)
         .as(register_definition('myReg') do |r|
           r.paraemter_definition id: 'SIZE', data_type: :longint, default: number(32)
-          r.body property_assignment(id('regwidth'), reference('SIZE'))
+          r.body property_assignment(reference(property: 'regwidth'), reference('SIZE'))
           r.body field_definition { |f| f.inst id: 'data', array: [b_op(:'-', reference('SIZE'), number(1))]}
         end)
 
@@ -336,8 +336,8 @@ RSpec.describe SystemRDL::Parser do
         .as(register_definition('myReg') do |r|
           r.paraemter_definition id: 'SIZE', data_type: :longint, default: number(32)
           r.paraemter_definition id: 'SHARED', data_type: :boolean
-          r.body property_assignment(id('regwidth'), reference('SIZE'))
-          r.body property_assignment(id('shared'), reference('SHARED'))
+          r.body property_assignment(reference(property: 'regwidth'), reference('SIZE'))
+          r.body property_assignment(reference(property: 'shared'), reference('SHARED'))
           r.body field_definition { |f| f.inst id: 'data', array: [b_op(:'-', reference('SIZE'), number(1))]}
         end)
 

@@ -15,7 +15,7 @@ module SystemRDL
     class Reference < Base
       def initialize(instance_refernce, property)
         assign_properties(instance_refernce: instance_refernce, property: property)
-        super(:reference, instance_refernce)
+        super(:reference, instance_refernce, property)
       end
 
       attr_reader :instance_refernce

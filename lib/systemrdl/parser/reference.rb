@@ -22,6 +22,10 @@ module SystemRDL
 
       private
 
+      def local_property_ref(property_atom)
+        property_atom.as(:local_property_ref)
+      end
+
       def define_property_ref(property_atom)
         (
           instance_ref >> spaced('->') >> property_atom.as(:property)
@@ -52,6 +56,10 @@ module SystemRDL
 
       rule(property_ref: { instance_ref: sequence(:inst), property: simple(:prop) }) do
         AST::Reference.new(inst, prop)
+      end
+
+      rule(local_property_ref: simple(:prop)) do
+        AST::Reference.new(nil, prop)
       end
     end
   end
