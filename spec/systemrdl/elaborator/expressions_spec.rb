@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SystemRDL::Elaborator do
+RSpec.describe SystemRDL::Elaborator, :elaborator do
   context 'when a type based cast operation is given' do
     it 'should convert type of the expression to the specified type' do
       ['true', "2'd1", "2'd2", '1', '2'].each do |value|

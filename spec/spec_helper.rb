@@ -14,7 +14,8 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 
-  config.include SystemRDL::HelerMethods
+  config.include SystemRDL::ParserHelperMethods, :parser
+  config.include SystemRDL::ElaboratorHelperMethods, :elaborator
 end
 
 if ENV.key?('COVERAGE')

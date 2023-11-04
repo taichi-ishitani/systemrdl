@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SystemRDL::Parser do
+RSpec.describe SystemRDL::Parser, :parser do
   let(:parser) do
     SystemRDL::Parser.new(:constant_expression)
   end

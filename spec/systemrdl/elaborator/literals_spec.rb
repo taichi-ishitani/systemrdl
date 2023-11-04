@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SystemRDL::Elaborator do
+RSpec.describe SystemRDL::Elaborator, :elaborator do
   context 'when a boolean literal is givne' do
     it 'should elaborate a boolean value' do
       expect(elaborate(boolean_literal: 'true'))

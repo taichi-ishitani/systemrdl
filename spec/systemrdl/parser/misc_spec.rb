@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SystemRDL::Parser do
+RSpec.describe SystemRDL::Parser, :parser do
   describe 'comment' do
     let(:parser) do
       SystemRDL::Parser.new

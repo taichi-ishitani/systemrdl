@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SystemRDL::Parser do
+RSpec.describe SystemRDL::Parser, :parser do
   def upcase_randomly(string)
     upcase_pos =
       (0...string.size)

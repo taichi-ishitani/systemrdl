@@ -1,10 +1,14 @@
 # frozen_string_literal: true
 
 module SystemRDL
-  module HelerMethods
+  module CommonHelerMethods
     def rspec_matcher?(v)
       v.is_a?(RSpec::Matchers::BuiltIn::BaseMatcher)
     end
+  end
+
+  module ParserHelperMethods
+    include CommonHelerMethods
 
     def data_type(type)
       builtin_types = [
@@ -312,6 +316,10 @@ module SystemRDL
     def address_map_definition(id = nil, &b)
       component_definition(AST::AddressMapDefinition, id, &b)
     end
+  end
+
+  module ElaboratorHelperMethods
+    include CommonHelerMethods
 
     def elaborate(context: nil, **input)
       parser, source = input.first

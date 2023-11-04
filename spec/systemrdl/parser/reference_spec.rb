@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SystemRDL::Parser do
+RSpec.describe SystemRDL::Parser, :parser do
   def join_elements(*elements)
     illegal_separators = [',', ':', ';', '/', '\\', ' ']
     elements.inject { |r, i| [r, i].join(illegal_separators.sample) }
