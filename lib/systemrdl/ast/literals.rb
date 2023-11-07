@@ -21,14 +21,16 @@ module SystemRDL
       attr_reader :base
       attr_reader :width
 
-      def verilog_number
-        pattern =
-          case base
-          when 2 then '%d\'b%b'
-          when 10 then '%d\'d%d'
-          when 16 then '%d\'h%x'
+      def to_s
+        pattern, args =
+          case [base, width]
+          in [10, nil] then ['%d', [number]]
+          in [16, nil] then ['%x', [number]]
+          in [2, _] then ['%d\'b%b', [width, number]]
+          in [10, _] then ['%d\'d%d', [width, number]]
+          else ['%d\'h%x', [width, number]]
           end
-        format(pattern, width, number)
+        format(pattern, *args)
       end
     end
 

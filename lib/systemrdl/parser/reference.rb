@@ -35,7 +35,7 @@ module SystemRDL
 
     define_transformer do
       rule(instance_ref_element: { id: simple(:id) }) do
-        AST::ReferenceElement.new(id, [])
+        AST::ReferenceElement.new(id, nil)
       end
 
       rule(instance_ref_element: { id: simple(:id), array: sequence(:array) }) do

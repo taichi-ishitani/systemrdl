@@ -9,6 +9,10 @@ module SystemRDL
       end
 
       attr_reader :id
+
+      def to_s
+        id.to_s
+      end
     end
 
     class ThisKeyword < Base

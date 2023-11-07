@@ -11,6 +11,10 @@ module SystemRDL
       end
     end
 
+    def process_all(nodes, context)
+      nodes&.map { |node| process(node, context) }
+    end
+
     private
 
     def error(message, position)

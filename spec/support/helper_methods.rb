@@ -89,8 +89,9 @@ module SystemRDL
     end
 
     def reference_element(id, *array)
+      array_matcher = array.empty? && be_nil || match(array)
       be_instance_of(AST::ReferenceElement)
-        .and have_attributes(id: identifer(id), array: match(array))
+        .and have_attributes(id: identifer(id), array: array_matcher)
     end
 
     def reference(*elements, property: nil)
@@ -327,8 +328,18 @@ module SystemRDL
       Elaborator.new.process(node, context)
     end
 
+    def create_component(parent, instance_name, array = nil, &block)
+      Element::ComponentInstance.new(parent, instance_name, array, &block)
+        .tap { |component| parent&.add_component(component) }
+    end
+
+    def create_proparty(component, property_name, type)
+      Element::Property.new(component, property_name, type)
+        .tap { |property| component.add_property(property) }
+    end
+
     def raise_elaboration_error(message)
-      raise_error(ElaborationError, match(/#{message}/))
+      raise_error(ElaborationError, match(/#{Regexp.escape(message)}/))
     end
 
     def match_value(value, data_type:)

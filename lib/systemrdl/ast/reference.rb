@@ -10,6 +10,10 @@ module SystemRDL
 
       attr_reader :id
       attr_reader :array
+
+      def to_s
+        [id.to_s, *array&.map { |a| "[#{a}]" }].join
+      end
     end
 
     class Reference < Base
@@ -20,6 +24,16 @@ module SystemRDL
 
       attr_reader :instance_refernce
       attr_reader :property
+
+      def to_s
+        if instance_refernce && property
+          "#{instance_refernce.map(&:to_s).join('.')}->#{property}"
+        elsif instance_refernce
+          instance_refernce.map(&:to_s).join('.')
+        else
+          property.to_s
+        end
+      end
     end
   end
 end

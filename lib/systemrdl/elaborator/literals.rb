@@ -21,8 +21,7 @@ module SystemRDL
       return if node.number.bit_length <= node.width
 
       message =
-        'value of number does not fit within the specified bit width: ' \
-        "#{node.verilog_number}"
+        "value of number does not fit within the specified bit width: #{node}"
       error(message, node.position)
     end
 
