@@ -333,8 +333,8 @@ module SystemRDL
         .tap { |component| parent&.add_component(component) }
     end
 
-    def create_proparty(component, property_name, type)
-      Element::Property.new(component, property_name, type)
+    def create_proparty(component, property_name, type, ref_target, dynamic_assign)
+      Element::Property.new(component, property_name, type, ref_target, dynamic_assign)
         .tap { |property| component.add_property(property) }
     end
 

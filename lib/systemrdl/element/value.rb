@@ -11,6 +11,8 @@ module SystemRDL
 
       attr_reader :data_type
       attr_reader :position
+
+      alias_method :value, :__getobj__
     end
 
     class BooleanValue < Value

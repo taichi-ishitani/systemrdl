@@ -7,7 +7,7 @@ RSpec.describe SystemRDL::Elaborator, :elaborator do
         3.times do |i|
           create_component(addrmap, :bar, [i]) do |reg|
             create_component(reg, :baz) do |field|
-              create_proparty(field, :name, :string)
+              create_proparty(field, :name, :string, false, true)
             end
           end
         end

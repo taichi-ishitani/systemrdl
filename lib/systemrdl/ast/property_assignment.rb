@@ -14,6 +14,10 @@ module SystemRDL
       def default?
         @default
       end
+
+      def dynamic_assignment?
+        lhs.instance_refernce && lhs.property && true || false
+      end
     end
 
     class PropertyModifier < Base

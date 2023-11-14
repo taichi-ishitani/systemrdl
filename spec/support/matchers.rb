@@ -55,3 +55,4 @@ RSpec::Matchers.define(:parse) do |input|
 end
 
 RSpec::Matchers.define_negated_matcher :be_not_default, :be_default
+RSpec::Matchers.define_negated_matcher :not_change, :change
