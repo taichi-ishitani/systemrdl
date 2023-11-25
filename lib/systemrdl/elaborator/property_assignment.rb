@@ -8,7 +8,7 @@ module SystemRDL
       lhs = process(node.lhs, context)
       rhs = process_assignment_rhs(lhs.first, node, context)
 
-      if node.dynamic_assignment? && !lhs.first.dynamic_assignable?
+      if node.dynamic_assignment? && !lhs.first.dynamic_assign?
         error 'the given LHS does not support dynamic assignment', node.position
       end
 

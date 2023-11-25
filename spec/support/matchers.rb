@@ -54,5 +54,28 @@ RSpec::Matchers.define(:parse) do |input|
   end
 end
 
+RSpec::Matchers.define(:have_property) do |name, type:, dynamic_assign:, ref_target: false, value: nil|
+  property = nil
+
+  match do |component|
+    property = component.properties.find { |property| property.name == name }
+    property &&
+      values_match?(Array(type), property.type) &&
+      values_match?(ref_target, property.ref_target?) &&
+      values_match?(dynamic_assign, property.dynamic_assign?) &&
+      values_match?(value, property.value)
+  end
+
+  failure_message do
+    if property.nil?
+      "no such property is defined: #{name}"
+    else
+      "descriptipn of the property was not matched\n" \
+      "expected: type #{Array(type)}/ref_target: #{ref_target}/dynamic assign #{dynamic_assign}/value #{value}\n" \
+      "  actual: type #{property.type}/ref_target: #{property.ref_target?}/dynamic assign: #{property.dynamic_assign?}/value: #{property.value}"
+    end
+  end
+end
+
 RSpec::Matchers.define_negated_matcher :be_not_default, :be_default
 RSpec::Matchers.define_negated_matcher :not_change, :change

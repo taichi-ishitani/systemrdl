@@ -328,8 +328,8 @@ module SystemRDL
       Elaborator.new.process(node, context)
     end
 
-    def create_component(parent, instance_name, array = nil, &block)
-      Element::ComponentInstance.new(parent, instance_name, array, &block)
+    def create_component(root, parent, instance_name, array = nil, &block)
+      Element::ComponentInstance.new(root, parent, instance_name, array, &block)
         .tap { |component| parent&.add_component(component) }
     end
 

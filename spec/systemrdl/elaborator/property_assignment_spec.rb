@@ -2,11 +2,15 @@
 
 RSpec.describe SystemRDL::Elaborator, :elaborator do
   context 'when a property assignment is given' do
+    let(:root) do
+      SystemRDL::Element::RootInstance.new(:root)
+    end
+
     let(:foo_component) do
-      create_component(nil, :foo) do |addrmap|
+      create_component(root, nil, :foo) do |addrmap|
         3.times do |i|
-          create_component(addrmap, :bar, [i]) do |reg|
-            create_component(reg, :baz)
+          create_component(root, addrmap, :bar, [i]) do |reg|
+            create_component(root, reg, :baz)
           end
         end
       end
