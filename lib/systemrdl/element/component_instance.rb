@@ -87,5 +87,13 @@ module SystemRDL
         :reg
       end
     end
+
+    class RegfileInstance < ComponentInstance
+      private
+
+      def component_type
+        :regfile
+      end
+    end
   end
 end

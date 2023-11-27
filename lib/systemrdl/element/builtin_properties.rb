@@ -312,6 +312,29 @@ module SystemRDL
       property.dynamic_assign false
       property.value false
     end
+
+    #
+    # 12.3 Register file properties
+    #
+    RootInstance.define_builtin_property(:alignment) do |property|
+      property.target :regfile
+      property.type :longint
+      property.dynamic_assign false
+    end
+
+    RootInstance.define_builtin_property(:sharedextbus) do |property|
+      property.target :regfile
+      property.type :boolean
+      property.dynamic_assign false
+      property.value false
+    end
+
+    RootInstance.define_builtin_property(:errextbus) do |property|
+      property.target :regfile
+      property.type :boolean
+      property.dynamic_assign false
+      property.value false
+    end
   end
 end
 
