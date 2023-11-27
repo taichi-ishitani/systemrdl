@@ -32,9 +32,23 @@ module SystemRDL
       property.value false
     end
 
+    RootInstance.define_builtin_property(:donttest) do |property|
+      property.target [:reg, :regfile, :addrmap]
+      property.type :boolean
+      property.dynamic_assign true
+      property.value false
+    end
+
     RootInstance.define_builtin_property(:dontcompare) do |property|
       property.target :field
       property.type [:boolean, :bit]
+      property.dynamic_assign true
+      property.value false
+    end
+
+    RootInstance.define_builtin_property(:dontcompare) do |property|
+      property.target [:reg, :regfile, :addrmap]
+      property.type :boolean
       property.dynamic_assign true
       property.value false
     end
@@ -265,6 +279,35 @@ module SystemRDL
 
     RootInstance.define_builtin_property(:paritycheck) do |property|
       property.target :field
+      property.type :boolean
+      property.dynamic_assign false
+      property.value false
+    end
+
+    #
+    # 10.6 Register properties
+    #
+    RootInstance.define_builtin_property(:regwidth) do |property|
+      property.target :reg
+      property.type :longint
+      property.dynamic_assign false
+    end
+
+    RootInstance.define_builtin_property(:accesswidth) do |property|
+      property.target :reg
+      property.type :longint
+      property.dynamic_assign true
+    end
+
+    RootInstance.define_builtin_property(:errextbus) do |property|
+      property.target :reg
+      property.type :boolean
+      property.dynamic_assign false
+      property.value false
+    end
+
+    RootInstance.define_builtin_property(:shared) do |property|
+      property.target :reg
       property.type :boolean
       property.dynamic_assign false
       property.value false
