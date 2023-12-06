@@ -95,5 +95,13 @@ module SystemRDL
         :regfile
       end
     end
+
+    class AddrmapInstance < ComponentInstance
+      private
+
+      def component_type
+        :addrmap
+      end
+    end
   end
 end

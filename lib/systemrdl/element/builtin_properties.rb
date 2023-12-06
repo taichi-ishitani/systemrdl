@@ -335,6 +335,78 @@ module SystemRDL
       property.dynamic_assign false
       property.value false
     end
+
+    #
+    # 13.4 Address map properties
+    #
+    RootInstance.define_builtin_property(:alignment) do |property|
+      property.target :addrmap
+      property.type :longint
+      property.dynamic_assign false
+    end
+
+    RootInstance.define_builtin_property(:sharedextbus) do |property|
+      property.target :addrmap
+      property.type :boolean
+      property.dynamic_assign false
+      property.value false
+    end
+
+    RootInstance.define_builtin_property(:errextbus) do |property|
+      property.target :addrmap
+      property.type :boolean
+      property.dynamic_assign false
+      property.value false
+    end
+
+    RootInstance.define_builtin_property(:bigendian) do |property|
+      property.target :addrmap
+      property.type :boolean
+      property.dynamic_assign true
+      property.value false
+    end
+
+    RootInstance.define_builtin_property(:littleendian) do |property|
+      property.target :addrmap
+      property.type :boolean
+      property.dynamic_assign true
+      property.value false
+    end
+
+    RootInstance.define_builtin_property(:addressing) do |property|
+      property.target :addrmap
+      property.type :addressingtype
+      property.dynamic_assign false
+      property.value :regalign
+    end
+
+    RootInstance.define_builtin_property(:rsvdset) do |property|
+      property.target :addrmap
+      property.type :boolean
+      property.dynamic_assign false
+      property.value false
+    end
+
+    RootInstance.define_builtin_property(:rsvdsetX) do |property|
+      property.target :addrmap
+      property.type :boolean
+      property.dynamic_assign false
+      property.value false
+    end
+
+    RootInstance.define_builtin_property(:msb0) do |property|
+      property.target :addrmap
+      property.type :boolean
+      property.dynamic_assign false
+      property.value false
+    end
+
+    RootInstance.define_builtin_property(:lsb0) do |property|
+      property.target :addrmap
+      property.type :boolean
+      property.dynamic_assign false
+      property.value false
+    end
   end
 end
 
