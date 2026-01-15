@@ -22,12 +22,12 @@ unless ENV.key?('CI')
 
   require 'bump/tasks'
 
-#  desc 'generate Toon parser'
-#  file 'lib/rbtoon/generated_parser.rb' => 'toon.y' do
-#    sh 'bundle exec racc toon.y -v -F -t -o lib/rbtoon/generated_parser.rb'
-#  end
-#
-#  task test: ['lib/rbtoon/generated_parser.rb']
+  desc 'generate SystemRDL parser'
+  file 'lib/systemrdl/parser/generated_parser.rb' => 'lib/systemrdl/parser/systemrdl.y' do
+    sh 'bundle exec racc lib/systemrdl/parser/systemrdl.y -v -F -t -o lib/systemrdl/parser/generated_parser.rb'
+  end
+
+  task test: ['lib/systemrdl/parser/generated_parser.rb']
 end
 
 require 'rdoc/task'

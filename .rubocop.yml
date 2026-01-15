@@ -4,6 +4,7 @@ inherit_from:
 AllCops:
   TargetRubyVersion: 3.2
   Exclude:
+    - lib/systemrdl/parser/generated_parser.rb
     - test/**/*
   NewCops: enable
   SuggestExtensions: false
@@ -26,6 +27,9 @@ Style/EmptyCaseCondition:
 
 Style/EmptyMethod:
   EnforcedStyle: expanded
+
+Style/NumericPredicate:
+  EnforcedStyle: comparison
 
 Style/RaiseArgs:
   EnforcedStyle: compact
