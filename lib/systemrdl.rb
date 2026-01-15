@@ -1,0 +1,6 @@
+# frozen_string_literal: true
+
+require_relative 'systemrdl/version'
+
+module SystemRDL
+end

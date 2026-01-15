@@ -1,0 +1,52 @@
+name: Regression
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Ruby ${{ matrix.ruby }}
+    strategy:
+      matrix:
+        ruby:
+          - '4.0'
+          - '3.4'
+          - '3.3'
+          - '3.2'
+    env:
+      BUNDLE_WITH: 'development_common development_test'
+      BUNDLE_WITHOUT: 'development_lint development_local'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          submodules: true
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Run unit tests
+        run: bundle exec rake test
+
+#      - name: Run unit tests and collect line coverage
+#        run: bundle exec rake coverage
+#
+#      - name: Upload coverage report
+#        uses: codecov/codecov-action@v5
+#        with:
+#          name: ${{ matrix.ruby  }}
+#          files: ./coverage/coverage.xml
+#        env:
+#          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

@@ -1,0 +1,5 @@
+Layout/CommentIndentation:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
