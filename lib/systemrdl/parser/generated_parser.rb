@@ -12,47 +12,52 @@ module SystemRDL
 ##### State transition tables begin ###
 
 racc_action_table = [
-     6,     7,     8 ]
+     7,     8,     9,    10 ]
 
 racc_action_check = [
-     0,     1,     7 ]
+     0,     0,     1,     9 ]
 
 racc_action_pointer = [
-    -2,     1,   nil,   nil,   nil,   nil,   nil,     2,   nil ]
+    -2,     2,   nil,   nil,   nil,   nil,   nil,   nil,   nil,     3,
+   nil ]
 
 racc_action_default = [
-    -6,    -6,    -1,    -2,    -3,    -4,    -5,    -6,     9 ]
+    -8,    -8,    -1,    -2,    -3,    -4,    -5,    -6,    -7,    -8,
+    11 ]
 
 racc_goto_table = [
-     1,     2,     3,     4,     5 ]
+     1,     2,     3,     4,     5,     6 ]
 
 racc_goto_check = [
-     1,     2,     3,     4,     5 ]
+     1,     2,     3,     4,     5,     6 ]
 
 racc_goto_pointer = [
-   nil,     0,     1,     2,     3,     4 ]
+   nil,     0,     1,     2,     3,     4,     5 ]
 
 racc_goto_default = [
-   nil,   nil,   nil,   nil,   nil,   nil ]
+   nil,   nil,   nil,   nil,   nil,   nil,   nil ]
 
 racc_reduce_table = [
   0, 0, :racc_error,
-  1, 4, :_reduce_none,
-  1, 5, :_reduce_2,
-  1, 6, :_reduce_none,
+  1, 5, :_reduce_none,
+  1, 6, :_reduce_2,
   1, 7, :_reduce_none,
-  1, 8, :_reduce_5 ]
+  1, 8, :_reduce_none,
+  1, 8, :_reduce_none,
+  1, 9, :_reduce_6,
+  1, 10, :_reduce_7 ]
 
-racc_reduce_n = 6
+racc_reduce_n = 8
 
-racc_shift_n = 9
+racc_shift_n = 11
 
 racc_token_table = {
   false => 0,
   :error => 1,
-  :BOOLEAN => 2 }
+  :BOOLEAN => 2,
+  :STRING => 3 }
 
-racc_nt_base = 3
+racc_nt_base = 4
 
 racc_use_result_var = true
 
@@ -77,12 +82,14 @@ Racc_token_to_s_table = [
   "$end",
   "error",
   "BOOLEAN",
+  "STRING",
   "$start",
   "root",
   "test_expression",
   "expression",
   "primary_literal",
-  "boolean_literal" ]
+  "boolean_literal",
+  "string_literal" ]
 Ractor.make_shareable(Racc_token_to_s_table) if defined?(Ractor)
 
 Racc_debug_parser = true
@@ -93,12 +100,11 @@ Racc_debug_parser = true
 
 # reduce 1 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 10)
+module_eval(<<'.,.,', 'systemrdl.y', 11)
   def _reduce_2(val, _values, result)
-            if test?
-          val[0]
-        else
+            unless test?
           # todo
+          # report parse error
         end
 
     result
@@ -109,9 +115,19 @@ module_eval(<<'.,.,', 'systemrdl.y', 10)
 
 # reduce 4 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 24)
-  def _reduce_5(val, _values, result)
+# reduce 5 omitted
+
+module_eval(<<'.,.,', 'systemrdl.y', 25)
+  def _reduce_6(val, _values, result)
             result = AST::Boolean.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 29)
+  def _reduce_7(val, _values, result)
+            result = AST::String.new(val[0])
 
     result
   end

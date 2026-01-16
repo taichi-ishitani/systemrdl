@@ -27,6 +27,7 @@ module SystemRDL
 
       def scan(pattern)
         text = @ss.scan(pattern)
+        return unless text
 
         line = @line
         column = @column
@@ -38,6 +39,19 @@ module SystemRDL
       def scan_token(kind, pattern)
         text, line, column = scan(pattern)
         text && create_token(kind, text, line, column)
+      end
+
+      def peek(pattern)
+        @ss.check(pattern)
+      end
+
+      def peek_char
+        peek(/./m)
+      end
+
+      def advance(text)
+        @ss.pos += text.bytesize
+        update_state(text)
       end
 
       def update_state(text)
@@ -68,6 +82,9 @@ module SystemRDL
         token = scan_keyword
         return token if token
 
+        token = scan_string
+        return token if token
+
         raise
       end
 
@@ -78,6 +95,27 @@ module SystemRDL
         end
 
         nil
+      end
+
+      def scan_string
+        return unless peek(/"/)
+
+        line = @line
+        column = @column
+
+        buffer = []
+        while (char = peek_char)
+          advance(char)
+          if char == '\\' && ((next_char, _, _) = scan(/"/))
+            buffer << next_char
+          else
+            buffer << char
+            break if buffer.size >= 2 && buffer.last == '"'
+          end
+        end
+
+        text = buffer.join
+        create_token(:STRING, text, line, column)
       end
     end
   end

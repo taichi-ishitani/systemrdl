@@ -34,8 +34,14 @@ Style/NumericPredicate:
 Style/RaiseArgs:
   EnforcedStyle: compact
 
+Style/RedundantRegexpArgument:
+  Enabled: false
+
 Style/SymbolArray:
   EnforcedStyle: brackets
+
+Style/TrailingUnderscoreVariable:
+  Enabled: false
 
 Style/WordArray:
   EnforcedStyle: brackets

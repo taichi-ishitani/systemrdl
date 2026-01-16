@@ -1,6 +1,7 @@
 class SystemRDL::Parser::GeneratedParser
 token
   BOOLEAN
+  STRING
 
 rule
   root
@@ -8,10 +9,9 @@ rule
 
   test_expression
     : expression {
-        if test?
-          val[0]
-        else
+        unless test?
           # todo
+          # report parse error
         end
       }
 
@@ -20,7 +20,12 @@ rule
 
   primary_literal
     : boolean_literal
+    | string_literal
   boolean_literal
     : BOOLEAN {
         result = AST::Boolean.new(val[0])
+      }
+  string_literal
+    : STRING {
+        result = AST::String.new(val[0])
       }
