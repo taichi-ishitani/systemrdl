@@ -20,5 +20,17 @@ module SystemRDL
         super(:string, token)
       end
     end
+
+    class Number < Literal
+      def initialize(token)
+        super(:number, token)
+      end
+    end
+
+    class VerilogNumber < Literal
+      def initialize(token)
+        super(:verilog_number, token)
+      end
+    end
   end
 end

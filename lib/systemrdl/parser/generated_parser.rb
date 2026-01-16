@@ -12,52 +12,57 @@ module SystemRDL
 ##### State transition tables begin ###
 
 racc_action_table = [
-     7,     8,     9,    10 ]
+     8,     9,    10,    11,    12,    13 ]
 
 racc_action_check = [
-     0,     0,     1,     9 ]
+     0,     0,     0,     0,     1,    12 ]
 
 racc_action_pointer = [
-    -2,     2,   nil,   nil,   nil,   nil,   nil,   nil,   nil,     3,
-   nil ]
+    -2,     4,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,     5,   nil ]
 
 racc_action_default = [
-    -8,    -8,    -1,    -2,    -3,    -4,    -5,    -6,    -7,    -8,
-    11 ]
+   -11,   -11,    -1,    -2,    -3,    -4,    -5,    -6,    -7,    -8,
+    -9,   -10,   -11,    14 ]
 
 racc_goto_table = [
-     1,     2,     3,     4,     5,     6 ]
+     1,     2,     3,     4,     5,     6,     7 ]
 
 racc_goto_check = [
-     1,     2,     3,     4,     5,     6 ]
+     1,     2,     3,     4,     5,     6,     7 ]
 
 racc_goto_pointer = [
-   nil,     0,     1,     2,     3,     4,     5 ]
+   nil,     0,     1,     2,     3,     4,     5,     6 ]
 
 racc_goto_default = [
-   nil,   nil,   nil,   nil,   nil,   nil,   nil ]
+   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil ]
 
 racc_reduce_table = [
   0, 0, :racc_error,
-  1, 5, :_reduce_none,
-  1, 6, :_reduce_2,
   1, 7, :_reduce_none,
-  1, 8, :_reduce_none,
-  1, 8, :_reduce_none,
-  1, 9, :_reduce_6,
-  1, 10, :_reduce_7 ]
+  1, 8, :_reduce_2,
+  1, 9, :_reduce_none,
+  1, 10, :_reduce_none,
+  1, 10, :_reduce_none,
+  1, 10, :_reduce_none,
+  1, 11, :_reduce_7,
+  1, 12, :_reduce_8,
+  1, 13, :_reduce_9,
+  1, 13, :_reduce_10 ]
 
-racc_reduce_n = 8
+racc_reduce_n = 11
 
-racc_shift_n = 11
+racc_shift_n = 14
 
 racc_token_table = {
   false => 0,
   :error => 1,
   :BOOLEAN => 2,
-  :STRING => 3 }
+  :STRING => 3,
+  :NUMBER => 4,
+  :VERILOG_NUMBER => 5 }
 
-racc_nt_base = 4
+racc_nt_base = 6
 
 racc_use_result_var = true
 
@@ -83,13 +88,16 @@ Racc_token_to_s_table = [
   "error",
   "BOOLEAN",
   "STRING",
+  "NUMBER",
+  "VERILOG_NUMBER",
   "$start",
   "root",
   "test_expression",
   "expression",
   "primary_literal",
   "boolean_literal",
-  "string_literal" ]
+  "string_literal",
+  "number_literal" ]
 Ractor.make_shareable(Racc_token_to_s_table) if defined?(Ractor)
 
 Racc_debug_parser = true
@@ -100,7 +108,7 @@ Racc_debug_parser = true
 
 # reduce 1 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 11)
+module_eval(<<'.,.,', 'systemrdl.y', 13)
   def _reduce_2(val, _values, result)
             unless test?
           # todo
@@ -117,17 +125,35 @@ module_eval(<<'.,.,', 'systemrdl.y', 11)
 
 # reduce 5 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 25)
-  def _reduce_6(val, _values, result)
+# reduce 6 omitted
+
+module_eval(<<'.,.,', 'systemrdl.y', 28)
+  def _reduce_7(val, _values, result)
             result = AST::Boolean.new(val[0])
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 29)
-  def _reduce_7(val, _values, result)
+module_eval(<<'.,.,', 'systemrdl.y', 32)
+  def _reduce_8(val, _values, result)
             result = AST::String.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 36)
+  def _reduce_9(val, _values, result)
+            result = AST::Number.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 39)
+  def _reduce_10(val, _values, result)
+            result = AST::VerilogNumber.new(val[0])
 
     result
   end

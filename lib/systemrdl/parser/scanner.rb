@@ -3,7 +3,16 @@
 module SystemRDL
   module Parser
     KEYWORDS = {
-      BOOLEAN: /(?:true|false)\b/
+      'true' => :BOOLEAN,
+      'false' => :BOOLEAN
+    }.freeze
+
+    NUMBERS = {
+      /\A\d[\d_]*\z/ => :NUMBER,
+      /\A0x\h[\h_]*\z/i => :NUMBER,
+      /\A\d+'b[01][01_]*\z/i => :VERILOG_NUMBER,
+      /\A\d+'d\d[\d_]*\z/i => :VERILOG_NUMBER,
+      /\A\d+'h\h[\h_]*\z/i => :VERILOG_NUMBER
     }.freeze
 
     class Scanner
@@ -79,22 +88,13 @@ module SystemRDL
       def scan_next_token
         return if eos?
 
-        token = scan_keyword
-        return token if token
-
         token = scan_string
         return token if token
 
+        token = scan_word
+        return token if token
+
         raise
-      end
-
-      def scan_keyword
-        KEYWORDS.each do |kind, pattern|
-          token = scan_token(kind, pattern)
-          return token if token
-        end
-
-        nil
       end
 
       def scan_string
@@ -116,6 +116,27 @@ module SystemRDL
 
         text = buffer.join
         create_token(:STRING, text, line, column)
+      end
+
+      def scan_word
+        text, line, column = scan(/[\w']+/)
+        return unless text
+
+        KEYWORDS.each do |pattern, kind|
+          next if text != pattern
+
+          token = create_token(kind, text, line, column)
+          return token
+        end
+
+        NUMBERS.each do |pattern, kind|
+          next unless pattern.match?(text)
+
+          token = create_token(kind, text, line, column)
+          return token
+        end
+
+        create_token(:UNKNOWN, text, line, column)
       end
     end
   end
