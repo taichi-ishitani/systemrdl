@@ -73,5 +73,44 @@ module SystemRDL::Parser
       assert_raises_parse_error("16'h_beaf", test: true)
       assert_raises_parse_error("1_6'hbeaf", test: true)
     end
+
+    def test_accesstype
+      assert_parses(s(:accesstype, 'na'), 'na', test: true)
+      assert_parses(s(:accesstype, 'rw'), 'rw', test: true)
+      assert_parses(s(:accesstype, 'wr'), 'wr', test: true)
+      assert_parses(s(:accesstype, 'rw1'), 'rw1', test: true)
+      assert_parses(s(:accesstype, 'r'), 'r', test: true)
+      assert_parses(s(:accesstype, 'w'), 'w', test: true)
+      assert_parses(s(:accesstype, 'w1'), 'w1', test: true)
+    end
+
+    def test_onreadtype
+      assert_parses(s(:onreadtype, 'rclr'), 'rclr', test: true)
+      assert_parses(s(:onreadtype, 'rset'), 'rset', test: true)
+      assert_parses(s(:onreadtype, 'ruser'), 'ruser', test: true)
+    end
+
+    def test_onwritetype
+      assert_parses(s(:onwritetype, 'woset'), 'woset', test: true)
+      assert_parses(s(:onwritetype, 'woclr'), 'woclr', test: true)
+      assert_parses(s(:onwritetype, 'wot'), 'wot', test: true)
+      assert_parses(s(:onwritetype, 'wzs'), 'wzs', test: true)
+      assert_parses(s(:onwritetype, 'wzc'), 'wzc', test: true)
+      assert_parses(s(:onwritetype, 'wzt'), 'wzt', test: true)
+      assert_parses(s(:onwritetype, 'wset'), 'wset', test: true)
+      assert_parses(s(:onwritetype, 'wclr'), 'wclr', test: true)
+      assert_parses(s(:onwritetype, 'wuser'), 'wuser', test: true)
+    end
+
+    def test_addressingtype
+      assert_parses(s(:addressingtype, 'compact'), 'compact', test: true)
+      assert_parses(s(:addressingtype, 'regalign'), 'regalign', test: true)
+      assert_parses(s(:addressingtype, 'fullalign'), 'fullalign', test: true)
+    end
+
+    def test_precedencetype
+      assert_parses(s(:precedencetype, 'hw'), 'hw', test: true)
+      assert_parses(s(:precedencetype, 'sw'), 'sw', test: true)
+    end
   end
 end

@@ -32,5 +32,35 @@ module SystemRDL
         super(:verilog_number, token)
       end
     end
+
+    class AccessType < Literal
+      def initialize(token)
+        super(:accesstype, token)
+      end
+    end
+
+    class OnReadType < Literal
+      def initialize(token)
+        super(:onreadtype, token)
+      end
+    end
+
+    class OnWriteType < Literal
+      def initialize(token)
+        super(:onwritetype, token)
+      end
+    end
+
+    class AddressingType < Literal
+      def initialize(token)
+        super(:addressingtype, token)
+      end
+    end
+
+    class PrecedenceType < Literal
+      def initialize(token)
+        super(:precedencetype, token)
+      end
+    end
   end
 end

@@ -12,57 +12,168 @@ module SystemRDL
 ##### State transition tables begin ###
 
 racc_action_table = [
-     8,     9,    10,    11,    12,    13 ]
+    37,    42,    43,   nil,   nil,   nil,   nil,   nil,    14,   nil,
+    39,    40,   nil,   nil,   nil,   nil,   nil,    18,   nil,   nil,
+    16,   nil,   nil,   nil,   nil,    21,    25,   nil,   nil,    38,
+   nil,    26,    27,    19,    23,   nil,    15,   nil,    41,   nil,
+    13,   nil,   nil,    22,    24,    34,    29,    28,    30,    20,
+    35,    36,    32,    31,    33,    17 ]
 
 racc_action_check = [
-     0,     0,     0,     0,     1,    12 ]
+     0,     1,    42,   nil,   nil,   nil,   nil,   nil,     0,   nil,
+     0,     0,   nil,   nil,   nil,   nil,   nil,     0,   nil,   nil,
+     0,   nil,   nil,   nil,   nil,     0,     0,   nil,   nil,     0,
+   nil,     0,     0,     0,     0,   nil,     0,   nil,     0,   nil,
+     0,   nil,   nil,     0,     0,     0,     0,     0,     0,     0,
+     0,     0,     0,     0,     0,     0 ]
 
 racc_action_pointer = [
-    -2,     4,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
-   nil,   nil,     5,   nil ]
+   -11,     1,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,     2,   nil ]
 
 racc_action_default = [
-   -11,   -11,    -1,    -2,    -3,    -4,    -5,    -6,    -7,    -8,
-    -9,   -10,   -11,    14 ]
+   -41,   -41,    -1,    -2,    -3,    -4,    -5,    -6,    -7,    -8,
+    -9,   -10,   -11,   -12,   -13,   -14,   -15,   -16,   -17,   -18,
+   -19,   -20,   -21,   -22,   -23,   -24,   -25,   -26,   -27,   -28,
+   -29,   -30,   -31,   -32,   -33,   -34,   -35,   -36,   -37,   -38,
+   -39,   -40,   -41,    44 ]
 
 racc_goto_table = [
-     1,     2,     3,     4,     5,     6,     7 ]
+     1,     2,     3,     4,     5,     6,     7,     8,     9,    10,
+    11,    12 ]
 
 racc_goto_check = [
-     1,     2,     3,     4,     5,     6,     7 ]
+     1,     2,     3,     4,     5,     6,     7,     8,     9,    10,
+    11,    12 ]
 
 racc_goto_pointer = [
-   nil,     0,     1,     2,     3,     4,     5,     6 ]
+   nil,     0,     1,     2,     3,     4,     5,     6,     7,     8,
+     9,    10,    11 ]
 
 racc_goto_default = [
-   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil ]
+   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,   nil ]
 
 racc_reduce_table = [
   0, 0, :racc_error,
-  1, 7, :_reduce_none,
-  1, 8, :_reduce_2,
-  1, 9, :_reduce_none,
-  1, 10, :_reduce_none,
-  1, 10, :_reduce_none,
-  1, 10, :_reduce_none,
-  1, 11, :_reduce_7,
-  1, 12, :_reduce_8,
-  1, 13, :_reduce_9,
-  1, 13, :_reduce_10 ]
+  1, 68, :_reduce_none,
+  1, 69, :_reduce_2,
+  1, 70, :_reduce_none,
+  1, 71, :_reduce_none,
+  1, 71, :_reduce_none,
+  1, 71, :_reduce_none,
+  1, 71, :_reduce_none,
+  1, 71, :_reduce_none,
+  1, 71, :_reduce_none,
+  1, 71, :_reduce_none,
+  1, 71, :_reduce_none,
+  1, 72, :_reduce_12,
+  1, 72, :_reduce_13,
+  1, 73, :_reduce_14,
+  1, 74, :_reduce_15,
+  1, 74, :_reduce_16,
+  1, 75, :_reduce_17,
+  1, 75, :_reduce_18,
+  1, 75, :_reduce_19,
+  1, 75, :_reduce_20,
+  1, 75, :_reduce_21,
+  1, 75, :_reduce_22,
+  1, 75, :_reduce_23,
+  1, 76, :_reduce_24,
+  1, 76, :_reduce_25,
+  1, 76, :_reduce_26,
+  1, 77, :_reduce_27,
+  1, 77, :_reduce_28,
+  1, 77, :_reduce_29,
+  1, 77, :_reduce_30,
+  1, 77, :_reduce_31,
+  1, 77, :_reduce_32,
+  1, 77, :_reduce_33,
+  1, 77, :_reduce_34,
+  1, 77, :_reduce_35,
+  1, 78, :_reduce_36,
+  1, 78, :_reduce_37,
+  1, 78, :_reduce_38,
+  1, 79, :_reduce_39,
+  1, 79, :_reduce_40 ]
 
-racc_reduce_n = 11
+racc_reduce_n = 41
 
-racc_shift_n = 14
+racc_shift_n = 44
 
 racc_token_table = {
   false => 0,
   :error => 1,
-  :BOOLEAN => 2,
-  :STRING => 3,
-  :NUMBER => 4,
-  :VERILOG_NUMBER => 5 }
+  :ABSTRACT => 2,
+  :ACCESSTYPE => 3,
+  :ADDRESSINGTYPE => 4,
+  :ADDRMAP => 5,
+  :ALIAS => 6,
+  :ALL => 7,
+  :BIT => 8,
+  :BOOLEAN => 9,
+  :BOTHEDGE => 10,
+  :COMPACT => 11,
+  :COMPONENT => 12,
+  :COMPONENTWIDTH => 13,
+  :CONSTRAINT => 14,
+  :DEFAULT => 15,
+  :ENCODE => 16,
+  :ENUM => 17,
+  :EXTERNAL => 18,
+  :FALSE => 19,
+  :FIELD => 20,
+  :FULLALIGN => 21,
+  :HW => 22,
+  :INSIDE => 23,
+  :INTERNAL => 24,
+  :LEVEL => 25,
+  :LONGINT => 26,
+  :MEM => 27,
+  :NA => 28,
+  :NEGEDGE => 29,
+  :NONSTICKY => 30,
+  :NUMBER => 31,
+  :ONREADTYPE => 32,
+  :ONWRITETYPE => 33,
+  :POSEDGE => 34,
+  :PROPERTY => 35,
+  :R => 36,
+  :RCLR => 37,
+  :REF => 38,
+  :REG => 39,
+  :REGALIGN => 40,
+  :REGFILE => 41,
+  :RSET => 42,
+  :RUSER => 43,
+  :RW => 44,
+  :RW1 => 45,
+  :SIGNAL => 46,
+  :STRING => 47,
+  :STRUCT => 48,
+  :SW => 49,
+  :THIS => 50,
+  :TRUE => 51,
+  :TYPE => 52,
+  :UNSIGNED => 53,
+  :W => 54,
+  :W1 => 55,
+  :WCLR => 56,
+  :WOCLR => 57,
+  :WOSET => 58,
+  :WOT => 59,
+  :WR => 60,
+  :WSET => 61,
+  :WUSER => 62,
+  :WZC => 63,
+  :WZS => 64,
+  :WZT => 65,
+  :VERILOG_NUMBER => 66 }
 
-racc_nt_base = 6
+racc_nt_base = 67
 
 racc_use_result_var = true
 
@@ -86,9 +197,70 @@ Ractor.make_shareable(Racc_arg) if defined?(Ractor)
 Racc_token_to_s_table = [
   "$end",
   "error",
+  "ABSTRACT",
+  "ACCESSTYPE",
+  "ADDRESSINGTYPE",
+  "ADDRMAP",
+  "ALIAS",
+  "ALL",
+  "BIT",
   "BOOLEAN",
-  "STRING",
+  "BOTHEDGE",
+  "COMPACT",
+  "COMPONENT",
+  "COMPONENTWIDTH",
+  "CONSTRAINT",
+  "DEFAULT",
+  "ENCODE",
+  "ENUM",
+  "EXTERNAL",
+  "FALSE",
+  "FIELD",
+  "FULLALIGN",
+  "HW",
+  "INSIDE",
+  "INTERNAL",
+  "LEVEL",
+  "LONGINT",
+  "MEM",
+  "NA",
+  "NEGEDGE",
+  "NONSTICKY",
   "NUMBER",
+  "ONREADTYPE",
+  "ONWRITETYPE",
+  "POSEDGE",
+  "PROPERTY",
+  "R",
+  "RCLR",
+  "REF",
+  "REG",
+  "REGALIGN",
+  "REGFILE",
+  "RSET",
+  "RUSER",
+  "RW",
+  "RW1",
+  "SIGNAL",
+  "STRING",
+  "STRUCT",
+  "SW",
+  "THIS",
+  "TRUE",
+  "TYPE",
+  "UNSIGNED",
+  "W",
+  "W1",
+  "WCLR",
+  "WOCLR",
+  "WOSET",
+  "WOT",
+  "WR",
+  "WSET",
+  "WUSER",
+  "WZC",
+  "WZS",
+  "WZT",
   "VERILOG_NUMBER",
   "$start",
   "root",
@@ -97,7 +269,12 @@ Racc_token_to_s_table = [
   "primary_literal",
   "boolean_literal",
   "string_literal",
-  "number_literal" ]
+  "number_literal",
+  "accesstype_literal",
+  "onreadtype_literal",
+  "onwritetype_literal",
+  "addressingtype_literal",
+  "precedencetype_literal" ]
 Ractor.make_shareable(Racc_token_to_s_table) if defined?(Ractor)
 
 Racc_debug_parser = true
@@ -108,7 +285,7 @@ Racc_debug_parser = true
 
 # reduce 1 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 13)
+module_eval(<<'.,.,', 'systemrdl.y', 25)
   def _reduce_2(val, _values, result)
             unless test?
           # todo
@@ -127,33 +304,243 @@ module_eval(<<'.,.,', 'systemrdl.y', 13)
 
 # reduce 6 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 28)
-  def _reduce_7(val, _values, result)
+# reduce 7 omitted
+
+# reduce 8 omitted
+
+# reduce 9 omitted
+
+# reduce 10 omitted
+
+# reduce 11 omitted
+
+module_eval(<<'.,.,', 'systemrdl.y', 45)
+  def _reduce_12(val, _values, result)
             result = AST::Boolean.new(val[0])
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 32)
-  def _reduce_8(val, _values, result)
+module_eval(<<'.,.,', 'systemrdl.y', 48)
+  def _reduce_13(val, _values, result)
+            result = AST::Boolean.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 52)
+  def _reduce_14(val, _values, result)
             result = AST::String.new(val[0])
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 36)
-  def _reduce_9(val, _values, result)
+module_eval(<<'.,.,', 'systemrdl.y', 56)
+  def _reduce_15(val, _values, result)
             result = AST::Number.new(val[0])
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 39)
-  def _reduce_10(val, _values, result)
+module_eval(<<'.,.,', 'systemrdl.y', 59)
+  def _reduce_16(val, _values, result)
             result = AST::VerilogNumber.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 63)
+  def _reduce_17(val, _values, result)
+            result = AST::AccessType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 66)
+  def _reduce_18(val, _values, result)
+            result = AST::AccessType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 69)
+  def _reduce_19(val, _values, result)
+            result = AST::AccessType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 72)
+  def _reduce_20(val, _values, result)
+            result = AST::AccessType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 75)
+  def _reduce_21(val, _values, result)
+            result = AST::AccessType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 78)
+  def _reduce_22(val, _values, result)
+            result = AST::AccessType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 81)
+  def _reduce_23(val, _values, result)
+            result = AST::AccessType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 85)
+  def _reduce_24(val, _values, result)
+            result = AST::OnReadType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 88)
+  def _reduce_25(val, _values, result)
+            result = AST::OnReadType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 91)
+  def _reduce_26(val, _values, result)
+            result = AST::OnReadType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 95)
+  def _reduce_27(val, _values, result)
+            result = AST::OnWriteType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 98)
+  def _reduce_28(val, _values, result)
+            result = AST::OnWriteType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 101)
+  def _reduce_29(val, _values, result)
+            result = AST::OnWriteType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 104)
+  def _reduce_30(val, _values, result)
+            result = AST::OnWriteType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 107)
+  def _reduce_31(val, _values, result)
+            result = AST::OnWriteType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 110)
+  def _reduce_32(val, _values, result)
+            result = AST::OnWriteType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 113)
+  def _reduce_33(val, _values, result)
+            result = AST::OnWriteType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 116)
+  def _reduce_34(val, _values, result)
+            result = AST::OnWriteType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 119)
+  def _reduce_35(val, _values, result)
+            result = AST::OnWriteType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 123)
+  def _reduce_36(val, _values, result)
+            result = AST::AddressingType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 126)
+  def _reduce_37(val, _values, result)
+            result = AST::AddressingType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 129)
+  def _reduce_38(val, _values, result)
+            result = AST::AddressingType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 133)
+  def _reduce_39(val, _values, result)
+            result = AST::PrecedenceType.new(val[0])
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 136)
+  def _reduce_40(val, _values, result)
+            result = AST::PrecedenceType.new(val[0])
 
     result
   end

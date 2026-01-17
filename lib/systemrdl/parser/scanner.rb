@@ -5,10 +5,21 @@ module SystemRDL
     class Scanner
       include RaiseParseError
 
-      KEYWORDS = {
-        'true' => :BOOLEAN,
-        'false' => :BOOLEAN
-      }.freeze
+      KEYWORDS = [
+        'abstract', 'accesstype', 'addressingtype', 'addrmap', 'alias',
+        'all', 'bit', 'boolean', 'bothedge', 'compact',
+        'component', 'componentwidth', 'constraint', 'default', 'encode',
+        'enum', 'external', 'false', 'field', 'fullalign',
+        'hw', 'inside', 'internal', 'level', 'longint',
+        'mem', 'na', 'negedge', 'nonsticky', 'number',
+        'onreadtype', 'onwritetype', 'posedge', 'property', 'r',
+        'rclr', 'ref', 'reg', 'regalign', 'regfile',
+        'rset', 'ruser', 'rw', 'rw1', 'signal',
+        'string', 'struct', 'sw', 'this', 'true',
+        'type', 'unsigned', 'w', 'w1', 'wclr',
+        'woclr', 'woset', 'wot', 'wr', 'wset',
+        'wuser', 'wzc', 'wzs', 'wzt'
+      ].to_h { |kw| [kw, kw.upcase.to_sym] }.freeze
 
       NUMBERS = {
         /\d+'[hH]\h[\h_]*/ => :VERILOG_NUMBER,
