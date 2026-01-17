@@ -13,7 +13,7 @@ module SystemRDL
       end
 
       def assert_raises_parse_error(code, **optargs)
-        assert_raises(Racc::ParseError) do
+        assert_raises(SystemRDL::ParseError) do
           SystemRDL::Parser.parse(code, **optargs)
         end
       end

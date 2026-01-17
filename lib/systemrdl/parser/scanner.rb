@@ -2,20 +2,22 @@
 
 module SystemRDL
   module Parser
-    KEYWORDS = {
-      'true' => :BOOLEAN,
-      'false' => :BOOLEAN
-    }.freeze
-
-    NUMBERS = {
-      /\A\d[\d_]*\z/ => :NUMBER,
-      /\A0x\h[\h_]*\z/i => :NUMBER,
-      /\A\d+'b[01][01_]*\z/i => :VERILOG_NUMBER,
-      /\A\d+'d\d[\d_]*\z/i => :VERILOG_NUMBER,
-      /\A\d+'h\h[\h_]*\z/i => :VERILOG_NUMBER
-    }.freeze
-
     class Scanner
+      include RaiseParseError
+
+      KEYWORDS = {
+        'true' => :BOOLEAN,
+        'false' => :BOOLEAN
+      }.freeze
+
+      NUMBERS = {
+        /\d+'[hH]\h[\h_]*/ => :VERILOG_NUMBER,
+        /\d+'[dD]\d[\d_]*/ => :VERILOG_NUMBER,
+        /\d+'[bB][01][01_]*/ => :VERILOG_NUMBER,
+        /0[xX]\h[\h_]*/ => :NUMBER,
+        /\d[\d_]*/ => :NUMBER
+      }.freeze
+
       def initialize(code, filename)
         @ss = StringScanner.new(code)
         @filename = filename
@@ -85,16 +87,24 @@ module SystemRDL
         AST::Token.new(text, kind, position)
       end
 
+      def current_position
+        AST::Position.new(@filename, @line, @column)
+      end
+
       def scan_next_token
         return if eos?
 
         token = scan_string
         return token if token
 
+        token = scan_number
+        return token if token
+
         token = scan_word
         return token if token
 
-        raise
+        char = peek_char
+        raise_parse_error "illegal character `#{char}`", current_position
       end
 
       def scan_string
@@ -118,8 +128,17 @@ module SystemRDL
         create_token(:STRING, text, line, column)
       end
 
+      def scan_number
+        NUMBERS.each do |pattern, kind|
+          token = scan_token(kind, pattern)
+          return token if token
+        end
+
+        nil
+      end
+
       def scan_word
-        text, line, column = scan(/[\w']+/)
+        text, line, column = scan(/[_a-zA-Z]\w*/)
         return unless text
 
         KEYWORDS.each do |pattern, kind|
@@ -129,14 +148,7 @@ module SystemRDL
           return token
         end
 
-        NUMBERS.each do |pattern, kind|
-          next unless pattern.match?(text)
-
-          token = create_token(kind, text, line, column)
-          return token
-        end
-
-        create_token(:UNKNOWN, text, line, column)
+        nil
       end
     end
   end
