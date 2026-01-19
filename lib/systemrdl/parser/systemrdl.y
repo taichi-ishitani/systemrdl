@@ -1,5 +1,6 @@
 class SystemRDL::Parser::GeneratedParser
 token
+  # Keywords
   ABSTRACT ACCESSTYPE ADDRESSINGTYPE ADDRMAP ALIAS
   ALL BIT BOOLEAN BOTHEDGE COMPACT
   COMPONENT COMPONENTWIDTH CONSTRAINT DEFAULT ENCODE
@@ -13,126 +14,128 @@ token
   TYPE UNSIGNED W W1 WCLR
   WOCLR WOSET WOT WR WSET
   WUSER WZC WZS WZT
+  # Symbols
+  L_BRACKET R_BRACKET
+  ARROW DOT
+  # Other tokens
   STRING
   NUMBER
   VERILOG_NUMBER
+  SIMPLE_ID
 
 rule
   root
     : test_expression
 
   test_expression
-    : expression {
+    : constant_expression {
         unless test?
           # todo
           # report parse error
         end
       }
 
-  expression
-    : primary_literal
+  #
+  # B.11 Reference
+  #
+  instance_ref
+    : instance_ref_element (DOT instance_ref_element)* {
+        val = to_list(val, include_separator: true)
+        range = to_token_range(val)
+        result = AST::InstanceRef.new(range, *val)
+      }
+  prop_ref
+    : instance_ref ARROW id {
+        range = to_token_range(val)
+        result = AST::PropRef.new(range, val[0], val[2])
+      }
+  instance_or_prop_ref
+    : prop_ref
+    | instance_ref
+  instance_ref_element
+    : id array* {
+      val = to_list(val, include_separator: false)
+      range = to_token_range(val)
+      result = AST::InstanceRefElement.new(range, val[0], *val[1..])
+    }
 
+  #
+  # B.12 Array and range
+  #
+  array
+    : L_BRACKET constant_expression R_BRACKET {
+        range = to_token_range(val)
+        result = AST::Array.new(range, val[1])
+      }
+
+  #
+  # B.15 Literals
+  #
   primary_literal
-    : boolean_literal
-    | string_literal
-    | number_literal
-    | accesstype_literal
-    | onreadtype_literal
-    | onwritetype_literal
-    | addressingtype_literal
-    | precedencetype_literal
-  boolean_literal
-    : TRUE {
-        result = AST::Boolean.new(val[0])
+    : boolean_literal {
+        range = to_token_range(val[0])
+        result = AST::Boolean.new(range, val[0])
       }
-    | FALSE {
-        result = AST::Boolean.new(val[0])
+    | STRING {
+        range = to_token_range(val[0])
+        result = AST::String.new(range, val[0])
       }
-  string_literal
-    : STRING {
-        result = AST::String.new(val[0])
-      }
-  number_literal
-    : NUMBER {
-        result = AST::Number.new(val[0])
+    | NUMBER {
+        range = to_token_range(val[0])
+        result = AST::Number.new(range, val[0])
       }
     | VERILOG_NUMBER {
-        result = AST::VerilogNumber.new(val[0])
+        range = to_token_range(val[0])
+        result = AST::VerilogNumber.new(range, val[0])
       }
+    | accesstype_literal {
+        range = to_token_range(val[0])
+        result = AST::AccessType.new(range, val[0])
+      }
+    | onreadtype_literal {
+        range = to_token_range(val[0])
+        result = AST::OnReadType.new(range, val[0])
+      }
+    | onwritetype_literal {
+        range = to_token_range(val[0])
+        result = AST::OnWriteType.new(range, val[0])
+      }
+    | addressingtype_literal {
+        range = to_token_range(val[0])
+        result = AST::AddressingType.new(range, val[0])
+      }
+    | precedencetype_literal {
+        range = to_token_range(val[0])
+        result = AST::PrecedenceType.new(range, val[0])
+
+      }
+  boolean_literal
+    : TRUE | FALSE
   accesstype_literal
-    : NA {
-        result = AST::AccessType.new(val[0])
-      }
-    | RW {
-        result = AST::AccessType.new(val[0])
-      }
-    | WR {
-        result = AST::AccessType.new(val[0])
-      }
-    | R {
-        result = AST::AccessType.new(val[0])
-      }
-    | W {
-        result = AST::AccessType.new(val[0])
-      }
-    | RW1 {
-        result = AST::AccessType.new(val[0])
-      }
-    | W1 {
-        result = AST::AccessType.new(val[0])
-      }
+    : NA | RW | WR | R | W | RW1 | W1
   onreadtype_literal
-    : RCLR {
-        result = AST::OnReadType.new(val[0])
-      }
-    | RSET {
-        result = AST::OnReadType.new(val[0])
-      }
-    | RUSER {
-        result = AST::OnReadType.new(val[0])
-      }
+    : RCLR | RSET | RUSER
   onwritetype_literal
-    : WOSET {
-        result = AST::OnWriteType.new(val[0])
-      }
-    | WOCLR {
-        result = AST::OnWriteType.new(val[0])
-      }
-    | WOT {
-        result = AST::OnWriteType.new(val[0])
-      }
-    | WZS {
-        result = AST::OnWriteType.new(val[0])
-      }
-    | WZC {
-        result = AST::OnWriteType.new(val[0])
-      }
-    | WZT {
-        result = AST::OnWriteType.new(val[0])
-      }
-    | WCLR {
-        result = AST::OnWriteType.new(val[0])
-      }
-    | WSET {
-        result = AST::OnWriteType.new(val[0])
-      }
-    | WUSER {
-        result = AST::OnWriteType.new(val[0])
-      }
+    : WOSET | WOCLR | WOT | WZS | WZC | WZT | WCLR | WSET | WUSER
   addressingtype_literal
-    : COMPACT {
-        result = AST::AddressingType.new(val[0])
-      }
-    | REGALIGN {
-        result = AST::AddressingType.new(val[0])
-      }
-    | FULLALIGN {
-        result = AST::AddressingType.new(val[0])
-      }
+    : COMPACT | REGALIGN | FULLALIGN
   precedencetype_literal
-    : HW {
-        result = AST::PrecedenceType.new(val[0])
-      }
-    | SW {
-        result = AST::PrecedenceType.new(val[0])
+    : HW | SW
+
+  #
+  # B.16 Expressions
+  #
+  constant_expression
+    : constant_primary
+  constant_primary
+    : primary_literal
+    | instance_or_prop_ref
+
+  #
+  # B.17 Identifiers
+  #
+  id
+    : SIMPLE_ID {
+        range = to_token_range(val[0])
+        result = AST::ID.new(range, val[0])
       }

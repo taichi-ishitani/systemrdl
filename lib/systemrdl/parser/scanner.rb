@@ -5,21 +5,43 @@ module SystemRDL
     class Scanner
       include RaiseParseError
 
-      KEYWORDS = [
-        'abstract', 'accesstype', 'addressingtype', 'addrmap', 'alias',
-        'all', 'bit', 'boolean', 'bothedge', 'compact',
-        'component', 'componentwidth', 'constraint', 'default', 'encode',
-        'enum', 'external', 'false', 'field', 'fullalign',
-        'hw', 'inside', 'internal', 'level', 'longint',
-        'mem', 'na', 'negedge', 'nonsticky', 'number',
-        'onreadtype', 'onwritetype', 'posedge', 'property', 'r',
-        'rclr', 'ref', 'reg', 'regalign', 'regfile',
-        'rset', 'ruser', 'rw', 'rw1', 'signal',
-        'string', 'struct', 'sw', 'this', 'true',
-        'type', 'unsigned', 'w', 'w1', 'wclr',
-        'woclr', 'woset', 'wot', 'wr', 'wset',
-        'wuser', 'wzc', 'wzs', 'wzt'
-      ].to_h { |kw| [kw, kw.upcase.to_sym] }.freeze
+      class << self
+        private
+
+        def keyword_patterns
+          [
+            'abstract', 'accesstype', 'addressingtype', 'addrmap', 'alias',
+            'all', 'bit', 'boolean', 'bothedge', 'compact',
+            'component', 'componentwidth', 'constraint', 'default', 'encode',
+            'enum', 'external', 'false', 'field', 'fullalign',
+            'hw', 'inside', 'internal', 'level', 'longint',
+            'mem', 'na', 'negedge', 'nonsticky', 'number',
+            'onreadtype', 'onwritetype', 'posedge', 'property', 'r',
+            'rclr', 'ref', 'reg', 'regalign', 'regfile',
+            'rset', 'ruser', 'rw', 'rw1', 'signal',
+            'string', 'struct', 'sw', 'this', 'true',
+            'type', 'unsigned', 'w', 'w1', 'wclr',
+            'woclr', 'woset', 'wot', 'wr', 'wset',
+            'wuser', 'wzc', 'wzs', 'wzt'
+          ].to_h { |kw| [kw, kw.upcase.to_sym] }.freeze
+        end
+
+        def symbol_patterns
+          patterns = [
+            ['[', :L_BRACKET], [']', :R_BRACKET],
+            ['->', :ARROW], ['.', :DOT]
+          ]
+          patterns
+            .sort_by { |(pattern, _)| pattern.size }
+            .reverse
+            .to_h { |(pattern, kind)| [Regexp.new(Regexp.escape(pattern)), kind] }
+            .freeze
+        end
+      end
+
+      KEYWORDS = keyword_patterns
+
+      SYMBOLS = symbol_patterns
 
       NUMBERS = {
         /\d+'[hH]\h[\h_]*/ => :VERILOG_NUMBER,
@@ -111,6 +133,9 @@ module SystemRDL
         token = scan_number
         return token if token
 
+        token = scan_symbol
+        return token if token
+
         token = scan_word
         return token if token
 
@@ -148,6 +173,15 @@ module SystemRDL
         nil
       end
 
+      def scan_symbol
+        SYMBOLS.each do |pattern, kind|
+          token = scan_token(kind, pattern)
+          return token if token
+        end
+
+        nil
+      end
+
       def scan_word
         text, line, column = scan(/[_a-zA-Z]\w*/)
         return unless text
@@ -159,7 +193,7 @@ module SystemRDL
           return token
         end
 
-        nil
+        create_token(:SIMPLE_ID, text, line, column)
       end
     end
   end

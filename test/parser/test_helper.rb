@@ -7,6 +7,13 @@ module SystemRDL
     class TestCase < Minitest::Test
       include ::AST::Sexp
 
+      def s(type, *children)
+        children = children.map do |child|
+          child.is_a?(::String) && AST::Token.new(child, nil, nil) || child
+        end
+        super(type, *children)
+      end
+
       def assert_parses(ast, code, **optargs)
         result = SystemRDL::Parser.parse(code, **optargs)
         assert_equal(ast, result)

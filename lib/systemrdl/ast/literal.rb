@@ -1,65 +1,58 @@
-# frozen_string_literal: true
+# frozen_string_Base: true
 
 module SystemRDL
   module AST
-    class Literal < Base
-      def initialize(kind, token)
-        range = TokenRange.new(token)
-        super(kind, range, token)
+    class Boolean < Base
+      def initialize(range, token)
+        super(:boolean, range, token)
       end
     end
 
-    class Boolean < Literal
-      def initialize(token)
-        super(:boolean, token)
+    class String < Base
+      def initialize(range, token)
+        super(:string, range, token)
       end
     end
 
-    class String < Literal
-      def initialize(token)
-        super(:string, token)
+    class Number < Base
+      def initialize(range, token)
+        super(:number, range, token)
       end
     end
 
-    class Number < Literal
-      def initialize(token)
-        super(:number, token)
+    class VerilogNumber < Base
+      def initialize(range, token)
+        super(:verilog_number, range, token)
       end
     end
 
-    class VerilogNumber < Literal
-      def initialize(token)
-        super(:verilog_number, token)
+    class AccessType < Base
+      def initialize(range, token)
+        super(:accesstype, range, token)
       end
     end
 
-    class AccessType < Literal
-      def initialize(token)
-        super(:accesstype, token)
+    class OnReadType < Base
+      def initialize(range, token)
+        super(:onreadtype, range, token)
       end
     end
 
-    class OnReadType < Literal
-      def initialize(token)
-        super(:onreadtype, token)
+    class OnWriteType < Base
+      def initialize(range, token)
+        super(:onwritetype, range, token)
       end
     end
 
-    class OnWriteType < Literal
-      def initialize(token)
-        super(:onwritetype, token)
+    class AddressingType < Base
+      def initialize(range, token)
+        super(:addressingtype, range, token)
       end
     end
 
-    class AddressingType < Literal
-      def initialize(token)
-        super(:addressingtype, token)
-      end
-    end
-
-    class PrecedenceType < Literal
-      def initialize(token)
-        super(:precedencetype, token)
+    class PrecedenceType < Base
+      def initialize(range, token)
+        super(:precedencetype, range, token)
       end
     end
   end
