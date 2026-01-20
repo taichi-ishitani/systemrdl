@@ -28,16 +28,20 @@ module SystemRDL
 
         def symbol_patterns
           patterns = [
-            ['[', :L_BRACKET], [']', :R_BRACKET],
-            ['->', :ARROW], ['.', :DOT]
+            '[', ']', '(', ')',
+            '!', '&&', '||', '<', '>', '<=', '>=', '==', '!=', '>>', '<<',
+            '~', '&', '~&', '|', '~|', '^', '~^', '^~', '*', '/', '%', '+', '-', '**',
+            '->', '.'
           ]
           patterns
-            .sort_by { |(pattern, _)| pattern.size }
+            .sort_by(&:size)
             .reverse
-            .to_h { |(pattern, kind)| [Regexp.new(Regexp.escape(pattern)), kind] }
+            .to_h { |pattern| [Regexp.new(Regexp.escape(pattern)), pattern] }
             .freeze
         end
       end
+
+      WHITE_SPACES = /[ \t\n\r]+/
 
       KEYWORDS = keyword_patterns
 
@@ -127,6 +131,8 @@ module SystemRDL
       def scan_next_token
         return if eos?
 
+        skip_blank
+
         token = scan_string
         return token if token
 
@@ -141,6 +147,10 @@ module SystemRDL
 
         char = peek_char
         raise_parse_error "illegal character `#{char}`", current_position
+      end
+
+      def skip_blank
+        scan(WHITE_SPACES)
       end
 
       def scan_string

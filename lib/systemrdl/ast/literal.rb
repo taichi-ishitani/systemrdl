@@ -1,4 +1,4 @@
-# frozen_string_Base: true
+# frozen_string_literal: true
 
 module SystemRDL
   module AST

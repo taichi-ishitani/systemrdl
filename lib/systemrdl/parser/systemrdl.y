@@ -14,14 +14,25 @@ token
   TYPE UNSIGNED W W1 WCLR
   WOCLR WOSET WOT WR WSET
   WUSER WZC WZS WZT
-  # Symbols
-  L_BRACKET R_BRACKET
-  ARROW DOT
   # Other tokens
   STRING
   NUMBER
   VERILOG_NUMBER
   SIMPLE_ID
+
+prechigh
+  nonassoc UOP
+  left "**"
+  left "*" "/" "%"
+  left "<<" ">>"
+  left "<" "<=" ">" ">="
+  left "==" "!="
+  left "&"
+  left "^" "~^" "^~"
+  left "|"
+  left "&&"
+  left "||"
+preclow
 
 rule
   root
@@ -39,13 +50,13 @@ rule
   # B.11 Reference
   #
   instance_ref
-    : instance_ref_element (DOT instance_ref_element)* {
+    : instance_ref_element ("." instance_ref_element)* {
         val = to_list(val, include_separator: true)
         range = to_token_range(val)
         result = AST::InstanceRef.new(range, *val)
       }
   prop_ref
-    : instance_ref ARROW id {
+    : instance_ref "->" id {
         range = to_token_range(val)
         result = AST::PropRef.new(range, val[0], val[2])
       }
@@ -63,7 +74,7 @@ rule
   # B.12 Array and range
   #
   array
-    : L_BRACKET constant_expression R_BRACKET {
+    : "[" constant_expression "]" {
         range = to_token_range(val)
         result = AST::Array.new(range, val[1])
       }
@@ -127,9 +138,26 @@ rule
   #
   constant_expression
     : constant_primary
+    | constant_expression binary_operator constant_expression {
+        range = to_token_range(val)
+        result = AST::BinaryOperation.new(range, val[1], val[0], val[2])
+      }
+    | unary_operator constant_expression = UOP {
+        range = to_token_range(val)
+        result = AST::UnaryOperation.new(range, val[0], val[1])
+      }
   constant_primary
     : primary_literal
+    | "(" constant_expression ")" {
+        range = to_token_range(range)
+        result = val[1].replace_range(range)
+      }
     | instance_or_prop_ref
+  binary_operator
+    : "&&" | "||" | "<" | ">" | "<=" | ">=" | "==" | "!=" | ">>" | "<<"
+    | "&" | "|" | "^" | "~^"| "^~" | "*" | "/" | "%" | "+" | "-" | "**"
+  unary_operator
+    : "!" | "+" | "-" | "~" | "&" | "~&" | "|" | "~|" | "^" | "~^" | "^~"
 
   #
   # B.17 Identifiers
