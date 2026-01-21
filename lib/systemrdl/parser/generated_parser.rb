@@ -537,29 +537,29 @@ Racc_debug_parser = true
 module_eval(<<'.,.,', 'systemrdl.y', 42)
   def _reduce_2(val, _values, result)
             unless test?
-          # todo
-          # report parse error
+          parse_error(val[0].range.head)
         end
+        result = val[0]
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 59)
+module_eval(<<'.,.,', 'systemrdl.y', 57)
   def _reduce_3(val, _values, result)
     result = val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 59)
+module_eval(<<'.,.,', 'systemrdl.y', 57)
   def _reduce_4(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 59)
+module_eval(<<'.,.,', 'systemrdl.y', 57)
   def _reduce_5(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
@@ -568,18 +568,15 @@ module_eval(<<'.,.,', 'systemrdl.y', 59)
 
 module_eval(<<'.,.,', 'systemrdl.y', 53)
   def _reduce_6(val, _values, result)
-            val = to_list(val, include_separator: true)
-        range = to_token_range(val)
-        result = AST::InstanceRef.new(range, *val)
+            result = create_node(:instance_ref, to_list(val, include_separator: true), val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 59)
+module_eval(<<'.,.,', 'systemrdl.y', 57)
   def _reduce_7(val, _values, result)
-            range = to_token_range(val)
-        result = AST::PropRef.new(range, val[0], val[2])
+            result = create_node(:prop_ref, [val[0], val[2]], val)
 
     result
   end
@@ -589,115 +586,103 @@ module_eval(<<'.,.,', 'systemrdl.y', 59)
 
 # reduce 9 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 77)
+module_eval(<<'.,.,', 'systemrdl.y', 72)
   def _reduce_10(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 77)
+module_eval(<<'.,.,', 'systemrdl.y', 72)
   def _reduce_11(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 67)
+module_eval(<<'.,.,', 'systemrdl.y', 64)
   def _reduce_12(val, _values, result)
-          val = to_list(val, include_separator: false)
-      range = to_token_range(val)
-      result = AST::InstanceRefElement.new(range, val[0], *val[1..])
+          result = create_node(:instance_ref_element, to_list(val, include_separator: false), val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 77)
+module_eval(<<'.,.,', 'systemrdl.y', 72)
   def _reduce_13(val, _values, result)
-            range = to_token_range(val)
-        result = AST::Array.new(range, val[1])
+            result = create_node(:array, [val[1]], val)
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 80)
+  def _reduce_14(val, _values, result)
+            result = create_node(:boolean, val, val)
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 83)
+  def _reduce_15(val, _values, result)
+            result = create_node(:string, val, val)
 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'systemrdl.y', 86)
-  def _reduce_14(val, _values, result)
-            range = to_token_range(val[0])
-        result = AST::Boolean.new(range, val[0])
-
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'systemrdl.y', 90)
-  def _reduce_15(val, _values, result)
-            range = to_token_range(val[0])
-        result = AST::String.new(range, val[0])
-
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'systemrdl.y', 94)
   def _reduce_16(val, _values, result)
-            range = to_token_range(val[0])
-        result = AST::Number.new(range, val[0])
+            result = create_node(:number, val, val)
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 89)
+  def _reduce_17(val, _values, result)
+            result = create_node(:verilog_number, val, val)
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 92)
+  def _reduce_18(val, _values, result)
+            result = create_node(:access_type, val, val)
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 95)
+  def _reduce_19(val, _values, result)
+            result = create_node(:on_read_type, val, val)
 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'systemrdl.y', 98)
-  def _reduce_17(val, _values, result)
-            range = to_token_range(val[0])
-        result = AST::VerilogNumber.new(range, val[0])
-
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'systemrdl.y', 102)
-  def _reduce_18(val, _values, result)
-            range = to_token_range(val[0])
-        result = AST::AccessType.new(range, val[0])
-
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'systemrdl.y', 106)
-  def _reduce_19(val, _values, result)
-            range = to_token_range(val[0])
-        result = AST::OnReadType.new(range, val[0])
-
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'systemrdl.y', 110)
   def _reduce_20(val, _values, result)
-            range = to_token_range(val[0])
-        result = AST::OnWriteType.new(range, val[0])
+            result = create_node(:on_write_type, val, val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 114)
+module_eval(<<'.,.,', 'systemrdl.y', 101)
   def _reduce_21(val, _values, result)
-            range = to_token_range(val[0])
-        result = AST::AddressingType.new(range, val[0])
+            result = create_node(:addressing_type, val, val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 118)
+module_eval(<<'.,.,', 'systemrdl.y', 104)
   def _reduce_22(val, _values, result)
-            range = to_token_range(val[0])
-        result = AST::PrecedenceType.new(range, val[0])
+            result = create_node(:precedence_type, val, val)
 
 
     result
@@ -758,19 +743,17 @@ module_eval(<<'.,.,', 'systemrdl.y', 118)
 
 # reduce 49 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 141)
+module_eval(<<'.,.,', 'systemrdl.y', 126)
   def _reduce_50(val, _values, result)
-            range = to_token_range(val)
-        result = AST::BinaryOperation.new(range, val[1], val[0], val[2])
+            result = create_node(:binary_operation, [val[1], val[0], val[2]], val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 145)
+module_eval(<<'.,.,', 'systemrdl.y', 129)
   def _reduce_51(val, _values, result)
-            range = to_token_range(val)
-        result = AST::UnaryOperation.new(range, val[0], val[1])
+            result = create_node(:unary_operation, val, val)
 
     result
   end
@@ -778,10 +761,9 @@ module_eval(<<'.,.,', 'systemrdl.y', 145)
 
 # reduce 52 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 151)
+module_eval(<<'.,.,', 'systemrdl.y', 134)
   def _reduce_53(val, _values, result)
-            range = to_token_range(range)
-        result = val[1].replace_range(range)
+            val[1].replace_range(to_token_range(val))
 
     result
   end
@@ -853,10 +835,9 @@ module_eval(<<'.,.,', 'systemrdl.y', 151)
 
 # reduce 86 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 166)
+module_eval(<<'.,.,', 'systemrdl.y', 148)
   def _reduce_87(val, _values, result)
-            range = to_token_range(val[0])
-        result = AST::ID.new(range, val[0])
+            result = create_node(:id, val, val)
 
     result
   end

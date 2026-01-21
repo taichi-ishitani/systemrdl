@@ -120,12 +120,12 @@ module SystemRDL
       end
 
       def create_token(kind, text, line, column)
-        position = AST::Position.new(@filename, line, column)
-        AST::Token.new(text, kind, position)
+        position = Position.new(@filename, line, column)
+        Token.new(text, kind, position)
       end
 
       def current_position
-        AST::Position.new(@filename, @line, @column)
+        Position.new(@filename, @line, @column)
       end
 
       def scan_next_token

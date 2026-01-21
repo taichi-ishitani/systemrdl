@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module SystemRDL
-  module AST
+  module Parser
     class Position
       def initialize(filename, line, column)
         @filename = filename

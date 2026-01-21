@@ -23,6 +23,10 @@ module SystemRDL
       end
 
       def on_error(_token_id, value, _value_stack)
+        parse_error(value)
+      end
+
+      def parse_error(value)
         message = "syntax error on value '#{value.text}' (#{value.kind})"
         raise_parse_error message, value.position
       end
@@ -35,15 +39,20 @@ module SystemRDL
         end
       end
 
-      def to_token_range(*values)
+      def create_node(kind, children, values)
+        range = to_token_range(values)
+        Node.new(kind, children, { range: range })
+      end
+
+      def to_token_range(values)
         head = values.first
         tail = values.last
-        if values.size == 1 && head.is_a?(AST::Base)
+        if values.size == 1 && head.is_a?(Node)
           head.range
         else
-          head_token = (head.is_a?(AST::Base) && head.range.head) || head
-          tail_token = (head.is_a?(AST::Base) && head.range.tail) || tail
-          AST::TokenRange.new(head_token, tail_token)
+          head_token = (head.is_a?(Node) && head.range.head) || head
+          tail_token = (head.is_a?(Node) && head.range.tail) || tail
+          TokenRange.new(head_token, tail_token)
         end
       end
 

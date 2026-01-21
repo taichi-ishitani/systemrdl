@@ -9,7 +9,7 @@ module SystemRDL
 
       def s(type, *children)
         children = children.map do |child|
-          child.is_a?(::String) && AST::Token.new(child, nil, nil) || child
+          child.is_a?(::String) && Token.new(child, nil, nil) || child
         end
         super(type, *children)
       end

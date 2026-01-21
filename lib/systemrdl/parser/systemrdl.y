@@ -41,9 +41,9 @@ rule
   test_expression
     : constant_expression {
         unless test?
-          # todo
-          # report parse error
+          parse_error(val[0].range.head)
         end
+        result = val[0]
       }
 
   #
@@ -51,23 +51,18 @@ rule
   #
   instance_ref
     : instance_ref_element ("." instance_ref_element)* {
-        val = to_list(val, include_separator: true)
-        range = to_token_range(val)
-        result = AST::InstanceRef.new(range, *val)
+        result = create_node(:instance_ref, to_list(val, include_separator: true), val)
       }
   prop_ref
     : instance_ref "->" id {
-        range = to_token_range(val)
-        result = AST::PropRef.new(range, val[0], val[2])
+        result = create_node(:prop_ref, [val[0], val[2]], val)
       }
   instance_or_prop_ref
     : prop_ref
     | instance_ref
   instance_ref_element
     : id array* {
-      val = to_list(val, include_separator: false)
-      range = to_token_range(val)
-      result = AST::InstanceRefElement.new(range, val[0], *val[1..])
+      result = create_node(:instance_ref_element, to_list(val, include_separator: false), val)
     }
 
   #
@@ -75,8 +70,7 @@ rule
   #
   array
     : "[" constant_expression "]" {
-        range = to_token_range(val)
-        result = AST::Array.new(range, val[1])
+        result = create_node(:array, [val[1]], val)
       }
 
   #
@@ -84,40 +78,31 @@ rule
   #
   primary_literal
     : boolean_literal {
-        range = to_token_range(val[0])
-        result = AST::Boolean.new(range, val[0])
+        result = create_node(:boolean, val, val)
       }
     | STRING {
-        range = to_token_range(val[0])
-        result = AST::String.new(range, val[0])
+        result = create_node(:string, val, val)
       }
     | NUMBER {
-        range = to_token_range(val[0])
-        result = AST::Number.new(range, val[0])
+        result = create_node(:number, val, val)
       }
     | VERILOG_NUMBER {
-        range = to_token_range(val[0])
-        result = AST::VerilogNumber.new(range, val[0])
+        result = create_node(:verilog_number, val, val)
       }
     | accesstype_literal {
-        range = to_token_range(val[0])
-        result = AST::AccessType.new(range, val[0])
+        result = create_node(:access_type, val, val)
       }
     | onreadtype_literal {
-        range = to_token_range(val[0])
-        result = AST::OnReadType.new(range, val[0])
+        result = create_node(:on_read_type, val, val)
       }
     | onwritetype_literal {
-        range = to_token_range(val[0])
-        result = AST::OnWriteType.new(range, val[0])
+        result = create_node(:on_write_type, val, val)
       }
     | addressingtype_literal {
-        range = to_token_range(val[0])
-        result = AST::AddressingType.new(range, val[0])
+        result = create_node(:addressing_type, val, val)
       }
     | precedencetype_literal {
-        range = to_token_range(val[0])
-        result = AST::PrecedenceType.new(range, val[0])
+        result = create_node(:precedence_type, val, val)
 
       }
   boolean_literal
@@ -139,18 +124,15 @@ rule
   constant_expression
     : constant_primary
     | constant_expression binary_operator constant_expression {
-        range = to_token_range(val)
-        result = AST::BinaryOperation.new(range, val[1], val[0], val[2])
+        result = create_node(:binary_operation, [val[1], val[0], val[2]], val)
       }
     | unary_operator constant_expression = UOP {
-        range = to_token_range(val)
-        result = AST::UnaryOperation.new(range, val[0], val[1])
+        result = create_node(:unary_operation, val, val)
       }
   constant_primary
     : primary_literal
     | "(" constant_expression ")" {
-        range = to_token_range(range)
-        result = val[1].replace_range(range)
+        val[1].replace_range(to_token_range(val))
       }
     | instance_or_prop_ref
   binary_operator
@@ -164,6 +146,5 @@ rule
   #
   id
     : SIMPLE_ID {
-        range = to_token_range(val[0])
-        result = AST::ID.new(range, val[0])
+        result = create_node(:id, val, val)
       }

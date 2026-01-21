@@ -74,43 +74,43 @@ module SystemRDL::Parser
       assert_raises_parse_error("1_6'hbeaf", test: true)
     end
 
-    def test_accesstype
-      assert_parses(s(:accesstype, 'na'), 'na', test: true)
-      assert_parses(s(:accesstype, 'rw'), 'rw', test: true)
-      assert_parses(s(:accesstype, 'wr'), 'wr', test: true)
-      assert_parses(s(:accesstype, 'rw1'), 'rw1', test: true)
-      assert_parses(s(:accesstype, 'r'), 'r', test: true)
-      assert_parses(s(:accesstype, 'w'), 'w', test: true)
-      assert_parses(s(:accesstype, 'w1'), 'w1', test: true)
+    def test_access_type
+      assert_parses(s(:access_type, 'na'), 'na', test: true)
+      assert_parses(s(:access_type, 'rw'), 'rw', test: true)
+      assert_parses(s(:access_type, 'wr'), 'wr', test: true)
+      assert_parses(s(:access_type, 'rw1'), 'rw1', test: true)
+      assert_parses(s(:access_type, 'r'), 'r', test: true)
+      assert_parses(s(:access_type, 'w'), 'w', test: true)
+      assert_parses(s(:access_type, 'w1'), 'w1', test: true)
     end
 
-    def test_onreadtype
-      assert_parses(s(:onreadtype, 'rclr'), 'rclr', test: true)
-      assert_parses(s(:onreadtype, 'rset'), 'rset', test: true)
-      assert_parses(s(:onreadtype, 'ruser'), 'ruser', test: true)
+    def test_on_read_type
+      assert_parses(s(:on_read_type, 'rclr'), 'rclr', test: true)
+      assert_parses(s(:on_read_type, 'rset'), 'rset', test: true)
+      assert_parses(s(:on_read_type, 'ruser'), 'ruser', test: true)
     end
 
-    def test_onwritetype
-      assert_parses(s(:onwritetype, 'woset'), 'woset', test: true)
-      assert_parses(s(:onwritetype, 'woclr'), 'woclr', test: true)
-      assert_parses(s(:onwritetype, 'wot'), 'wot', test: true)
-      assert_parses(s(:onwritetype, 'wzs'), 'wzs', test: true)
-      assert_parses(s(:onwritetype, 'wzc'), 'wzc', test: true)
-      assert_parses(s(:onwritetype, 'wzt'), 'wzt', test: true)
-      assert_parses(s(:onwritetype, 'wset'), 'wset', test: true)
-      assert_parses(s(:onwritetype, 'wclr'), 'wclr', test: true)
-      assert_parses(s(:onwritetype, 'wuser'), 'wuser', test: true)
+    def test_on_write_type
+      assert_parses(s(:on_write_type, 'woset'), 'woset', test: true)
+      assert_parses(s(:on_write_type, 'woclr'), 'woclr', test: true)
+      assert_parses(s(:on_write_type, 'wot'), 'wot', test: true)
+      assert_parses(s(:on_write_type, 'wzs'), 'wzs', test: true)
+      assert_parses(s(:on_write_type, 'wzc'), 'wzc', test: true)
+      assert_parses(s(:on_write_type, 'wzt'), 'wzt', test: true)
+      assert_parses(s(:on_write_type, 'wset'), 'wset', test: true)
+      assert_parses(s(:on_write_type, 'wclr'), 'wclr', test: true)
+      assert_parses(s(:on_write_type, 'wuser'), 'wuser', test: true)
     end
 
-    def test_addressingtype
-      assert_parses(s(:addressingtype, 'compact'), 'compact', test: true)
-      assert_parses(s(:addressingtype, 'regalign'), 'regalign', test: true)
-      assert_parses(s(:addressingtype, 'fullalign'), 'fullalign', test: true)
+    def test_addressing_type
+      assert_parses(s(:addressing_type, 'compact'), 'compact', test: true)
+      assert_parses(s(:addressing_type, 'regalign'), 'regalign', test: true)
+      assert_parses(s(:addressing_type, 'fullalign'), 'fullalign', test: true)
     end
 
-    def test_precedencetype
-      assert_parses(s(:precedencetype, 'hw'), 'hw', test: true)
-      assert_parses(s(:precedencetype, 'sw'), 'sw', test: true)
+    def test_precedence_type
+      assert_parses(s(:precedence_type, 'hw'), 'hw', test: true)
+      assert_parses(s(:precedence_type, 'sw'), 'sw', test: true)
     end
   end
 end
