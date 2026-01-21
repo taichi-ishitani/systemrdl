@@ -39,7 +39,7 @@ module SystemRDL
         end
       end
 
-      def create_node(kind, children, values)
+      def node(kind, children, values)
         range = to_token_range(values)
         Node.new(kind, children, { range: range })
       end

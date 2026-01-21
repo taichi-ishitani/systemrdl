@@ -22,16 +22,17 @@ token
 
 prechigh
   nonassoc UOP
-  left "**"
-  left "*" "/" "%"
-  left "<<" ">>"
-  left "<" "<=" ">" ">="
-  left "==" "!="
-  left "&"
-  left "^" "~^" "^~"
-  left "|"
-  left "&&"
-  left "||"
+  left  "**"
+  left  "*" "/" "%"
+  left  "<<" ">>"
+  left  "<" "<=" ">" ">="
+  left  "==" "!="
+  left  "&"
+  left  "^" "~^" "^~"
+  left  "|"
+  left  "&&"
+  left  "||"
+  right "?" ":"
 preclow
 
 rule
@@ -51,18 +52,18 @@ rule
   #
   instance_ref
     : instance_ref_element ("." instance_ref_element)* {
-        result = create_node(:instance_ref, to_list(val, include_separator: true), val)
+        result = node(:instance_ref, to_list(val, include_separator: true), val)
       }
   prop_ref
     : instance_ref "->" id {
-        result = create_node(:prop_ref, [val[0], val[2]], val)
+        result = node(:prop_ref, [val[0], val[2]], val)
       }
   instance_or_prop_ref
     : prop_ref
     | instance_ref
   instance_ref_element
     : id array* {
-      result = create_node(:instance_ref_element, to_list(val, include_separator: false), val)
+      result = node(:instance_ref_element, to_list(val, include_separator: false), val)
     }
 
   #
@@ -70,7 +71,7 @@ rule
   #
   array
     : "[" constant_expression "]" {
-        result = create_node(:array, [val[1]], val)
+        result = node(:array, [val[1]], val)
       }
 
   #
@@ -78,31 +79,31 @@ rule
   #
   primary_literal
     : boolean_literal {
-        result = create_node(:boolean, val, val)
+        result = node(:boolean, val, val)
       }
     | STRING {
-        result = create_node(:string, val, val)
+        result = node(:string, val, val)
       }
     | NUMBER {
-        result = create_node(:number, val, val)
+        result = node(:number, val, val)
       }
     | VERILOG_NUMBER {
-        result = create_node(:verilog_number, val, val)
+        result = node(:verilog_number, val, val)
       }
     | accesstype_literal {
-        result = create_node(:access_type, val, val)
+        result = node(:access_type, val, val)
       }
     | onreadtype_literal {
-        result = create_node(:on_read_type, val, val)
+        result = node(:on_read_type, val, val)
       }
     | onwritetype_literal {
-        result = create_node(:on_write_type, val, val)
+        result = node(:on_write_type, val, val)
       }
     | addressingtype_literal {
-        result = create_node(:addressing_type, val, val)
+        result = node(:addressing_type, val, val)
       }
     | precedencetype_literal {
-        result = create_node(:precedence_type, val, val)
+        result = node(:precedence_type, val, val)
 
       }
   boolean_literal
@@ -123,11 +124,14 @@ rule
   #
   constant_expression
     : constant_primary
-    | constant_expression binary_operator constant_expression {
-        result = create_node(:binary_operation, [val[1], val[0], val[2]], val)
-      }
     | unary_operator constant_expression = UOP {
-        result = create_node(:unary_operation, val, val)
+        result = node(:unary_operation, val, val)
+      }
+    | constant_expression binary_operator constant_expression {
+        result = node(:binary_operation, [val[1], val[0], val[2]], val)
+      }
+    | constant_expression "?" constant_expression ":" constant_expression {
+        result = node(:conditional_operation, [val[0], val[2], val[4]], val)
       }
   constant_primary
     : primary_literal
@@ -146,5 +150,5 @@ rule
   #
   id
     : SIMPLE_ID {
-        result = create_node(:id, val, val)
+        result = node(:id, val, val)
       }

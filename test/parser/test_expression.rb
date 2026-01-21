@@ -269,6 +269,36 @@ module SystemRDL
         )
       end
 
+      def test_conditional_operation
+        code = 'a ? b : c'
+        assert_parses(
+          cop(reference('a'), reference('b'), reference('c')),
+          code, test: true
+        )
+
+        code = '1 ? 2 : 3'
+        assert_parses(
+          cop(number(1), number(2), number(3)),
+          code, test: true
+        )
+
+        code = '1 ? 2 : 3 ? 4 : 5'
+        assert_parses(
+          cop(number(1), number(2), cop(number(3), number(4), number(5))),
+          code, test: true
+        )
+
+        code = '1 ? 2 ? 3 : 4 : 5 ? 6 : 7'
+        assert_parses(
+          cop(
+            number(1),
+            cop(number(2), number(3), number(4)),
+            cop(number(5), number(6), number(7))
+          ),
+          code, test: true
+        )
+      end
+
       def test_operator_precedence
         code = '+1**2'
         assert_parses(
@@ -397,10 +427,11 @@ module SystemRDL
         #  cop(bop('||', number(1), number(2)), number(3), number(4)),
         #  code, test: true
         #)
-        #code = '1||(2?3:4)'
-        #assert_parses(
-        #  bop('||', number(1), cop(number(2), number(3), number(4)))
-        #)
+        code = '1||(2?3:4)'
+        assert_parses(
+          bop('||', number(1), cop(number(2), number(3), number(4))),
+          code, test: true
+        )
       end
 
       def reference(id)
@@ -425,6 +456,10 @@ module SystemRDL
 
       def bop(operator, lhs, rhs)
         s(:binary_operation, operator, lhs, rhs)
+      end
+
+      def cop(condition, if_expression, else_expression)
+        s(:conditional_operation, condition, if_expression, else_expression)
       end
     end
   end
