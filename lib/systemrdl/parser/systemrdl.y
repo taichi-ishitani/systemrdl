@@ -22,17 +22,18 @@ token
 
 prechigh
   nonassoc UOP
-  left  "**"
-  left  "*" "/" "%"
-  left  "<<" ">>"
-  left  "<" "<=" ">" ">="
-  left  "==" "!="
-  left  "&"
-  left  "^" "~^" "^~"
-  left  "|"
-  left  "&&"
-  left  "||"
-  right "?" ":"
+  left     "**"
+  left     "*" "/" "%"
+  left     "+" "-"
+  left     "<<" ">>"
+  left     "<" "<=" ">" ">="
+  left     "==" "!="
+  left     "&"
+  left     "^" "~^" "^~"
+  left     "|"
+  left     "&&"
+  left     "||"
+  right    "?" ":"
 preclow
 
 rule
@@ -124,11 +125,101 @@ rule
   #
   constant_expression
     : constant_primary
-    | unary_operator constant_expression = UOP {
-        result = node(:unary_operation, val, val)
+    | "!" constant_expression = UOP {
+        result = uop_node(val)
       }
-    | constant_expression binary_operator constant_expression {
-        result = node(:binary_operation, [val[1], val[0], val[2]], val)
+    | "+" constant_expression = UOP {
+        result = uop_node(val)
+      }
+    | "-" constant_expression = UOP {
+        result = uop_node(val)
+      }
+    | "~" constant_expression = UOP {
+        result = uop_node(val)
+      }
+    | "&" constant_expression = UOP {
+        result = uop_node(val)
+      }
+    | "~&" constant_expression = UOP {
+        result = uop_node(val)
+      }
+    | "|" constant_expression = UOP {
+        result = uop_node(val)
+      }
+    | "~|" constant_expression = UOP {
+        result = uop_node(val)
+      }
+    | "^" constant_expression = UOP {
+        result = uop_node(val)
+      }
+    | "~^" constant_expression = UOP {
+        result = uop_node(val)
+      }
+    | "^~" constant_expression = UOP {
+        result = uop_node(val)
+      }
+    | constant_expression "&&" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "||" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "<" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression ">" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "<=" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression ">=" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "==" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "!=" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression ">>" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "<<" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "&" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "|" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "^" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "~^" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "^~" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "*" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "/" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "%" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "+" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "-" constant_expression {
+        result = bop_node(val)
+      }
+    | constant_expression "**" constant_expression {
+        result = bop_node(val)
       }
     | constant_expression "?" constant_expression ":" constant_expression {
         result = node(:conditional_operation, [val[0], val[2], val[4]], val)
@@ -139,11 +230,6 @@ rule
         val[1].replace_range(to_token_range(val))
       }
     | instance_or_prop_ref
-  binary_operator
-    : "&&" | "||" | "<" | ">" | "<=" | ">=" | "==" | "!=" | ">>" | "<<"
-    | "&" | "|" | "^" | "~^"| "^~" | "*" | "/" | "%" | "+" | "-" | "**"
-  unary_operator
-    : "!" | "+" | "-" | "~" | "&" | "~&" | "|" | "~|" | "^" | "~^" | "^~"
 
   #
   # B.17 Identifiers

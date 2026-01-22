@@ -44,6 +44,14 @@ module SystemRDL
         Node.new(kind, children, { range: range })
       end
 
+      def uop_node(values)
+        node(:unary_operation, values, values)
+      end
+
+      def bop_node(values)
+        node(:binary_operation, [values[1], values[0], values[2]], values)
+      end
+
       def to_token_range(values)
         head = values.first
         tail = values.last

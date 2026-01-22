@@ -64,7 +64,7 @@ module SystemRDL
         assert_parses(bop('&&', boolean(true), boolean(true)), code, test: true)
         code = 'true && true && false'
         assert_parses(
-          bop('&&', boolean(true), bop('&&', boolean(true), boolean(false))),
+          bop('&&', bop('&&', boolean(true), boolean(true)), boolean(false)),
           code, test: true
         )
 
@@ -74,7 +74,7 @@ module SystemRDL
         assert_parses(bop('||', boolean(true), boolean(true)), code, test: true)
         code = 'true || true || false'
         assert_parses(
-          bop('||', boolean(true), bop('||', boolean(true), boolean(false))),
+          bop('||', bop('||', boolean(true), boolean(true)), boolean(false)),
           code, test: true
         )
 
@@ -84,7 +84,7 @@ module SystemRDL
         assert_parses(bop('<', number(123), number(456)), code, test: true)
         code = '123 < 456 < 789'
         assert_parses(
-          bop('<', number(123), bop('<', number(456), number(789))),
+          bop('<', bop('<', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -94,7 +94,7 @@ module SystemRDL
         assert_parses(bop('>', number(123), number(456)), code, test: true)
         code = '123 > 456 > 789'
         assert_parses(
-          bop('>', number(123), bop('>', number(456), number(789))),
+          bop('>', bop('>', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -104,7 +104,7 @@ module SystemRDL
         assert_parses(bop('<=', number(123), number(456)), code, test: true)
         code = '123 <= 456 <= 789'
         assert_parses(
-          bop('<=', number(123), bop('<=', number(456), number(789))),
+          bop('<=', bop('<=', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -114,7 +114,7 @@ module SystemRDL
         assert_parses(bop('>=', number(123), number(456)), code, test: true)
         code = '123 >= 456 >= 789'
         assert_parses(
-          bop('>=', number(123), bop('>=', number(456), number(789))),
+          bop('>=', bop('>=', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -124,7 +124,7 @@ module SystemRDL
         assert_parses(bop('==', number(123), number(456)), code, test: true)
         code = '123 == 456 == 789'
         assert_parses(
-          bop('==', number(123), bop('==', number(456), number(789))),
+          bop('==', bop('==', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -134,7 +134,7 @@ module SystemRDL
         assert_parses(bop('!=', number(123), number(456)), code, test: true)
         code = '123 != 456 != 789'
         assert_parses(
-          bop('!=', number(123), bop('!=', number(456), number(789))),
+          bop('!=', bop('!=', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -144,7 +144,7 @@ module SystemRDL
         assert_parses(bop('>>', number(123), number(456)), code, test: true)
         code = '123 >> 456 >> 789'
         assert_parses(
-          bop('>>', number(123), bop('>>', number(456), number(789))),
+          bop('>>', bop('>>', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -154,7 +154,7 @@ module SystemRDL
         assert_parses(bop('<<', number(123), number(456)), code, test: true)
         code = '123 << 456 << 789'
         assert_parses(
-          bop('<<', number(123), bop('<<', number(456), number(789))),
+          bop('<<', bop('<<', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -164,7 +164,7 @@ module SystemRDL
         assert_parses(bop('&', number(123), number(456)), code, test: true)
         code = '123 & 456 & 789'
         assert_parses(
-          bop('&', number(123), bop('&', number(456), number(789))),
+          bop('&', bop('&', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -174,7 +174,7 @@ module SystemRDL
         assert_parses(bop('|', number(123), number(456)), code, test: true)
         code = '123 | 456 | 789'
         assert_parses(
-          bop('|', number(123), bop('|', number(456), number(789))),
+          bop('|', bop('|', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -184,7 +184,7 @@ module SystemRDL
         assert_parses(bop('^', number(123), number(456)), code, test: true)
         code = '123 ^ 456 ^ 789'
         assert_parses(
-          bop('^', number(123), bop('^', number(456), number(789))),
+          bop('^', bop('^', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -194,7 +194,7 @@ module SystemRDL
         assert_parses(bop('~^', number(123), number(456)), code, test: true)
         code = '123 ~^ 456 ~^ 789'
         assert_parses(
-          bop('~^', number(123), bop('~^', number(456), number(789))),
+          bop('~^', bop('~^', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -204,7 +204,7 @@ module SystemRDL
         assert_parses(bop('^~', number(123), number(456)), code, test: true)
         code = '123 ^~ 456 ^~ 789'
         assert_parses(
-          bop('^~', number(123), bop('^~', number(456), number(789))),
+          bop('^~', bop('^~', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -214,7 +214,7 @@ module SystemRDL
         assert_parses(bop('*', number(123), number(456)), code, test: true)
         code = '123 * 456 * 789'
         assert_parses(
-          bop('*', number(123), bop('*', number(456), number(789))),
+          bop('*', bop('*', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -224,7 +224,7 @@ module SystemRDL
         assert_parses(bop('/', number(123), number(456)), code, test: true)
         code = '123 / 456 / 789'
         assert_parses(
-          bop('/', number(123), bop('/', number(456), number(789))),
+          bop('/', bop('/', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -234,7 +234,7 @@ module SystemRDL
         assert_parses(bop('%', number(123), number(456)), code, test: true)
         code = '123 % 456 % 789'
         assert_parses(
-          bop('%', number(123), bop('%', number(456), number(789))),
+          bop('%', bop('%', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -244,7 +244,7 @@ module SystemRDL
         assert_parses(bop('+', number(123), number(456)), code, test: true)
         code = '123 + 456 + 789'
         assert_parses(
-          bop('+', number(123), bop('+', number(456), number(789))),
+          bop('+', bop('+', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -254,7 +254,7 @@ module SystemRDL
         assert_parses(bop('-', number(123), number(456)), code, test: true)
         code = '123 - 456 - 789'
         assert_parses(
-          bop('-', number(123), bop('-', number(456), number(789))),
+          bop('-', bop('-', number(123), number(456)), number(789)),
           code, test: true
         )
 
@@ -264,7 +264,7 @@ module SystemRDL
         assert_parses(bop('**', number(123), number(456)), code, test: true)
         code = '123 ** 456 ** 789'
         assert_parses(
-          bop('**', number(123), bop('**', number(456), number(789))),
+          bop('**', bop('**', number(123), number(456)), number(789)),
           code, test: true
         )
       end
@@ -421,12 +421,11 @@ module SystemRDL
           code, test: true
         )
 
-        # todo
-        #code = '1||2?3:4'
-        #assert_parses(
-        #  cop(bop('||', number(1), number(2)), number(3), number(4)),
-        #  code, test: true
-        #)
+        code = '1||2?3:4'
+        assert_parses(
+          cop(bop('||', number(1), number(2)), number(3), number(4)),
+          code, test: true
+        )
         code = '1||(2?3:4)'
         assert_parses(
           bop('||', number(1), cop(number(2), number(3), number(4))),
