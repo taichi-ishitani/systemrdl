@@ -5,6 +5,39 @@ require_relative 'test_helper'
 module SystemRDL
   module Parser
     class ExpressionTest < TestCase
+      def test_this
+        code = 'this'
+        assert_parses(s(:this, 'this'), code, test: true)
+      end
+
+      def test_concatenation
+        code = "{a, b, 3'b101, c}"
+        assert_parses(
+          s(:concatenation,
+            reference('a'), reference('b'), verilog_number("3'b101"), reference('c')
+          ),
+          code, test: true
+        )
+
+        code = '{4{a}}'
+        assert_parses(
+          s(:replication, number(4), s(:concatenation, reference('a'))),
+          code, test: true
+        )
+
+        code = '{a, {3{b, c}}}'
+        assert_parses(
+          s(:concatenation,
+            reference('a'),
+            s(:replication,
+              number(3),
+              s(:concatenation, reference('b'), reference('c'))
+            )
+          ),
+          code, test: true
+        )
+      end
+
       def test_unary_operation
         code = '!a'
         assert_parses(uop('!', reference('a')), code, test: true)

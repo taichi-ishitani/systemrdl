@@ -76,37 +76,20 @@ rule
       }
 
   #
+  # B.13 Concatenation
+  #
+  constant_concatenation
+    : "{" constant_expression ("," constant_expression)* "}" {
+        result = node(:concatenation, to_list(val[1..-2], include_separator: true), val)
+      }
+  constant_multiple_concatenation
+    : "{" constant_expression constant_concatenation "}" {
+      result = node(:replication, val[1..2], val)
+    }
+
+  #
   # B.15 Literals
   #
-  primary_literal
-    : boolean_literal {
-        result = node(:boolean, val, val)
-      }
-    | STRING {
-        result = node(:string, val, val)
-      }
-    | NUMBER {
-        result = node(:number, val, val)
-      }
-    | VERILOG_NUMBER {
-        result = node(:verilog_number, val, val)
-      }
-    | accesstype_literal {
-        result = node(:access_type, val, val)
-      }
-    | onreadtype_literal {
-        result = node(:on_read_type, val, val)
-      }
-    | onwritetype_literal {
-        result = node(:on_write_type, val, val)
-      }
-    | addressingtype_literal {
-        result = node(:addressing_type, val, val)
-      }
-    | precedencetype_literal {
-        result = node(:precedence_type, val, val)
-
-      }
   boolean_literal
     : TRUE | FALSE
   accesstype_literal
@@ -226,10 +209,43 @@ rule
       }
   constant_primary
     : primary_literal
+    | constant_concatenation
+    | constant_multiple_concatenation
     | "(" constant_expression ")" {
         val[1].replace_range(to_token_range(val))
       }
     | instance_or_prop_ref
+  primary_literal
+    : boolean_literal {
+        result = node(:boolean, val, val)
+      }
+    | STRING {
+        result = node(:string, val, val)
+      }
+    | NUMBER {
+        result = node(:number, val, val)
+      }
+    | VERILOG_NUMBER {
+        result = node(:verilog_number, val, val)
+      }
+    | accesstype_literal {
+        result = node(:access_type, val, val)
+      }
+    | onreadtype_literal {
+        result = node(:on_read_type, val, val)
+      }
+    | onwritetype_literal {
+        result = node(:on_write_type, val, val)
+      }
+    | addressingtype_literal {
+        result = node(:addressing_type, val, val)
+      }
+    | precedencetype_literal {
+        result = node(:precedence_type, val, val)
+      }
+    | THIS {
+        result = node(:this, val, val)
+    }
 
   #
   # B.17 Identifiers
