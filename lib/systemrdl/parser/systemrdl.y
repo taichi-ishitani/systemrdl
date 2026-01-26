@@ -88,6 +88,17 @@ rule
     }
 
   #
+  # B.14 Data types
+  #
+  simple_type
+    : LONGINT {
+        result = node(:data_type, val, val)
+      }
+    | BIT {
+        result = node(:data_type, val, val)
+      }
+
+  #
   # B.15 Literals
   #
   boolean_literal
@@ -214,6 +225,7 @@ rule
     | "(" constant_expression ")" {
         result = val[1].replace_range(to_token_range(val))
       }
+    | constant_cast
     | instance_or_prop_ref
   primary_literal
     : boolean_literal {
@@ -246,6 +258,16 @@ rule
     | THIS {
         result = node(:this, val, val)
     }
+    constant_cast
+      : casting_type "'" "(" constant_expression ")" {
+          result = node(:cast, [val[0], val[3]], val)
+        }
+    casting_type
+      : simple_type
+      | constant_primary
+      | BOOLEAN {
+          result = node(:data_type, val, val)
+        }
 
   #
   # B.17 Identifiers

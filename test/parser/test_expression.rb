@@ -38,6 +38,56 @@ module SystemRDL
         )
       end
 
+      def test_constant_cast
+        code = "boolean'(1+2)"
+        assert_parses(
+          cast(data_type(:boolean), bop('+', number(1), number(2))),
+          code, test: true
+        )
+
+        code = "bit'(1+2)"
+        assert_parses(
+          cast(data_type(:bit), bop('+', number(1), number(2))),
+          code, test: true
+        )
+
+        code = "longint'(1+2)"
+        assert_parses(
+          cast(data_type(:longint), bop('+', number(1), number(2))),
+          code, test: true
+        )
+
+        code = "17'(1+2)"
+        assert_parses(
+          cast(number(17), bop('+', number(1), number(2))),
+          code, test: true
+        )
+
+        code = "(10+7)'(1+2)"
+        assert_parses(
+          cast(bop('+', number(10), number(7)), bop('+', number(1), number(2))),
+          code, test: true
+        )
+
+        code = "17'(1+2)'(3+4)"
+        assert_parses(
+          cast(
+            cast(number(17), bop('+', number(1), number(2))),
+            bop('+', number(3), number(4))
+          ),
+          code, test: true
+        )
+
+        code = "longint'(1+2)'(3+4)"
+        assert_parses(
+          cast(
+            cast(data_type(:longint), bop('+', number(1), number(2))),
+            bop('+', number(3), number(4))
+          ),
+          code, test: true
+        )
+      end
+
       def test_unary_operation
         code = '!a'
         assert_parses(uop('!', reference('a')), code, test: true)
@@ -480,6 +530,14 @@ module SystemRDL
 
       def verilog_number(number)
         s(:verilog_number, number)
+      end
+
+      def data_type(type)
+        s(:data_type, type.to_s)
+      end
+
+      def cast(casting_type, expression)
+        s(:cast, casting_type, expression)
       end
 
       def uop(operator, expression)
