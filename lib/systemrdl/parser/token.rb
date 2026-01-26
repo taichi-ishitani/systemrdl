@@ -32,7 +32,7 @@ module SystemRDL
       attr_reader :position
 
       def ==(other)
-        text == ((other.is_a?(Token) && other.text) || text)
+        text == ((other.is_a?(Token) && other.text) || other)
       end
     end
 

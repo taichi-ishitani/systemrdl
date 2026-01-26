@@ -1598,7 +1598,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 207)
 
 module_eval(<<'.,.,', 'systemrdl.y', 214)
   def _reduce_82(val, _values, result)
-            val[1].replace_range(to_token_range(val))
+            result = val[1].replace_range(to_token_range(val))
 
     result
   end

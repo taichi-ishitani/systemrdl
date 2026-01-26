@@ -212,7 +212,7 @@ rule
     | constant_concatenation
     | constant_multiple_concatenation
     | "(" constant_expression ")" {
-        val[1].replace_range(to_token_range(val))
+        result = val[1].replace_range(to_token_range(val))
       }
     | instance_or_prop_ref
   primary_literal
