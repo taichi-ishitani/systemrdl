@@ -5,10 +5,9 @@ module SystemRDL
     class Parser < GeneratedParser
       include RaiseParseError
 
-      def initialize(scanner, debug: false, test: false)
+      def initialize(scanner, debug: false)
         @scanner = scanner
         @yydebug = debug
-        @test = test
         super()
       end
 
@@ -62,10 +61,6 @@ module SystemRDL
           tail_token = (head.is_a?(Node) && head.range.tail) || tail
           TokenRange.new(head_token, tail_token)
         end
-      end
-
-      def test?
-        @test
       end
     end
   end

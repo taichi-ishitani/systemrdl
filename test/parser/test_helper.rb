@@ -19,6 +19,14 @@ module SystemRDL
         assert_equal(ast, result)
       end
 
+      def assert_parses_expression(ast, code)
+        assert_parses(ast, code, test: :constant_expression)
+      end
+
+      def assert_parses_prop_assignment(ast, code)
+        assert_parses(ast, code, test: :property_assignment)
+      end
+
       def assert_raises_parse_error(code, **optargs)
         assert_raises(SystemRDL::ParseError) do
           SystemRDL::Parser.parse(code, **optargs)

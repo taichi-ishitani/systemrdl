@@ -31,7 +31,7 @@ module SystemRDL
             '[', ']', '(', ')', '{', '}',
             '!', '&&', '||', '<', '>', '<=', '>=', '==', '!=', '>>', '<<',
             '~', '&', '~&', '|', '~|', '^', '~^', '^~', '*', '/', '%', '+', '-', '**',
-            '?', ':', '->', '.', ',', "'"
+            '?', ':', '->', '.', ',', "'", ';', '='
           ]
           patterns
             .sort_by(&:size)
@@ -55,15 +55,22 @@ module SystemRDL
         /\d[\d_]*/ => :NUMBER
       }.freeze
 
-      def initialize(code, filename)
+      def initialize(code, filename, test)
         @ss = StringScanner.new(code)
         @filename = filename
         @line = 1
         @column = 1
+        @control_tokens = []
+        @control_tokens << create_test_token(test) if test
       end
 
       def next_token
-        token = scan_next_token
+        token =
+          if @control_tokens.empty?
+            scan_next_token
+          else
+            @control_tokens.shift
+          end
         token && [token.kind, token]
       end
 
@@ -122,6 +129,11 @@ module SystemRDL
       def create_token(kind, text, line, column)
         position = Position.new(@filename, line, column)
         Token.new(text, kind, position)
+      end
+
+      def create_test_token(test)
+        kind = :"__test_#{test}__".upcase
+        create_token(kind, '', @line, @column)
       end
 
       def current_position

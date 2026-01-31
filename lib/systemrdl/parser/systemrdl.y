@@ -14,11 +14,15 @@ token
   TYPE UNSIGNED W W1 WCLR
   WOCLR WOSET WOT WR WSET
   WUSER WZC WZS WZT
-  # Other tokens
+  # Literal
   STRING
   NUMBER
   VERILOG_NUMBER
+  # Identifier
   SIMPLE_ID
+  # Conrol tokens for test
+  __TEST_PROPERTY_ASSIGNMENT__
+  __TEST_CONSTANT_EXPRESSION__
 
 prechigh
   nonassoc UOP
@@ -38,14 +42,86 @@ preclow
 
 rule
   root
-    : test_expression
+    : __TEST_PROPERTY_ASSIGNMENT__ property_assignment {
+        result = val[1]
+      }
+    | __TEST_CONSTANT_EXPRESSION__ constant_expression {
+        result = val[1]
+      }
 
-  test_expression
-    : constant_expression {
-        unless test?
-          parse_error(val[0].range.head)
-        end
-        result = val[0]
+  #
+  # B.8 Property assignment
+  #
+  property_assignment
+    : DEFAULT prop_mod id ";" {
+        result = node(:default_prop_modifier, val[1..2], val)
+      }
+    | prop_mod id ";" {
+        result = node(:prop_modifier, val[0..1], val)
+      }
+    | DEFAULT prop_assignment_lhs ";" {
+        result = node(:default_prop_assignment, [val[1]], val)
+      }
+    | prop_assignment_lhs ";" {
+        result = node(:prop_assignment, [val[0]], val)
+      }
+    | DEFAULT prop_assignment_lhs "=" prop_assignment_rhs ";" {
+        result = node(:default_prop_assignment, [val[1], val[3]], val)
+      }
+    | prop_assignment_lhs "=" prop_assignment_rhs ";" {
+        result = node(:prop_assignment, [val[0], val[2]], val)
+      }
+    | DEFAULT encode "=" id ";" {
+        result = node(:default_prop_assignment, [val[1], val[3]], val)
+      }
+    | encode "=" id ";" {
+        result = node(:prop_assignment, [val[0], val[2]], val)
+      }
+    | prop_ref ";" {
+        result = node(:post_prop_assignment, [val[0]], val)
+      }
+    | prop_ref "=" prop_assignment_rhs ";" {
+        result = node(:post_prop_assignment, [val[0], val[2]], val)
+      }
+    | encode_ref "=" id ";" {
+        result = node(:post_prop_assignment, [val[0], val[2]], val)
+      }
+  prop_mod
+    : POSEDGE | NEGEDGE | BOTHEDGE | LEVEL | NONSTICKY
+  prop_assignment_lhs
+    : id
+    | prop_keyword
+  prop_keyword
+    : SW {
+        result = node(:id, val, val)
+      }
+    | HW {
+        result = node(:id, val, val)
+      }
+    | RCLR {
+        result = node(:id, val, val)
+      }
+    | RSET {
+        result = node(:id, val, val)
+      }
+    | WOCLR {
+        result = node(:id, val, val)
+      }
+    | WOSET {
+        result = node(:id, val, val)
+      }
+  prop_assignment_rhs
+    : constant_expression
+    | precedencetype_literal {
+        result = node(:precedence_type, val, val)
+      }
+  encode
+    : ENCODE {
+        result = node(:id, val, val)
+      }
+  encode_ref
+    : instance_ref "->" encode {
+        result = node(:prop_ref, [val[0], val[2]], val)
       }
 
   #
@@ -57,6 +133,9 @@ rule
       }
   prop_ref
     : instance_ref "->" id {
+        result = node(:prop_ref, [val[0], val[2]], val)
+      }
+    | instance_ref "->" prop_keyword {
         result = node(:prop_ref, [val[0], val[2]], val)
       }
   instance_or_prop_ref
@@ -251,9 +330,6 @@ rule
       }
     | addressingtype_literal {
         result = node(:addressing_type, val, val)
-      }
-    | precedencetype_literal {
-        result = node(:precedence_type, val, val)
       }
     | THIS {
         result = node(:this, val, val)

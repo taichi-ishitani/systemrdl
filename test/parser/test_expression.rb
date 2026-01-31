@@ -7,26 +7,26 @@ module SystemRDL
     class ExpressionTest < TestCase
       def test_this
         code = 'this'
-        assert_parses(s(:this, 'this'), code, test: true)
+        assert_parses_expression(s(:this, 'this'), code)
       end
 
       def test_concatenation
         code = "{a, b, 3'b101, c}"
-        assert_parses(
+        assert_parses_expression(
           s(:concatenation,
             reference('a'), reference('b'), verilog_number("3'b101"), reference('c')
           ),
-          code, test: true
+          code
         )
 
         code = '{4{a}}'
-        assert_parses(
+        assert_parses_expression(
           s(:replication, number(4), s(:concatenation, reference('a'))),
-          code, test: true
+          code
         )
 
         code = '{a, {3{b, c}}}'
-        assert_parses(
+        assert_parses_expression(
           s(:concatenation,
             reference('a'),
             s(:replication,
@@ -34,485 +34,485 @@ module SystemRDL
               s(:concatenation, reference('b'), reference('c'))
             )
           ),
-          code, test: true
+          code
         )
       end
 
       def test_constant_cast
         code = "boolean'(1+2)"
-        assert_parses(
+        assert_parses_expression(
           cast(data_type(:boolean), bop('+', number(1), number(2))),
-          code, test: true
+          code
         )
 
         code = "bit'(1+2)"
-        assert_parses(
+        assert_parses_expression(
           cast(data_type(:bit), bop('+', number(1), number(2))),
-          code, test: true
+          code
         )
 
         code = "longint'(1+2)"
-        assert_parses(
+        assert_parses_expression(
           cast(data_type(:longint), bop('+', number(1), number(2))),
-          code, test: true
+          code
         )
 
         code = "17'(1+2)"
-        assert_parses(
+        assert_parses_expression(
           cast(number(17), bop('+', number(1), number(2))),
-          code, test: true
+          code
         )
 
         code = "(10+7)'(1+2)"
-        assert_parses(
+        assert_parses_expression(
           cast(bop('+', number(10), number(7)), bop('+', number(1), number(2))),
-          code, test: true
+          code
         )
 
         code = "17'(1+2)'(3+4)"
-        assert_parses(
+        assert_parses_expression(
           cast(
             cast(number(17), bop('+', number(1), number(2))),
             bop('+', number(3), number(4))
           ),
-          code, test: true
+          code
         )
 
         code = "longint'(1+2)'(3+4)"
-        assert_parses(
+        assert_parses_expression(
           cast(
             cast(data_type(:longint), bop('+', number(1), number(2))),
             bop('+', number(3), number(4))
           ),
-          code, test: true
+          code
         )
       end
 
       def test_unary_operation
         code = '!a'
-        assert_parses(uop('!', reference('a')), code, test: true)
+        assert_parses_expression(uop('!', reference('a')), code)
         code = '!true'
-        assert_parses(uop('!', boolean(true)), code, test: true)
+        assert_parses_expression(uop('!', boolean(true)), code)
 
         code = '+a'
-        assert_parses(uop('+', reference('a')), code, test: true)
+        assert_parses_expression(uop('+', reference('a')), code)
         code = "+8'hab"
-        assert_parses(uop('+', verilog_number("8'hab")), code, test: true)
+        assert_parses_expression(uop('+', verilog_number("8'hab")), code)
 
         code = '~a'
-        assert_parses(uop('~', reference('a')), code, test: true)
+        assert_parses_expression(uop('~', reference('a')), code)
         code = "~8'hab"
-        assert_parses(uop('~', verilog_number("8'hab")), code, test: true)
+        assert_parses_expression(uop('~', verilog_number("8'hab")), code)
 
         code = '&a'
-        assert_parses(uop('&', reference('a')), code, test: true)
+        assert_parses_expression(uop('&', reference('a')), code)
         code = "&8'hab"
-        assert_parses(uop('&', verilog_number("8'hab")), code, test: true)
+        assert_parses_expression(uop('&', verilog_number("8'hab")), code)
 
         code = '~&a'
-        assert_parses(uop('~&', reference('a')), code, test: true)
+        assert_parses_expression(uop('~&', reference('a')), code)
         code = "~&8'hab"
-        assert_parses(uop('~&', verilog_number("8'hab")), code, test: true)
+        assert_parses_expression(uop('~&', verilog_number("8'hab")), code)
 
         code = '|a'
-        assert_parses(uop('|', reference('a')), code, test: true)
+        assert_parses_expression(uop('|', reference('a')), code)
         code = "|8'hab"
-        assert_parses(uop('|', verilog_number("8'hab")), code, test: true)
+        assert_parses_expression(uop('|', verilog_number("8'hab")), code)
 
         code = '~|a'
-        assert_parses(uop('~|', reference('a')), code, test: true)
+        assert_parses_expression(uop('~|', reference('a')), code)
         code = "~|8'hab"
-        assert_parses(uop('~|', verilog_number("8'hab")), code, test: true)
+        assert_parses_expression(uop('~|', verilog_number("8'hab")), code)
 
         code = '^a'
-        assert_parses(uop('^', reference('a')), code, test: true)
+        assert_parses_expression(uop('^', reference('a')), code)
         code = "^8'hab"
-        assert_parses(uop('^', verilog_number("8'hab")), code, test: true)
+        assert_parses_expression(uop('^', verilog_number("8'hab")), code)
 
         code = '~^a'
-        assert_parses(uop('~^', reference('a')), code, test: true)
+        assert_parses_expression(uop('~^', reference('a')), code)
         code = "~^8'hab"
-        assert_parses(uop('~^', verilog_number("8'hab")), code, test: true)
+        assert_parses_expression(uop('~^', verilog_number("8'hab")), code)
 
         code = '^~a'
-        assert_parses(uop('^~', reference('a')), code, test: true)
+        assert_parses_expression(uop('^~', reference('a')), code)
         code = "^~8'hab"
-        assert_parses(uop('^~', verilog_number("8'hab")), code, test: true)
+        assert_parses_expression(uop('^~', verilog_number("8'hab")), code)
       end
 
       def test_binary_operation
         code = 'a && b'
-        assert_parses(bop('&&', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('&&', reference('a'), reference('b')), code)
         code = 'true && true'
-        assert_parses(bop('&&', boolean(true), boolean(true)), code, test: true)
+        assert_parses_expression(bop('&&', boolean(true), boolean(true)), code)
         code = 'true && true && false'
-        assert_parses(
+        assert_parses_expression(
           bop('&&', bop('&&', boolean(true), boolean(true)), boolean(false)),
-          code, test: true
+          code
         )
 
         code = 'a || b'
-        assert_parses(bop('||', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('||', reference('a'), reference('b')), code)
         code = 'true || true'
-        assert_parses(bop('||', boolean(true), boolean(true)), code, test: true)
+        assert_parses_expression(bop('||', boolean(true), boolean(true)), code)
         code = 'true || true || false'
-        assert_parses(
+        assert_parses_expression(
           bop('||', bop('||', boolean(true), boolean(true)), boolean(false)),
-          code, test: true
+          code
         )
 
         code = 'a < b'
-        assert_parses(bop('<', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('<', reference('a'), reference('b')), code)
         code = '123 < 456'
-        assert_parses(bop('<', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('<', number(123), number(456)), code)
         code = '123 < 456 < 789'
-        assert_parses(
+        assert_parses_expression(
           bop('<', bop('<', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a > b'
-        assert_parses(bop('>', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('>', reference('a'), reference('b')), code)
         code = '123 > 456'
-        assert_parses(bop('>', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('>', number(123), number(456)), code)
         code = '123 > 456 > 789'
-        assert_parses(
+        assert_parses_expression(
           bop('>', bop('>', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a <= b'
-        assert_parses(bop('<=', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('<=', reference('a'), reference('b')), code)
         code = '123 <= 456'
-        assert_parses(bop('<=', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('<=', number(123), number(456)), code)
         code = '123 <= 456 <= 789'
-        assert_parses(
+        assert_parses_expression(
           bop('<=', bop('<=', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a >= b'
-        assert_parses(bop('>=', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('>=', reference('a'), reference('b')), code)
         code = '123 >= 456'
-        assert_parses(bop('>=', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('>=', number(123), number(456)), code)
         code = '123 >= 456 >= 789'
-        assert_parses(
+        assert_parses_expression(
           bop('>=', bop('>=', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a == b'
-        assert_parses(bop('==', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('==', reference('a'), reference('b')), code)
         code = '123 == 456'
-        assert_parses(bop('==', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('==', number(123), number(456)), code)
         code = '123 == 456 == 789'
-        assert_parses(
+        assert_parses_expression(
           bop('==', bop('==', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a != b'
-        assert_parses(bop('!=', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('!=', reference('a'), reference('b')), code)
         code = '123 != 456'
-        assert_parses(bop('!=', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('!=', number(123), number(456)), code)
         code = '123 != 456 != 789'
-        assert_parses(
+        assert_parses_expression(
           bop('!=', bop('!=', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a >> b'
-        assert_parses(bop('>>', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('>>', reference('a'), reference('b')), code)
         code = '123 >> 456'
-        assert_parses(bop('>>', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('>>', number(123), number(456)), code)
         code = '123 >> 456 >> 789'
-        assert_parses(
+        assert_parses_expression(
           bop('>>', bop('>>', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a << b'
-        assert_parses(bop('<<', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('<<', reference('a'), reference('b')), code)
         code = '123 << 456'
-        assert_parses(bop('<<', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('<<', number(123), number(456)), code)
         code = '123 << 456 << 789'
-        assert_parses(
+        assert_parses_expression(
           bop('<<', bop('<<', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a & b'
-        assert_parses(bop('&', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('&', reference('a'), reference('b')), code)
         code = '123 & 456'
-        assert_parses(bop('&', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('&', number(123), number(456)), code)
         code = '123 & 456 & 789'
-        assert_parses(
+        assert_parses_expression(
           bop('&', bop('&', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a | b'
-        assert_parses(bop('|', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('|', reference('a'), reference('b')), code)
         code = '123 | 456'
-        assert_parses(bop('|', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('|', number(123), number(456)), code)
         code = '123 | 456 | 789'
-        assert_parses(
+        assert_parses_expression(
           bop('|', bop('|', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a ^ b'
-        assert_parses(bop('^', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('^', reference('a'), reference('b')), code)
         code = '123 ^ 456'
-        assert_parses(bop('^', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('^', number(123), number(456)), code)
         code = '123 ^ 456 ^ 789'
-        assert_parses(
+        assert_parses_expression(
           bop('^', bop('^', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a ~^ b'
-        assert_parses(bop('~^', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('~^', reference('a'), reference('b')), code)
         code = '123 ~^ 456'
-        assert_parses(bop('~^', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('~^', number(123), number(456)), code)
         code = '123 ~^ 456 ~^ 789'
-        assert_parses(
+        assert_parses_expression(
           bop('~^', bop('~^', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a ^~ b'
-        assert_parses(bop('^~', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('^~', reference('a'), reference('b')), code)
         code = '123 ^~ 456'
-        assert_parses(bop('^~', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('^~', number(123), number(456)), code)
         code = '123 ^~ 456 ^~ 789'
-        assert_parses(
+        assert_parses_expression(
           bop('^~', bop('^~', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a * b'
-        assert_parses(bop('*', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('*', reference('a'), reference('b')), code)
         code = '123 * 456'
-        assert_parses(bop('*', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('*', number(123), number(456)), code)
         code = '123 * 456 * 789'
-        assert_parses(
+        assert_parses_expression(
           bop('*', bop('*', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a / b'
-        assert_parses(bop('/', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('/', reference('a'), reference('b')), code)
         code = '123 / 456'
-        assert_parses(bop('/', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('/', number(123), number(456)), code)
         code = '123 / 456 / 789'
-        assert_parses(
+        assert_parses_expression(
           bop('/', bop('/', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a % b'
-        assert_parses(bop('%', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('%', reference('a'), reference('b')), code)
         code = '123 % 456'
-        assert_parses(bop('%', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('%', number(123), number(456)), code)
         code = '123 % 456 % 789'
-        assert_parses(
+        assert_parses_expression(
           bop('%', bop('%', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a + b'
-        assert_parses(bop('+', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('+', reference('a'), reference('b')), code)
         code = '123 + 456'
-        assert_parses(bop('+', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('+', number(123), number(456)), code)
         code = '123 + 456 + 789'
-        assert_parses(
+        assert_parses_expression(
           bop('+', bop('+', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a - b'
-        assert_parses(bop('-', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('-', reference('a'), reference('b')), code)
         code = '123 - 456'
-        assert_parses(bop('-', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('-', number(123), number(456)), code)
         code = '123 - 456 - 789'
-        assert_parses(
+        assert_parses_expression(
           bop('-', bop('-', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
 
         code = 'a ** b'
-        assert_parses(bop('**', reference('a'), reference('b')), code, test: true)
+        assert_parses_expression(bop('**', reference('a'), reference('b')), code)
         code = '123 ** 456'
-        assert_parses(bop('**', number(123), number(456)), code, test: true)
+        assert_parses_expression(bop('**', number(123), number(456)), code)
         code = '123 ** 456 ** 789'
-        assert_parses(
+        assert_parses_expression(
           bop('**', bop('**', number(123), number(456)), number(789)),
-          code, test: true
+          code
         )
       end
 
       def test_conditional_operation
         code = 'a ? b : c'
-        assert_parses(
+        assert_parses_expression(
           cop(reference('a'), reference('b'), reference('c')),
-          code, test: true
+          code
         )
 
         code = '1 ? 2 : 3'
-        assert_parses(
+        assert_parses_expression(
           cop(number(1), number(2), number(3)),
-          code, test: true
+          code
         )
 
         code = '1 ? 2 : 3 ? 4 : 5'
-        assert_parses(
+        assert_parses_expression(
           cop(number(1), number(2), cop(number(3), number(4), number(5))),
-          code, test: true
+          code
         )
 
         code = '1 ? 2 ? 3 : 4 : 5 ? 6 : 7'
-        assert_parses(
+        assert_parses_expression(
           cop(
             number(1),
             cop(number(2), number(3), number(4)),
             cop(number(5), number(6), number(7))
           ),
-          code, test: true
+          code
         )
       end
 
       def test_operator_precedence
         code = '+1**2'
-        assert_parses(
+        assert_parses_expression(
           bop('**', uop('+', number(1)), number(2)),
-          code, test: true
+          code
         )
         code = '+(1**2)'
-        assert_parses(
+        assert_parses_expression(
           uop('+', bop('**', number(1), number(2))),
-          code, test: true
+          code
         )
 
         code = '1*2**3'
-        assert_parses(
+        assert_parses_expression(
           bop('*', number(1), bop('**', number(2), number(3))),
-          code, test: true
+          code
         )
         code = '(1*2)**3'
-        assert_parses(
+        assert_parses_expression(
           bop('**', bop('*', number(1), number(2)), number(3)),
-          code, test: true
+          code
         )
 
         code = '1+2*3'
-        assert_parses(
+        assert_parses_expression(
           bop('+', number(1), bop('*', number(2), number(3))),
-          code, test: true
+          code
         )
         code = '(1+2)*3'
-        assert_parses(
+        assert_parses_expression(
           bop('*', bop('+', number(1), number(2)), number(3)),
-          code, test: true
+          code
         )
 
         code = '1<<2+3'
-        assert_parses(
+        assert_parses_expression(
           bop('<<', number(1), bop('+', number(2), number(3))),
-          code, test: true
+          code
         )
         code = '(1<<2)+3'
-        assert_parses(
+        assert_parses_expression(
           bop('+', bop('<<', number(1), number(2)), number(3)),
-          code, test: true
+          code
         )
 
         code = '1<2<<3'
-        assert_parses(
+        assert_parses_expression(
           bop('<', number(1), bop('<<', number(2), number(3))),
-          code, test: true
+          code
         )
         code = '(1<2)<<3'
-        assert_parses(
+        assert_parses_expression(
           bop('<<', bop('<', number(1), number(2)), number(3)),
-          code, test: true
+          code
         )
 
         code = '1==2<3'
-        assert_parses(
+        assert_parses_expression(
           bop('==', number(1), bop('<', number(2), number(3))),
-          code, test: true
+          code
         )
         code = '(1==2)<3'
-        assert_parses(
+        assert_parses_expression(
           bop('<', bop('==', number(1), number(2)), number(3)),
-          code, test: true
+          code
         )
 
         code = '1&2==3'
-        assert_parses(
+        assert_parses_expression(
           bop('&', number(1), bop('==', number(2), number(3))),
-          code, test: true
+          code
         )
         code = '(1&2)==3'
-        assert_parses(
+        assert_parses_expression(
           bop('==', bop('&', number(1), number(2)), number(3)),
-          code, test: true
+          code
         )
 
         code = '1^2&3'
-        assert_parses(
+        assert_parses_expression(
           bop('^', number(1), bop('&', number(2), number(3))),
-          code, test: true
+          code
         )
         code = '(1^2)&3'
-        assert_parses(
+        assert_parses_expression(
           bop('&', bop('^', number(1), number(2)), number(3)),
-          code, test: true
+          code
         )
 
         code = '1|2^3'
-        assert_parses(
+        assert_parses_expression(
           bop('|', number(1), bop('^', number(2), number(3))),
-          code, test: true
+          code
         )
         code = '(1|2)^3'
-        assert_parses(
+        assert_parses_expression(
           bop('^', bop('|', number(1), number(2)), number(3)),
-          code, test: true
+          code
         )
 
         code = '1&&2|3'
-        assert_parses(
+        assert_parses_expression(
           bop('&&', number(1), bop('|', number(2), number(3))),
-          code, test: true
+          code
         )
         code = '(1&&2)|3'
-        assert_parses(
+        assert_parses_expression(
           bop('|', bop('&&', number(1), number(2)), number(3)),
-          code, test: true
+          code
         )
 
         code = '1||2&&3'
-        assert_parses(
+        assert_parses_expression(
           bop('||', number(1), bop('&&', number(2), number(3))),
-          code, test: true
+          code
         )
         code = '(1||2)&&3'
-        assert_parses(
+        assert_parses_expression(
           bop('&&', bop('||', number(1), number(2)), number(3)),
-          code, test: true
+          code
         )
 
         code = '1||2?3:4'
-        assert_parses(
+        assert_parses_expression(
           cop(bop('||', number(1), number(2)), number(3), number(4)),
-          code, test: true
+          code
         )
         code = '1||(2?3:4)'
-        assert_parses(
+        assert_parses_expression(
           bop('||', number(1), cop(number(2), number(3), number(4))),
-          code, test: true
+          code
         )
       end
 
