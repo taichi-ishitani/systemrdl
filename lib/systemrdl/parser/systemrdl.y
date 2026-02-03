@@ -42,11 +42,50 @@ preclow
 
 rule
   root
-    : __TEST_PROPERTY_ASSIGNMENT__ property_assignment {
+    : component_def
+    | __TEST_PROPERTY_ASSIGNMENT__ property_assignment {
         result = val[1]
       }
     | __TEST_CONSTANT_EXPRESSION__ constant_expression {
         result = val[1]
+      }
+
+  #
+  # B.3 Component definition
+  #
+  component_def
+    : component_type id "{" component_body_elem* "}" component_insts ";" {
+        result = node(:component_named_def, [val[0], val[1], *val[3], val[5]], val)
+      }
+    | component_type id "{" component_body_elem* "}" ";" {
+        result = node(:component_named_def, [val[0], val[1], *val[3]], val)
+      }
+    | component_type "{" component_body_elem* "}" component_insts ";" {
+        result = node(:component_anon_def, [val[0], *val[2], val[4]], val)
+      }
+  component_body_elem
+    : component_def
+    | property_assignment
+  component_type
+    : ADDRMAP | REGFILE | REG | FIELD | MEM
+  component_insts
+    : component_inst ("," component_inst)* {
+        result = node(:component_insts, to_list(val, include_separator: true), val)
+      }
+  component_inst
+    : id component_inst_array_or_range? reset_value? {
+        result = component_inst_node(val)
+      }
+  component_inst_array_or_range
+    : array+ {
+        result = [val[0], nil]
+      }
+    | range {
+        result = [nil, val[0]]
+      }
+  reset_value
+    : "=" constant_expression {
+        result = node(:reset_value, [val[1]], val)
       }
 
   #
@@ -149,6 +188,10 @@ rule
   #
   # B.12 Array and range
   #
+  range
+    : "[" constant_expression ":" constant_expression "]" {
+        result = node(:range, [val[1], val[3]], val)
+      }
   array
     : "[" constant_expression "]" {
         result = node(:array, [val[1]], val)
