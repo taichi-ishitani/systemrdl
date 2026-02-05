@@ -5,6 +5,10 @@ module SystemRDL
     class Node < AST::Node
       attr_reader :range
 
+      def replace_type(type)
+        updated(type, nil, nil)
+      end
+
       def replace_range(range)
         updated(nil, nil, { range: range })
       end

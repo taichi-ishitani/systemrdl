@@ -44,10 +44,8 @@ module SystemRDL
       end
 
       def component_inst_node(values)
-        id = values[0]
         array, range = values[1]
-        reset_value = values[2]
-        node(:component_inst, [id, *array, range, reset_value].compact, values)
+        node(:component_inst, [values[0], *array, range, *values[2..]].compact, values)
       end
 
       def uop_node(values)

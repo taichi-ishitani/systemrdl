@@ -31,7 +31,7 @@ module SystemRDL
             '[', ']', '(', ')', '{', '}',
             '!', '&&', '||', '<', '>', '<=', '>=', '==', '!=', '>>', '<<',
             '~', '&', '~&', '|', '~|', '^', '~^', '^~', '*', '/', '%', '+', '-', '**',
-            '?', ':', '->', '.', ',', "'", ';', '='
+            '?', ':', '->', '.', ',', "'", ';', '=', '@', '+=', '%='
           ]
           patterns
             .sort_by(&:size)
@@ -141,20 +141,11 @@ module SystemRDL
       end
 
       def scan_next_token
+        skip_blank
         return if eos?
 
-        skip_blank
-
-        token = scan_string
-        return token if token
-
-        token = scan_number
-        return token if token
-
-        token = scan_symbol
-        return token if token
-
-        token = scan_word
+        token =
+          scan_string || scan_number || scan_symbol || scan_word
         return token if token
 
         char = peek_char
@@ -162,7 +153,7 @@ module SystemRDL
       end
 
       def skip_blank
-        scan(WHITE_SPACES)
+        eos? || scan(WHITE_SPACES)
       end
 
       def scan_string

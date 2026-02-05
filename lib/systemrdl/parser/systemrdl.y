@@ -57,23 +57,44 @@ rule
     : component_type id "{" component_body_elem* "}" component_insts ";" {
         result = node(:component_named_def, [val[0], val[1], *val[3], val[5]], val)
       }
+    | component_type id "{" component_body_elem* "}" EXTERNAL component_insts ";" {
+        insts = val[6].replace_type(:external_component_insts)
+        result = node(:component_named_def, [val[0], val[1], *val[3], insts], val)
+      }
+    | EXTERNAL component_type id "{" component_body_elem* "}" component_insts ";" {
+        insts = val[6].replace_type(:external_component_insts)
+        result = node(:component_named_def, [val[1], val[2], *val[4], insts], val)
+      }
     | component_type id "{" component_body_elem* "}" ";" {
         result = node(:component_named_def, [val[0], val[1], *val[3]], val)
       }
     | component_type "{" component_body_elem* "}" component_insts ";" {
         result = node(:component_anon_def, [val[0], *val[2], val[4]], val)
       }
+    | component_type "{" component_body_elem* "}" EXTERNAL component_insts ";" {
+        insts = val[5].replace_type(:external_component_insts)
+        result = node(:component_anon_def, [val[0], *val[2], insts], val)
+      }
+    | EXTERNAL component_type "{" component_body_elem* "}" component_insts ";" {
+        insts = val[5].replace_type(:external_component_insts)
+        result = node(:component_anon_def, [val[1], *val[3], insts], val)
+      }
   component_body_elem
     : component_def
     | property_assignment
+    | explicit_component_inst
   component_type
     : ADDRMAP | REGFILE | REG | FIELD | MEM
+  explicit_component_inst
+    : id component_insts ";" {
+        result = node(:explicit_component_inst, val[0..1], val)
+      }
   component_insts
     : component_inst ("," component_inst)* {
         result = node(:component_insts, to_list(val, include_separator: true), val)
       }
   component_inst
-    : id component_inst_array_or_range? reset_value? {
+    : id component_inst_array_or_range? reset_value? address_assignment? address_stride? address_alignment? {
         result = component_inst_node(val)
       }
   component_inst_array_or_range
@@ -86,6 +107,18 @@ rule
   reset_value
     : "=" constant_expression {
         result = node(:reset_value, [val[1]], val)
+      }
+  address_assignment
+    : "@" constant_expression {
+        result = node(:address_assignment, [val[1]], val)
+      }
+  address_stride
+    : "+=" constant_expression {
+        result = node(:address_stride, [val[1]], val)
+      }
+  address_alignment
+    : "%=" constant_expression {
+        result = node(:address_alignment, [val[1]], val)
       }
 
   #
