@@ -246,6 +246,126 @@ module SystemRDL
         )
       end
 
+      def test_register_file_component
+        code = <<~'RF'
+          regfile fifo_rfile {
+            alignment = 8;
+            reg {field {} a;} a;
+            reg {field {} b;} b;
+          };
+        RF
+        assert_parses(
+          regfile_named_definition(
+            id(:fifo_rfile),
+            prop_assignment(:alignment, number(8)),
+            reg_anonymous_definition(
+              field_anonymous_definition(component_insts(component_inst(:a))),
+              component_insts(component_inst(:a))
+            ),
+            reg_anonymous_definition(
+              field_anonymous_definition(component_insts(component_inst(:b))),
+              component_insts(component_inst(:b))
+            )
+          ),
+          code
+        )
+
+        code = <<~'RF'
+          regfile {
+            external fifo_rfile fifo_a;
+            external fifo_rfile fifo_b[64];
+            sharedextbus;
+          } top_regfile;
+        RF
+        assert_parses(
+          regfile_anonymous_definition(
+            explicit_component_inst(
+              :fifo_rfile,
+              external_component_insts(component_inst(:fifo_a))
+            ),
+            explicit_component_inst(
+              :fifo_rfile,
+              external_component_insts(component_inst(:fifo_b, array(64)))
+            ),
+            prop_assignment(:sharedextbus),
+            component_insts(component_inst(:top_regfile))
+          ),
+          code
+        )
+
+        code = <<~'RF'
+          external regfile {} a;
+        RF
+        assert_parses(
+          regfile_anonymous_definition(external_component_insts(component_inst(:a))),
+          code
+        )
+
+        code = <<~'RF'
+          internal regfile {} a;
+        RF
+        assert_parses(
+          regfile_anonymous_definition(internal_component_insts(component_inst(:a))),
+          code
+        )
+
+        code = <<~'RF'
+          regfile {} external a;
+        RF
+        assert_parses(
+          regfile_anonymous_definition(external_component_insts(component_inst(:a))),
+          code
+        )
+
+        code = <<~'RF'
+          regfile {} internal a;
+        RF
+        assert_parses(
+          regfile_anonymous_definition(internal_component_insts(component_inst(:a))),
+          code
+        )
+
+        code = <<~'RF'
+          external regfile rf {} a;
+        RF
+        assert_parses(
+          regfile_named_definition(id(:rf), external_component_insts(component_inst(:a))),
+          code
+        )
+
+        code = <<~'RF'
+          internal regfile rf {} a;
+        RF
+        assert_parses(
+          regfile_named_definition(id(:rf), internal_component_insts(component_inst(:a))),
+          code
+        )
+
+        code = <<~'RF'
+          regfile rf {} external a;
+        RF
+        assert_parses(
+          regfile_named_definition(id(:rf), external_component_insts(component_inst(:a))),
+          code
+        )
+
+        code = <<~'RF'
+          regfile rf {} internal a;
+        RF
+        assert_parses(
+          regfile_named_definition(id(:rf), internal_component_insts(component_inst(:a))),
+          code
+        )
+      end
+
+      def regfile_anonymous_definition(*children)
+        s(:component_anon_def, 'regfile', *children)
+      end
+
+      def regfile_named_definition(*children)
+        s(:component_named_def, 'regfile', *children)
+      end
+
       def reg_anonymous_definition(*children)
         s(:component_anon_def, 'reg', *children)
       end
@@ -272,6 +392,10 @@ module SystemRDL
 
       def external_component_insts(*children)
         s(:external_component_insts, *children)
+      end
+
+      def internal_component_insts(*children)
+        s(:internal_component_insts, *children)
       end
 
       def explicit_component_inst(component_name, insts)

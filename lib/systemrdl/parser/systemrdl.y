@@ -54,16 +54,16 @@ rule
   # B.3 Component definition
   #
   component_def
-    : component_type id "{" component_body_elem* "}" component_insts ";" {
-        result = node(:component_named_def, [val[0], val[1], *val[3], val[5]], val)
-      }
-    | component_type id "{" component_body_elem* "}" EXTERNAL component_insts ";" {
-        insts = val[6].replace_type(:external_component_insts)
+    : component_type id "{" component_body_elem* "}" component_inst_type component_insts ";" {
+        insts = component_insts_node(val[5], val[6])
         result = node(:component_named_def, [val[0], val[1], *val[3], insts], val)
       }
-    | EXTERNAL component_type id "{" component_body_elem* "}" component_insts ";" {
-        insts = val[6].replace_type(:external_component_insts)
-        result = node(:component_named_def, [val[1], val[2], *val[4], insts], val)
+    | component_type "{" component_body_elem* "}" component_inst_type component_insts ";" {
+        insts = component_insts_node(val[4], val[5])
+        result = node(:component_anon_def, [val[0], *val[2], insts], val)
+      }
+    | component_type id "{" component_body_elem* "}" component_insts ";" {
+        result = node(:component_named_def, [val[0], val[1], *val[3], val[5]], val)
       }
     | component_type id "{" component_body_elem* "}" ";" {
         result = node(:component_named_def, [val[0], val[1], *val[3]], val)
@@ -71,12 +71,12 @@ rule
     | component_type "{" component_body_elem* "}" component_insts ";" {
         result = node(:component_anon_def, [val[0], *val[2], val[4]], val)
       }
-    | component_type "{" component_body_elem* "}" EXTERNAL component_insts ";" {
-        insts = val[5].replace_type(:external_component_insts)
-        result = node(:component_anon_def, [val[0], *val[2], insts], val)
+    | component_inst_type component_type id "{" component_body_elem* "}" component_insts ";" {
+        insts = component_insts_node(val[0], val[6])
+        result = node(:component_named_def, [val[1], val[2], *val[4], insts], val)
       }
-    | EXTERNAL component_type "{" component_body_elem* "}" component_insts ";" {
-        insts = val[5].replace_type(:external_component_insts)
+    | component_inst_type component_type "{" component_body_elem* "}" component_insts ";" {
+        insts = component_insts_node(val[0], val[5])
         result = node(:component_anon_def, [val[1], *val[3], insts], val)
       }
   component_body_elem
@@ -87,8 +87,12 @@ rule
     : ADDRMAP | REGFILE | REG | FIELD | MEM
   explicit_component_inst
     : id component_insts ";" {
-        result = node(:explicit_component_inst, val[0..1], val)
+        result = node(:explicit_component_inst, val[..1], val)
       }
+    | component_inst_type id component_insts ";" {
+        insts = component_insts_node(val[0], val[2])
+        result = node(:explicit_component_inst, [val[1], insts], val)
+    }
   component_insts
     : component_inst ("," component_inst)* {
         result = node(:component_insts, to_list(val, include_separator: true), val)
@@ -96,13 +100,6 @@ rule
   component_inst
     : id component_inst_array_or_range? reset_value? address_assignment? address_stride? address_alignment? {
         result = component_inst_node(val)
-      }
-  component_inst_array_or_range
-    : array+ {
-        result = [val[0], nil]
-      }
-    | range {
-        result = [nil, val[0]]
       }
   reset_value
     : "=" constant_expression {
@@ -119,6 +116,16 @@ rule
   address_alignment
     : "%=" constant_expression {
         result = node(:address_alignment, [val[1]], val)
+      }
+  component_inst_type
+    : EXTERNAL
+    | INTERNAL
+  component_inst_array_or_range
+    : array+ {
+        result = [val[0], nil]
+      }
+    | range {
+        result = [nil, val[0]]
       }
 
   #

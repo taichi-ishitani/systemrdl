@@ -43,6 +43,13 @@ module SystemRDL
         Node.new(kind, children, { range: range })
       end
 
+      def component_insts_node(type, insts)
+        case type&.kind
+        when :EXTERNAL then insts.replace_type(:external_component_insts)
+        when :INTERNAL then insts.replace_type(:internal_component_insts)
+        end
+      end
+
       def component_inst_node(values)
         array, range = values[1]
         node(:component_inst, [values[0], *array, range, *values[2..]].compact, values)
