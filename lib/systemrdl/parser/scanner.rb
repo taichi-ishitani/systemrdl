@@ -47,12 +47,19 @@ module SystemRDL
 
       SYMBOLS = symbol_patterns
 
+      VERILOG_BIN_NUMBER = /(\d+)'[bB]([01][01_]*)/
+      VERILOG_DEC_NUMBER = /(\d+)'[dD](\d[\d_]*)/
+      VERILOG_HEX_NUMBER = /(\d+)'[hH](\h[\h_]*)/
+
+      DEC_NUMBER = /\d[\d_]*/
+      HEX_NUMBER = /0[xX]\h[\h_]*/
+
       NUMBERS = {
-        /\d+'[hH]\h[\h_]*/ => :VERILOG_NUMBER,
-        /\d+'[dD]\d[\d_]*/ => :VERILOG_NUMBER,
-        /\d+'[bB][01][01_]*/ => :VERILOG_NUMBER,
-        /0[xX]\h[\h_]*/ => :NUMBER,
-        /\d[\d_]*/ => :NUMBER
+        VERILOG_HEX_NUMBER => :VERILOG_NUMBER,
+        VERILOG_DEC_NUMBER => :VERILOG_NUMBER,
+        VERILOG_BIN_NUMBER => :VERILOG_NUMBER,
+        HEX_NUMBER => :NUMBER,
+        DEC_NUMBER => :NUMBER
       }.freeze
 
       def initialize(code, filename, test)

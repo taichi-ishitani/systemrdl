@@ -5,7 +5,6 @@ require 'ast'
 
 require_relative 'systemrdl/version'
 require_relative 'systemrdl/error'
-require_relative 'systemrdl/parser/raise_parse_error'
 require_relative 'systemrdl/parser/token'
 require_relative 'systemrdl/parser/scanner'
 require_relative 'systemrdl/parser/node'

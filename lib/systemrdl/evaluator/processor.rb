@@ -6,6 +6,14 @@ module SystemRDL
       def on_boolean(node)
         Boolean.new(node)
       end
+
+      def on_number(node)
+        Number.new(node)
+      end
+
+      def on_verilog_number(node)
+        Number.new(node)
+      end
     end
   end
 end

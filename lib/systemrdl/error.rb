@@ -18,4 +18,23 @@ module SystemRDL
 
   class ParseError < Error
   end
+
+  module RaiseParseError
+    private
+
+    def raise_parse_error(message, position)
+      raise ParseError.new(message, position)
+    end
+  end
+
+  class EvaluationError < Error
+  end
+
+  module RaiseEvaluationError
+    private
+
+    def raise_evaluation_error(message, position)
+      raise EvaluationError.new(message, position)
+    end
+  end
 end
