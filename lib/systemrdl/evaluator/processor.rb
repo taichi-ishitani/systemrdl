@@ -12,7 +12,7 @@ module SystemRDL
       end
 
       def on_verilog_number(node)
-        Number.new(node)
+        VerilogNumber.new(node)
       end
     end
   end

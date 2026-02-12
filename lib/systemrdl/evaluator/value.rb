@@ -9,7 +9,6 @@ module SystemRDL
         @node = node
       end
 
-      attr_reader :type
       attr_reader :value
 
       private
@@ -24,42 +23,50 @@ module SystemRDL
     end
 
     class Boolean < Value
-      def evaluate
-        @value = text == 'true'
-      end
-
       def type
         :boolean
+      end
+
+      def evaluate
+        @value = text == 'true'
       end
     end
 
     class Number < Value
-      def evaluate
-        @value, @width, @type =
-          if @node.type == :number
-            [Integer(text), 64, :longint]
-          else
-            parse_verilog_number
-          end
+      def type
+        :longint
       end
 
+      def width
+        64
+      end
+
+      def evaluate
+        @value = Integer(text)
+      end
+    end
+
+    class VerilogNumber < Value
       attr_reader :width
 
-      private
+      def type
+        :bit
+      end
 
-      def parse_verilog_number
+      def evaluate
         match_data, base =
           case text.tr('_', '')
           when Parser::Scanner::VERILOG_HEX_NUMBER then [Regexp.last_match, 16]
           when Parser::Scanner::VERILOG_DEC_NUMBER then [Regexp.last_match, 10]
           when Parser::Scanner::VERILOG_BIN_NUMBER then [Regexp.last_match, 2]
           end
-        width = match_data.captures[0].to_i
-        value = match_data.captures[1].to_i(base)
+        @width = match_data.captures[0].to_i
+        @value = match_data.captures[1].to_i(base)
 
-        check_bit_width(value, width)
-        [value, width, :bit]
+        check_bit_width(@value, @width)
       end
+
+      private
 
       def check_bit_width(value, width)
         return if value.bit_length <= width
