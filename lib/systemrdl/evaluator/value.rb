@@ -75,5 +75,60 @@ module SystemRDL
         raise_evaluation_error(message, token.position)
       end
     end
+
+    class String < Value
+      def type
+        :string
+      end
+
+      def evaluate
+        @value = text[1..-2]
+      end
+    end
+
+    class AccessType < Value
+      def type
+        :access_type
+      end
+
+      def evaluate
+        @value =
+          if ['rw', 'wr'].include?(text)
+            :rw
+          else
+            text.to_sym
+          end
+      end
+    end
+
+    class OnReadType < Value
+      def type
+        :on_read_type
+      end
+
+      def evaluate
+        @value = text.to_sym
+      end
+    end
+
+    class OnWriteType < Value
+      def type
+        :on_write_type
+      end
+
+      def evaluate
+        @value = text.to_sym
+      end
+    end
+
+    class AddressingType < Value
+      def type
+        :addressing_type
+      end
+
+      def evaluate
+        @value = text.to_sym
+      end
+    end
   end
 end
