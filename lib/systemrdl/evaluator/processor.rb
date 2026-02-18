@@ -34,6 +34,12 @@ module SystemRDL
       def on_addressing_type(node)
         AddressingType.new(node)
       end
+
+      def on_unary_operation(node)
+        operator = node.children[0].text.to_sym
+        operand = process(node.children[1])
+        UnaryOperation.new(operator, operand, node.range)
+      end
     end
   end
 end

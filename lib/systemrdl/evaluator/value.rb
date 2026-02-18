@@ -11,6 +11,10 @@ module SystemRDL
 
       attr_reader :value
 
+      def position
+        @node.range.head
+      end
+
       private
 
       def token
