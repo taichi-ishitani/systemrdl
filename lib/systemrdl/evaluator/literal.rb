@@ -2,7 +2,7 @@
 
 module SystemRDL
   module Evaluator
-    class Value
+    class Literal
       include RaiseEvaluationError
 
       def initialize(node)
@@ -26,7 +26,7 @@ module SystemRDL
       end
     end
 
-    class Boolean < Value
+    class Boolean < Literal
       def type
         :boolean
       end
@@ -36,7 +36,7 @@ module SystemRDL
       end
     end
 
-    class Number < Value
+    class Number < Literal
       def type
         :longint
       end
@@ -50,7 +50,7 @@ module SystemRDL
       end
     end
 
-    class VerilogNumber < Value
+    class VerilogNumber < Literal
       attr_reader :width
 
       def type
@@ -80,7 +80,7 @@ module SystemRDL
       end
     end
 
-    class String < Value
+    class String < Literal
       def type
         :string
       end
@@ -90,7 +90,7 @@ module SystemRDL
       end
     end
 
-    class AccessType < Value
+    class AccessType < Literal
       def type
         :access_type
       end
@@ -105,7 +105,7 @@ module SystemRDL
       end
     end
 
-    class OnReadType < Value
+    class OnReadType < Literal
       def type
         :on_read_type
       end
@@ -115,7 +115,7 @@ module SystemRDL
       end
     end
 
-    class OnWriteType < Value
+    class OnWriteType < Literal
       def type
         :on_write_type
       end
@@ -125,7 +125,7 @@ module SystemRDL
       end
     end
 
-    class AddressingType < Value
+    class AddressingType < Literal
       def type
         :addressing_type
       end
