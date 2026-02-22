@@ -38,7 +38,7 @@ module SystemRDL
 
     class Number < Literal
       def type
-        :longint
+        :bit
       end
 
       def width

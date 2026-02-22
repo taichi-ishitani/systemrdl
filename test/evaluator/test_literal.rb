@@ -20,12 +20,12 @@ module SystemRDL
       def test_number
         code = '0'
         assert_evaluates_value(
-          :longint, { value: 0, width: 64 }, code, test: :constant_expression
+          :bit, { value: 0, width: 64 }, code, test: :constant_expression
         )
 
         code = '0x45'
         assert_evaluates_value(
-          :longint, { value: 0x45, width: 64 }, code, test: :constant_expression
+          :bit, { value: 0x45, width: 64 }, code, test: :constant_expression
         )
 
         code = "4'd1"

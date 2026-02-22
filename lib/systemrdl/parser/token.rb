@@ -31,6 +31,10 @@ module SystemRDL
       attr_reader :kind
       attr_reader :position
 
+      def to_sym
+        text.to_sym
+      end
+
       def ==(other)
         text == ((other.is_a?(Token) && other.text) || other)
       end

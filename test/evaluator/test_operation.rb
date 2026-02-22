@@ -55,13 +55,13 @@ module SystemRDL
           ['0xFFFF_FFFF_FFFF_FFFF', [0xFFFF_FFFF_FFFF_FFFF, 0x0000_0000_0000_0001, 0x0000_0000_0000_0000]]
         ].each do |value, result|
           assert_evaluates_value(
-            :longint, { value: result[0], width: 64 }, "+#{value}", test: :constant_expression
+            :bit, { value: result[0], width: 64 }, "+#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :longint, { value: result[1], width: 64 }, "-#{value}", test: :constant_expression
+            :bit, { value: result[1], width: 64 }, "-#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :longint, { value: result[2], width: 64 }, "~#{value}", test: :constant_expression
+            :bit, { value: result[2], width: 64 }, "~#{value}", test: :constant_expression
           )
         end
 
@@ -137,6 +137,206 @@ module SystemRDL
               "#{operator}#{value}", message, test: :constant_expression
             )
           end
+        end
+      end
+
+      def test_binary_operation
+        ['true', '1', "1'b1"].product(['true', '1', "1'b1"]).each do |(lhs, rhs)|
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{lhs} && #{rhs}", test: :constant_expression
+          )
+        end
+
+        ['false', '0', "1'b0"].product(['false', '0', "1'b0", 'true', '1', "1'b1"]).each do |(lhs, rhs)|
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{lhs} && #{rhs}", test: :constant_expression
+          )
+        end
+
+        ['true', '1', "1'b1"].product(['false', '0', "1'b0", 'true', '1', "1'b1"]).each do |(lhs, rhs)|
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{lhs} || #{rhs}", test: :constant_expression
+          )
+        end
+
+        ['false', '0', "1'b0"].product(['false', '0', "1'b0"]).each do |(lhs, rhs)|
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{lhs} || #{rhs}", test: :constant_expression
+          )
+        end
+
+        ['true', "1'd1", "2'd2", '1', '2'].each do |value|
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{value} > 1'd0", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{value} > 0", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{value} < 1'd0", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{value} < 0", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "1'd0 < #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "0 < #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "1'd0 > #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "0 > #{value}", test: :constant_expression
+          )
+        end
+
+        ['false', "1'd0", '0'].each do |value|
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{value} > 1'd0", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{value} > 0", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{value} < 1'd0", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{value} < 0", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "1'd0> #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "0 > #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "1'd0 < #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "0 < #{value}", test: :constant_expression
+          )
+        end
+
+        ["2'd2", '2'].each do |value|
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{value} >= 1'd1", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{value} >= 1", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{value} <= 1'd1", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{value} <= 1", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "1'd1 <= #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "1 <= #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "1'd1 >= #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "1 >= #{value}", test: :constant_expression
+          )
+        end
+
+        ['true', "1'd1", '1'].each do |value|
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{value} >= 1'd1", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{value} >= 1", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{value} <= 1'd1", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{value} <= 1", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "1'd1 <= #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "1 <= #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "1'd1 >= #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "1 >= #{value}", test: :constant_expression
+          )
+        end
+
+        ['false', "1'd0", '0'].each do |value|
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{value} >= 1'd1", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{value} >= 1", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{value} <= 1'd1", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{value} <= 1", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "1'd1 <= #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "1 <= #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "1'd1 >= #{value}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "1 >= #{value}", test: :constant_expression
+          )
+        end
+
+        ['true', "1'd1", '1'].product(['true', "1'd1", '1']).each do |(lhs, rhs)|
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{lhs} == #{rhs}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{lhs} != #{rhs}", test: :constant_expression
+          )
+        end
+
+        ['false', "1'd0", '0', "2'd2", '2'].product(['true', "1'd1", '1']).each do |(lhs, rhs)|
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{lhs} == #{rhs}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{lhs} != #{rhs}", test: :constant_expression
+          )
+        end
+
+        [
+          ['na'     , ['na'     , 'rw'      ]],
+          ['rclr'   , ['rclr'   , 'rset'    ]],
+          ['woset'  , ['woset'  , 'woclr'   ]],
+          ['compact', ['compact', 'regalign']],
+          ['"foo"'  , ['"foo"'  , '"bar"'   ]]
+        ].each do |lhs, rhs|
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{lhs} == #{rhs[0]}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{lhs} != #{rhs[0]}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: false }, "#{lhs} == #{rhs[1]}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :boolean, { value: true }, "#{lhs} != #{rhs[1]}", test: :constant_expression
+          )
         end
       end
     end
