@@ -338,6 +338,184 @@ module SystemRDL
             :boolean, { value: true }, "#{lhs} != #{rhs[1]}", test: :constant_expression
           )
         end
+
+        [
+          ["3'd1", "65'd0", 1,  3],
+          ["3'd1", "65'd1", 2,  3],
+          ["3'd1", "65'd2", 4,  3],
+          ["3'd1", "65'd3", 0,  3],
+          ['1'   , "65'd0", 1, 64],
+          ['1'   , "65'd1", 2, 64],
+          ['1'   , "65'd2", 4, 64],
+          ['1'   , "65'd3", 8, 64]
+        ].each do |(lhs, rhs, result, width)|
+          assert_evaluates_value(
+            :bit, { value: result, width: }, "#{lhs} << #{rhs}", test: :constant_expression
+          )
+        end
+
+        [
+          ["3'd4", "65'd0", 4,  3],
+          ["3'd4", "65'd1", 2,  3],
+          ["3'd4", "65'd2", 1,  3],
+          ["3'd4", "65'd3", 0,  3],
+          ['4'   , "65'd0", 4, 64],
+          ['4'   , "65'd1", 2, 64],
+          ['4'   , "65'd2", 1, 64],
+          ['4'   , "65'd3", 0, 64]
+        ].each do |(lhs, rhs, result, width)|
+          assert_evaluates_value(
+            :bit, { value: result, width: }, "#{lhs} >> #{rhs}", test: :constant_expression
+          )
+        end
+
+        [
+          ["1'd0" , [0, 1, 3, 0                    , 0xFFFF_FFFF_FFFF_FFFC],  2],
+          ["1'd1" , [1, 1, 2, 1                    , 0xFFFF_FFFF_FFFF_FFFD],  2],
+          ["2'd2" , [2, 3, 1, 2                    , 0xFFFF_FFFF_FFFF_FFFE],  2],
+          ["2'd3" , [3, 3, 0, 3                    , 0xFFFF_FFFF_FFFF_FFFF],  2],
+          ["3'd4" , [0, 5, 7, 0                    , 0xFFFF_FFFF_FFFF_FFF8],  3],
+          ["3'd5" , [1, 5, 6, 1                    , 0xFFFF_FFFF_FFFF_FFF9],  3],
+          ["3'd6" , [2, 7, 5, 2                    , 0xFFFF_FFFF_FFFF_FFFA],  3],
+          ["3'd7" , [3, 7, 4, 3                    , 0xFFFF_FFFF_FFFF_FFFB],  3],
+          ['0'    , [0, 1, 3, 0xFFFF_FFFF_FFFF_FFFC, 0xFFFF_FFFF_FFFF_FFFC], 64],
+          ['1'    , [1, 1, 2, 0xFFFF_FFFF_FFFF_FFFD, 0xFFFF_FFFF_FFFF_FFFD], 64],
+          ['2'    , [2, 3, 1, 0xFFFF_FFFF_FFFF_FFFE, 0xFFFF_FFFF_FFFF_FFFE], 64],
+          ['3'    , [3, 3, 0, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF], 64],
+          ['4'    , [0, 5, 7, 0xFFFF_FFFF_FFFF_FFF8, 0xFFFF_FFFF_FFFF_FFF8], 64],
+          ['5'    , [1, 5, 6, 0xFFFF_FFFF_FFFF_FFF9, 0xFFFF_FFFF_FFFF_FFF9], 64],
+          ['6'    , [2, 7, 5, 0xFFFF_FFFF_FFFF_FFFA, 0xFFFF_FFFF_FFFF_FFFA], 64],
+          ['7'    , [3, 7, 4, 0xFFFF_FFFF_FFFF_FFFB, 0xFFFF_FFFF_FFFF_FFFB], 64],
+          ['false', [0, 1, 3, 0                    , 0xFFFF_FFFF_FFFF_FFFC],  2],
+          ['true' , [1, 1, 2, 1                    , 0xFFFF_FFFF_FFFF_FFFD],  2]
+        ].each do |rhs, results, width|
+          assert_evaluates_value(
+            :bit, { value: results[0], width: }, "2'd3 & #{rhs}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :bit, { value: results[0], width: 64 }, "3 & #{rhs}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :bit, { value: results[1], width: }, "2'd1 | #{rhs}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :bit, { value: results[1], width: 64 }, "1 | #{rhs}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :bit, { value: results[2], width: }, "2'd3 ^ #{rhs}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :bit, { value: results[2], width: 64 }, "3 ^ #{rhs}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :bit, { value: results[3], width: }, "2'd3 ^~ #{rhs}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :bit, { value: results[4], width: 64 }, "3 ^~ #{rhs}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :bit, { value: results[3], width: }, "2'd3 ~^ #{rhs}", test: :constant_expression
+          )
+          assert_evaluates_value(
+            :bit, { value: results[4], width: 64 }, "3 ~^ #{rhs}", test: :constant_expression
+          )
+        end
+
+        [
+          ["8'd128", "1'd0",   0,  8],
+          ["8'd128", "1'd1", 128,  8],
+          ["8'd128", "2'd2",   0,  8],
+          ['128'   , "1'd0",   0, 64],
+          ['128'   , "1'd1", 128, 64],
+          ['128'   , "2'd2", 256, 64],
+        ].each do |(lhs, rhs, result, width)|
+          assert_evaluates_value(
+            :bit, { value: result, width: }, "#{lhs} * #{rhs}", test: :constant_expression
+          )
+        end
+
+        [
+          ["3'd6", "2'd3", 2,  3],
+          ["3'd5", "2'd3", 1,  3],
+          ["3'd4", "2'd3", 1,  3],
+          ["2'd3", "2'd3", 1,  2],
+          ["2'd2", "2'd3", 0,  2],
+          ["1'd1", "2'd3", 0,  2],
+          ["1'd0", "2'd3", 0,  2],
+          ['6'   , "2'd3", 2, 64],
+          ['5'   , "2'd3", 1, 64],
+          ['4'   , "2'd3", 1, 64],
+          ['3'   , "2'd3", 1, 64],
+          ['2'   , "2'd3", 0, 64],
+          ['1'   , "2'd3", 0, 64],
+          ['0'   , "2'd3", 0, 64]
+        ].each do |(lhs, rhs, result, width)|
+          assert_evaluates_value(
+            :bit, { value: result, width: }, "#{lhs} / #{rhs}", test: :constant_expression
+          )
+        end
+
+        [
+          ["3'd6", "2'd3", 0,  3],
+          ["3'd5", "2'd3", 2,  3],
+          ["3'd4", "2'd3", 1,  3],
+          ["2'd3", "2'd3", 0,  2],
+          ["2'd2", "2'd3", 2,  2],
+          ["1'd1", "2'd3", 1,  2],
+          ["1'd0", "2'd3", 0,  2],
+          ['6'   , "2'd3", 0, 64],
+          ['5'   , "2'd3", 2, 64],
+          ['4'   , "2'd3", 1, 64],
+          ['3'   , "2'd3", 0, 64],
+          ['2'   , "2'd3", 2, 64],
+          ['1'   , "2'd3", 1, 64],
+          ['0'   , "2'd3", 0, 64]
+        ].each do |(lhs, rhs, result, width)|
+          assert_evaluates_value(
+            :bit, { value: result, width: }, "#{lhs} % #{rhs}", test: :constant_expression
+          )
+        end
+
+        [
+          ["8'd254", "1'd0", 254,  8],
+          ["8'd254", "1'd1", 255,  8],
+          ["8'd254", "2'd2",   0,  8],
+          ['254'   , "1'd0", 254, 64],
+          ['254'   , "1'd1", 255, 64],
+          ['254'   , "2'd2", 256, 64]
+        ].each do |(lhs, rhs, result, width)|
+          assert_evaluates_value(
+            :bit, { value: result, width: }, "#{lhs} + #{rhs}", test: :constant_expression
+          )
+        end
+
+        [
+          ["8'd1", "1'd0", 1                    ,  8],
+          ["8'd1", "1'd1", 0                    ,  8],
+          ["8'd1", "2'd2", 255                  ,  8],
+          ['1'   , "1'd0", 1                    , 64],
+          ['1'   , "1'd1", 0                    , 64],
+          ['1'   , "2'd2", 0xFFFF_FFFF_FFFF_FFFF, 64]
+        ].each do |(lhs, rhs, result, width)|
+          assert_evaluates_value(
+            :bit, { value: result, width: }, "#{lhs} - #{rhs}", test: :constant_expression
+          )
+        end
+
+        [
+          ["6'd4", "65'd0",  1,  6],
+          ["6'd4", "65'd1",  4,  6],
+          ["6'd4", "65'd2", 16,  6],
+          ["6'd4", "65'd3",  0,  6],
+          ['4'   , "65'd0",  1, 64],
+          ['4'   , "65'd1",  4, 64],
+          ['4'   , "65'd2", 16, 64],
+          ['4'   , "65'd3", 64, 64]
+        ].each do |(lhs, rhs, result, width)|
+          assert_evaluates_value(
+            :bit, { value: result, width: }, "#{lhs} ** #{rhs}", test: :constant_expression
+          )
+        end
       end
     end
   end

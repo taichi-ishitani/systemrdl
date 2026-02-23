@@ -7,9 +7,16 @@ module SystemRDL
 
       def initialize(node)
         @node = node
+        evaluate_literal
       end
 
       attr_reader :value
+
+      def evaluate(**_optargs)
+      end
+
+      def expression_width
+      end
 
       def position
         @node.range.head
@@ -31,7 +38,13 @@ module SystemRDL
         :boolean
       end
 
-      def evaluate
+      def expression_width
+        1
+      end
+
+      private
+
+      def evaluate_literal
         @value = text == 'true'
       end
     end
@@ -45,7 +58,13 @@ module SystemRDL
         64
       end
 
-      def evaluate
+      def expression_width
+        width
+      end
+
+      private
+
+      def evaluate_literal
         @value = Integer(text)
       end
     end
@@ -57,7 +76,13 @@ module SystemRDL
         :bit
       end
 
-      def evaluate
+      def expression_width
+        width
+      end
+
+      private
+
+      def evaluate_literal
         match_data, base =
           case text.tr('_', '')
           when Parser::Scanner::VERILOG_HEX_NUMBER then [Regexp.last_match, 16]
@@ -69,8 +94,6 @@ module SystemRDL
 
         check_bit_width(@value, @width)
       end
-
-      private
 
       def check_bit_width(value, width)
         return if value.bit_length <= width
@@ -85,7 +108,9 @@ module SystemRDL
         :string
       end
 
-      def evaluate
+      private
+
+      def evaluate_literal
         @value = text[1..-2]
       end
     end
@@ -95,7 +120,9 @@ module SystemRDL
         :access_type
       end
 
-      def evaluate
+      private
+
+      def evaluate_literal
         @value =
           if ['rw', 'wr'].include?(text)
             :rw
@@ -110,7 +137,9 @@ module SystemRDL
         :on_read_type
       end
 
-      def evaluate
+      private
+
+      def evaluate_literal
         @value = text.to_sym
       end
     end
@@ -120,7 +149,9 @@ module SystemRDL
         :on_write_type
       end
 
-      def evaluate
+      private
+
+      def evaluate_literal
         @value = text.to_sym
       end
     end
@@ -130,7 +161,9 @@ module SystemRDL
         :addressing_type
       end
 
-      def evaluate
+      private
+
+      def evaluate_literal
         @value = text.to_sym
       end
     end
