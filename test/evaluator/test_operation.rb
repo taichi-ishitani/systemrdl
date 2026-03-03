@@ -517,6 +517,48 @@ module SystemRDL
           )
         end
       end
+
+      def test_expression_width
+        code = "(8'hFF + 8'h01) >> 1"
+        assert_evaluates_value(
+          :bit, { value: 0x00, width: 8 }, code, test: :constant_expression
+        )
+
+        code = "(8'hFF + 0x01) >> 1"
+        assert_evaluates_value(
+          :bit, { value: 0x80, width: 64 }, code, test: :constant_expression
+        )
+
+        code = "4'hF * 6'hA"
+        assert_evaluates_value(
+          :bit, { value: 0x16, width: 6 }, code, test: :constant_expression
+        )
+
+        code = "4'hF ** 6'hA"
+        assert_evaluates_value(
+          :bit, { value: 0x1, width: 4 }, code, test: :constant_expression
+        )
+
+        code = "2'd0 - 2'd1"
+        assert_evaluates_value(
+          :bit, { value: 3, width: 2 }, code, test: :constant_expression
+        )
+
+        code = "2'd0 - 2'd1 + 3'd0"
+        assert_evaluates_value(
+          :bit, { value: 7, width: 3 }, code, test: :constant_expression
+        )
+
+        code = "(2'd0 - 2'd1) == 3'd7"
+        assert_evaluates_value(
+          :boolean, { value: true }, code, test: :constant_expression
+        )
+
+        code = "~2'd0 + 3'd0"
+        assert_evaluates_value(
+          :bit, { value: 7, width: 3 }, code, test: :constant_expression
+        )
+      end
     end
   end
 end
