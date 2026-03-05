@@ -559,6 +559,64 @@ module SystemRDL
           :bit, { value: 7, width: 3 }, code, test: :constant_expression
         )
       end
+
+      def test_zero_divisor
+        ['0', "1'd0", 'false'].each do |divisor|
+          message = 'divisor should be non zero value'
+          assert_raises_evaluation_error(
+            "1 / #{divisor}", message, test: :constant_expression
+          )
+          assert_raises_evaluation_error(
+            "1 % #{divisor}", message, test: :constant_expression
+          )
+        end
+      end
+
+      def test_binary_operation_with_non_integral_operand
+        {
+          string: '"this is a string"',
+          access_type: 'na', addressing_type: 'compact', on_read_type: 'rclr', on_write_type: 'woset'
+        }.each do |type, value|
+          [
+            '&&', '||', '<', '>', '<=', '>=', '>>', '<<',
+            '&', '|', '^', '~^', '^~', '*', '/', '%', '+', '-', '**'
+          ].each do |operator|
+            message = "non integral operand is given: #{type}"
+            assert_raises_evaluation_error(
+              "1 #{operator} #{value}", message, test: :constant_expression
+            )
+            assert_raises_evaluation_error(
+              "#{value} #{operator} 1", message, test: :constant_expression
+            )
+          end
+        end
+      end
+
+      def test_eq_operation_with_incompatible_operand
+        lhs_values = [
+          [:string, '"this is a string"'],
+          [:access_type, 'na'], [:addressing_type, 'compact'], [:on_read_type, 'rclr'], [:on_write_type, 'woset']
+        ]
+        rhs_values = [
+          [:string, '"this is a string"'],
+          [:access_type, 'na'], [:addressing_type, 'compact'], [:on_read_type, 'rclr'], [:on_write_type, 'woset'],
+          [:bit, '0'], [:bit, "1'd0"], [:boolean, 'false']
+        ]
+
+        lhs_values.each do |(lhs_type, lhs_value)|
+          rhs_values.each do |(rhs_type, rhs_value)|
+            next if lhs_type == rhs_type
+
+            message = "#{rhs_type} type is not compatible with #{lhs_type} type"
+            assert_raises_evaluation_error(
+              "#{lhs_value} == #{rhs_value}", message, test: :constant_expression
+            )
+            assert_raises_evaluation_error(
+              "#{lhs_value} != #{rhs_value}", message, test: :constant_expression
+            )
+          end
+        end
+      end
     end
   end
 end

@@ -41,9 +41,11 @@ module SystemRDL
         end
       end
 
-      def to_int(operand, width = nil)
-        operand.evaluate(width:)
-        check_integral_operand(operand)
+      def to_int(operand, width = nil, evaluation: true)
+        if evaluation
+          operand.evaluate(width:)
+          check_integral_operand(operand)
+        end
 
         if operand.type == :boolean
           [(operand.value && 1) || 0, 1]
@@ -170,19 +172,25 @@ module SystemRDL
       end
 
       def equality_op
-        lhs, rhs, _ =
-          if [@l_operand, @r_operand].all? { integral_operand?(_1) }
-            integral_operands(nil)
-          elsif @l_operand.type == @r_operand.type
-            @l_operand.evaluate
-            @r_operand.evaluate
-            [@l_operand.value, @r_operand.value]
-          else
-            # todo
-            # report error
-          end
-
+        lhs, rhs = eval_eq_operands
         [lhs.__send__(@operator, rhs), :boolean]
+      end
+
+      def eval_eq_operands
+        width = eval_expression_width
+        @l_operand.evaluate(width:)
+        @r_operand.evaluate(width:)
+
+        if [@l_operand, @r_operand].all? { integral_operand?(_1) }
+          lhs, _ = to_int(@l_operand, evaluation: false)
+          rhs, _ = to_int(@r_operand, evaluation: false)
+          [lhs, rhs]
+        elsif @l_operand.type == @r_operand.type
+          [@l_operand.value, @r_operand.value]
+        else
+          message = "#{@r_operand.type} type is not compatible with #{@l_operand.type} type"
+          raise_evaluation_error message, @r_operand.position
+        end
       end
 
       def relational_op
@@ -202,9 +210,18 @@ module SystemRDL
       def general_op(operator, width, negate)
         lhs, rhs, width = integral_operands(width)
 
+        if div_by_0?(rhs)
+          message = 'divisor should be non zero value'
+          raise_evaluation_error message, @r_operand.position
+        end
+
         result = lhs.__send__(operator, rhs)
         result = ~result if negate
         [mask(result, width), :bit, width]
+      end
+
+      def div_by_0?(rhs)
+        [:/, :%].include?(@operator) && rhs == 0
       end
 
       def integral_operands(width)
