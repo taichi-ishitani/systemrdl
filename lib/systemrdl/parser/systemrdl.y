@@ -41,14 +41,21 @@ prechigh
 preclow
 
 rule
+  #
+  # B.1 SystemRDL source text
+  #
   root
-    : component_def
+    : description+ {
+      result = node(:root, val[0], val[0])
+    }
     | __TEST_PROPERTY_ASSIGNMENT__ property_assignment {
         result = val[1]
       }
     | __TEST_CONSTANT_EXPRESSION__ constant_expression {
         result = val[1]
       }
+  description
+    : component_def
 
   #
   # B.3 Component definition

@@ -12,7 +12,11 @@ module SystemRDL
 
       attr_reader :value
 
-      def evaluate(**_optargs)
+      def set_parent(node)
+        @parent = node
+      end
+
+      def evaluate(_instance, **_optargs)
       end
 
       def expression_width

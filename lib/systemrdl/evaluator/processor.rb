@@ -47,6 +47,19 @@ module SystemRDL
         r_operand = process(node.children[2])
         BinaryOperation.new(operator, l_operand, r_operand, node.range)
       end
+
+      def on_component_named_def(node)
+        id = node.children[1].children[0].to_sym
+        elements = process_all(node.children[2..])
+        case node.children[0].to_sym
+        when :addrmap then AddrMapDefinition.new(id, elements, node.range)
+        end
+      end
+
+      def on_root(node)
+        elements = process_all(node.children)
+        Root.new(elements, node.range)
+      end
     end
   end
 end

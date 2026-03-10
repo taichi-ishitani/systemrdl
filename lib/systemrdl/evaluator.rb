@@ -5,10 +5,14 @@ module SystemRDL
     module_function
 
     def evaluate(ast)
-      processor = Processor.new
-      result = processor.process(ast)
-      result.evaluate
-      result
+      root = Instance.new(nil, :root)
+      evaluator = build_evaluator(ast)
+      evaluator.evaluate(root)
+      root
+    end
+
+    def build_evaluator(ast)
+      Processor.new.process(ast)
     end
   end
 end

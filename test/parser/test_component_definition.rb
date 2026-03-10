@@ -8,68 +8,84 @@ module SystemRDL
       def test_field_component
         code = 'field {} singlebitfield;'
         assert_parses(
-          field_anonymous_definition(
-            component_insts(component_inst(:singlebitfield))
+          root(
+            field_anonymous_definition(
+              component_insts(component_inst(:singlebitfield))
+            )
           ),
           code
         )
 
         code = 'field {} somefield[4];'
         assert_parses(
-          field_anonymous_definition(
-            component_insts(component_inst(:somefield, array(4)))
+          root(
+            field_anonymous_definition(
+              component_insts(component_inst(:somefield, array(4)))
+            )
           ),
           code
         )
 
         code = 'field {} somefield[3:0];'
         assert_parses(
-          field_anonymous_definition(
-            component_insts(component_inst(:somefield, range(3, 0)))
+          root(
+            field_anonymous_definition(
+              component_insts(component_inst(:somefield, range(3, 0)))
+            )
           ),
           code
         )
 
         code = 'field {} somefield[0:31];'
         assert_parses(
-          field_anonymous_definition(
-            component_insts(component_inst(:somefield, range(0, 31)))
+          root(
+            field_anonymous_definition(
+              component_insts(component_inst(:somefield, range(0, 31)))
+            )
           ),
           code
         )
 
         code = 'field f { sw = rw; hw = rw; };'
         assert_parses(
-          field_named_definition(
-            id(:f),
-            prop_assignment(:sw, access_type(:rw)),
-            prop_assignment(:hw, access_type(:rw))
+          root(
+            field_named_definition(
+              id(:f),
+              prop_assignment(:sw, access_type(:rw)),
+              prop_assignment(:hw, access_type(:rw))
+            )
           ),
           code
         )
 
         code = "field { reset = 1'b1; } a;"
         assert_parses(
-          field_anonymous_definition(
-            prop_assignment(:reset, verilog_number("1'b1")),
-            component_insts(component_inst(:a))
+          root(
+            field_anonymous_definition(
+              prop_assignment(:reset, verilog_number("1'b1")),
+              component_insts(component_inst(:a))
+            )
           ),
           code
         )
 
         code = 'field {} b=0;'
         assert_parses(
-          field_anonymous_definition(
-            component_insts(component_inst(:b, reset_value(number(0))))
+          root(
+            field_anonymous_definition(
+              component_insts(component_inst(:b, reset_value(number(0))))
+            )
           ),
           code
         )
 
         code = 'field { anded;} a[4]=0;'
         assert_parses(
-          field_anonymous_definition(
-            prop_assignment(:anded),
-            component_insts(component_inst(:a, array(4), reset_value(number(0))))
+          root(
+            field_anonymous_definition(
+              prop_assignment(:anded),
+              component_insts(component_inst(:a, array(4), reset_value(number(0))))
+            )
           ),
           code
         )
@@ -78,10 +94,12 @@ module SystemRDL
       def test_register_component
         code = 'reg myReg { field {} data[31:0]; };'
         assert_parses(
-          reg_named_definition(
-            id(:myReg),
-            field_anonymous_definition(
-              component_insts(component_inst(:data, range(31, 0)))
+          root(
+            reg_named_definition(
+              id(:myReg),
+              field_anonymous_definition(
+                component_insts(component_inst(:data, range(31, 0)))
+              )
             )
           ),
           code
@@ -89,11 +107,13 @@ module SystemRDL
 
         code = 'reg myReg {} reg_a[2], reg_b[2][4];'
         assert_parses(
-          reg_named_definition(
-            id(:myReg),
-            component_insts(
-              component_inst(:reg_a, array(2)),
-              component_inst(:reg_b, array(2), array(4))
+          root(
+            reg_named_definition(
+              id(:myReg),
+              component_insts(
+                component_inst(:reg_a, array(2)),
+                component_inst(:reg_b, array(2), array(4))
+              )
             )
           ),
           code
@@ -101,10 +121,12 @@ module SystemRDL
 
         code = 'reg myReg {} reg_a @ 0x10;'
         assert_parses(
-          reg_named_definition(
-            id(:myReg),
-            component_insts(
-              component_inst(:reg_a, address_assignment(number('0x10')))
+          root(
+            reg_named_definition(
+              id(:myReg),
+              component_insts(
+                component_inst(:reg_a, address_assignment(number('0x10')))
+              )
             )
           ),
           code
@@ -112,14 +134,16 @@ module SystemRDL
 
         code = 'reg myReg {} reg_b[10] @0x100 += 0x10;'
         assert_parses(
-          reg_named_definition(
-            id(:myReg),
-            component_insts(
-              component_inst(
-                :reg_b,
-                array(10),
-                address_assignment(number('0x100')),
-                address_stride(number('0x10')),
+          root(
+            reg_named_definition(
+              id(:myReg),
+              component_insts(
+                component_inst(
+                  :reg_b,
+                  array(10),
+                  address_assignment(number('0x100')),
+                  address_stride(number('0x10')),
+                )
               )
             )
           ),
@@ -128,10 +152,12 @@ module SystemRDL
 
         code = 'reg myReg {} reg_a %= 0x10;'
         assert_parses(
-          reg_named_definition(
-            id(:myReg),
-            component_insts(
-              component_inst(:reg_a, address_alignment(number('0x10')))
+          root(
+            reg_named_definition(
+              id(:myReg),
+              component_insts(
+                component_inst(:reg_a, address_alignment(number('0x10')))
+              )
             )
           ),
           code
@@ -139,9 +165,11 @@ module SystemRDL
 
         code = 'reg {} external reg_a , reg_b;'
         assert_parses(
-          reg_anonymous_definition(
-            external_component_insts(
-              component_inst(:reg_a), component_inst(:reg_b)
+          root(
+            reg_anonymous_definition(
+              external_component_insts(
+                component_inst(:reg_a), component_inst(:reg_b)
+              )
             )
           ),
           code
@@ -149,10 +177,12 @@ module SystemRDL
 
         code = 'reg myReg {} external reg_a , reg_b;'
         assert_parses(
-          reg_named_definition(
-            id(:myReg),
-            external_component_insts(
-              component_inst(:reg_a), component_inst(:reg_b)
+          root(
+            reg_named_definition(
+              id(:myReg),
+              external_component_insts(
+                component_inst(:reg_a), component_inst(:reg_b)
+              )
             )
           ),
           code
@@ -160,9 +190,11 @@ module SystemRDL
 
         code = 'external reg {} reg_a , reg_b;'
         assert_parses(
-          reg_anonymous_definition(
-            external_component_insts(
-              component_inst(:reg_a), component_inst(:reg_b)
+          root(
+            reg_anonymous_definition(
+              external_component_insts(
+                component_inst(:reg_a), component_inst(:reg_b)
+              )
             )
           ),
           code
@@ -170,10 +202,12 @@ module SystemRDL
 
         code = 'external reg myReg {} reg_a , reg_b;'
         assert_parses(
-          reg_named_definition(
-            id(:myReg),
-            external_component_insts(
-              component_inst(:reg_a), component_inst(:reg_b)
+          root(
+            reg_named_definition(
+              id(:myReg),
+              external_component_insts(
+                component_inst(:reg_a), component_inst(:reg_b)
+              )
             )
           ),
           code
@@ -186,13 +220,15 @@ module SystemRDL
           } some_reg;
         R
         assert_parses(
-          reg_anonymous_definition(
-            field_named_definition(id(:f_type)),
-            explicit_component_inst(
-              :f_type,
-              component_insts(component_inst(:some_field))
-            ),
-            component_insts(component_inst(:some_reg))
+          root(
+            reg_anonymous_definition(
+              field_named_definition(id(:f_type)),
+              explicit_component_inst(
+                :f_type,
+                component_insts(component_inst(:some_field))
+              ),
+              component_insts(component_inst(:some_reg))
+            )
           ),
           code
         )
@@ -204,15 +240,17 @@ module SystemRDL
           } some_reg;
         R
         assert_parses(
-          reg_anonymous_definition(
-            field_anonymous_definition(
-              component_insts(component_inst(:f1))
-            ),
-            post_prop_assignment(
-              [:f1], :name, string('"New name for Field 1"')
-            ),
-            component_insts(
-              component_inst(:some_reg)
+          root(
+            reg_anonymous_definition(
+              field_anonymous_definition(
+                component_insts(component_inst(:f1))
+              ),
+              post_prop_assignment(
+                [:f1], :name, string('"New name for Field 1"')
+              ),
+              component_insts(
+                component_inst(:some_reg)
+              )
             )
           ),
           code
@@ -227,18 +265,20 @@ module SystemRDL
           };
         R
         assert_parses(
-          reg_named_definition(
-            id(:my32bitReg),
-            prop_assignment(:regwidth, number(32)),
-            prop_assignment(:accesswidth, number(16)),
-            field_anonymous_definition(
-              component_insts(
-                component_inst(:a, array(16), reset_value(number(0)))
-              )
-            ),
-            field_anonymous_definition(
-              component_insts(
-                component_inst(:b, array(32), reset_value(number(1)))
+          root(
+            reg_named_definition(
+              id(:my32bitReg),
+              prop_assignment(:regwidth, number(32)),
+              prop_assignment(:accesswidth, number(16)),
+              field_anonymous_definition(
+                component_insts(
+                  component_inst(:a, array(16), reset_value(number(0)))
+                )
+              ),
+              field_anonymous_definition(
+                component_insts(
+                  component_inst(:b, array(32), reset_value(number(1)))
+                )
               )
             )
           ),
@@ -254,10 +294,12 @@ module SystemRDL
           };
         M
         assert_parses(
-          mem_named_definition(
-            id(:fifo_mem),
-            prop_assignment(:mementries, number(1024)),
-            prop_assignment(:memwidth, number(32))
+          root(
+            mem_named_definition(
+              id(:fifo_mem),
+              prop_assignment(:mementries, number(1024)),
+              prop_assignment(:memwidth, number(32))
+            )
           ),
           code
         )
@@ -269,13 +311,15 @@ module SystemRDL
           } mem_a, mem_b;
         M
         assert_parses(
-          mem_named_definition(
-            id(:fifo_mem),
-            prop_assignment(:mementries, number(1024)),
-            prop_assignment(:memwidth, number(32)),
-            external_component_insts(
-              component_inst(:mem_a),
-              component_inst(:mem_b),
+          root(
+            mem_named_definition(
+              id(:fifo_mem),
+              prop_assignment(:mementries, number(1024)),
+              prop_assignment(:memwidth, number(32)),
+              external_component_insts(
+                component_inst(:mem_a),
+                component_inst(:mem_b),
+              )
             )
           ),
           code
@@ -288,12 +332,14 @@ module SystemRDL
           } external mem_a, mem_b;
         M
         assert_parses(
-          mem_anonymous_definition(
-            prop_assignment(:mementries, number(1024)),
-            prop_assignment(:memwidth, number(32)),
-            external_component_insts(
-              component_inst(:mem_a),
-              component_inst(:mem_b),
+          root(
+            mem_anonymous_definition(
+              prop_assignment(:mementries, number(1024)),
+              prop_assignment(:memwidth, number(32)),
+              external_component_insts(
+                component_inst(:mem_a),
+                component_inst(:mem_b),
+              )
             )
           ),
           code
@@ -309,16 +355,18 @@ module SystemRDL
           };
         RF
         assert_parses(
-          regfile_named_definition(
-            id(:fifo_rfile),
-            prop_assignment(:alignment, number(8)),
-            reg_anonymous_definition(
-              field_anonymous_definition(component_insts(component_inst(:a))),
-              component_insts(component_inst(:a))
-            ),
-            reg_anonymous_definition(
-              field_anonymous_definition(component_insts(component_inst(:b))),
-              component_insts(component_inst(:b))
+          root(
+            regfile_named_definition(
+              id(:fifo_rfile),
+              prop_assignment(:alignment, number(8)),
+              reg_anonymous_definition(
+                field_anonymous_definition(component_insts(component_inst(:a))),
+                component_insts(component_inst(:a))
+              ),
+              reg_anonymous_definition(
+                field_anonymous_definition(component_insts(component_inst(:b))),
+                component_insts(component_inst(:b))
+              )
             )
           ),
           code
@@ -332,17 +380,19 @@ module SystemRDL
           } top_regfile;
         RF
         assert_parses(
-          regfile_anonymous_definition(
-            explicit_component_inst(
-              :fifo_rfile,
-              external_component_insts(component_inst(:fifo_a))
-            ),
-            explicit_component_inst(
-              :fifo_rfile,
-              external_component_insts(component_inst(:fifo_b, array(64)))
-            ),
-            prop_assignment(:sharedextbus),
-            component_insts(component_inst(:top_regfile))
+          root(
+            regfile_anonymous_definition(
+              explicit_component_inst(
+                :fifo_rfile,
+                external_component_insts(component_inst(:fifo_a))
+              ),
+              explicit_component_inst(
+                :fifo_rfile,
+                external_component_insts(component_inst(:fifo_b, array(64)))
+              ),
+              prop_assignment(:sharedextbus),
+              component_insts(component_inst(:top_regfile))
+            )
           ),
           code
         )
@@ -351,7 +401,9 @@ module SystemRDL
           external regfile {} a;
         RF
         assert_parses(
-          regfile_anonymous_definition(external_component_insts(component_inst(:a))),
+          root(
+            regfile_anonymous_definition(external_component_insts(component_inst(:a)))
+          ),
           code
         )
 
@@ -359,7 +411,9 @@ module SystemRDL
           internal regfile {} a;
         RF
         assert_parses(
-          regfile_anonymous_definition(internal_component_insts(component_inst(:a))),
+          root(
+            regfile_anonymous_definition(internal_component_insts(component_inst(:a)))
+          ),
           code
         )
 
@@ -367,7 +421,9 @@ module SystemRDL
           regfile {} external a;
         RF
         assert_parses(
-          regfile_anonymous_definition(external_component_insts(component_inst(:a))),
+          root(
+            regfile_anonymous_definition(external_component_insts(component_inst(:a)))
+          ),
           code
         )
 
@@ -375,7 +431,9 @@ module SystemRDL
           regfile {} internal a;
         RF
         assert_parses(
-          regfile_anonymous_definition(internal_component_insts(component_inst(:a))),
+          root(
+            regfile_anonymous_definition(internal_component_insts(component_inst(:a)))
+          ),
           code
         )
 
@@ -383,7 +441,9 @@ module SystemRDL
           external regfile rf {} a;
         RF
         assert_parses(
-          regfile_named_definition(id(:rf), external_component_insts(component_inst(:a))),
+          root(
+            regfile_named_definition(id(:rf), external_component_insts(component_inst(:a)))
+          ),
           code
         )
 
@@ -391,7 +451,9 @@ module SystemRDL
           internal regfile rf {} a;
         RF
         assert_parses(
-          regfile_named_definition(id(:rf), internal_component_insts(component_inst(:a))),
+          root(
+            regfile_named_definition(id(:rf), internal_component_insts(component_inst(:a)))
+          ),
           code
         )
 
@@ -399,7 +461,9 @@ module SystemRDL
           regfile rf {} external a;
         RF
         assert_parses(
-          regfile_named_definition(id(:rf), external_component_insts(component_inst(:a))),
+          root(
+            regfile_named_definition(id(:rf), external_component_insts(component_inst(:a)))
+          ),
           code
         )
 
@@ -407,7 +471,9 @@ module SystemRDL
           regfile rf {} internal a;
         RF
         assert_parses(
-          regfile_named_definition(id(:rf), internal_component_insts(component_inst(:a))),
+          root(
+            regfile_named_definition(id(:rf), internal_component_insts(component_inst(:a)))
+          ),
           code
         )
       end
@@ -444,7 +510,8 @@ module SystemRDL
           };
         AM
         assert_parses(
-          addrmap_named_definition(
+          root(
+            addrmap_named_definition(
             id(:some_bridge),
             prop_assignment(
               :desc,
@@ -517,9 +584,14 @@ module SystemRDL
               post_prop_assignment([:ahb_stat, :stat1], :desc, string('"bar"')),
               component_insts(component_inst(:ahb))
             )
+            )
           ),
           code
         )
+      end
+
+      def root(*children)
+        s(:root, *children)
       end
 
       def addrmap_anonymous_definition(*children)

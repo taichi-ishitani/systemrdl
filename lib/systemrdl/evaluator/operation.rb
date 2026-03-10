@@ -30,8 +30,8 @@ module SystemRDL
         raise_evaluation_error message, position
       end
 
-      def to_boolean(operand)
-        operand.evaluate
+      def to_boolean(instance, operand)
+        operand.evaluate(instance)
         check_integral_operand(operand)
 
         if operand.type == :boolean
@@ -41,9 +41,9 @@ module SystemRDL
         end
       end
 
-      def to_int(operand, width = nil, evaluation: true)
+      def to_int(instance, operand, width = nil, evaluation: true)
         if evaluation
-          operand.evaluate(width:)
+          operand.evaluate(instance, width:)
           check_integral_operand(operand)
         end
 
@@ -66,15 +66,20 @@ module SystemRDL
         super(range)
       end
 
-      def evaluate(width: nil)
+      def set_parent(node)
+        @parent = node
+        @operand.set_parent(node)
+      end
+
+      def evaluate(instance, width: nil)
         @value, @type, @width =
           case @operator
-          when :! then logical_negation
-          when :+, :-, :~ then general_op(width)
-          when :&, :|, :^ then reduction(@operator, false)
-          when :'~&' then reduction(:&, true)
-          when :'~|' then reduction(:|, true)
-          when :'~^', :'^~' then reduction(:^, true)
+          when :! then logical_negation(instance)
+          when :+, :-, :~ then general_op(instance, width)
+          when :&, :|, :^ then reduction(instance, @operator, false)
+          when :'~&' then reduction(instance, :&, true)
+          when :'~|' then reduction(instance, :|, true)
+          when :'~^', :'^~' then reduction(instance, :^, true)
           end
       end
 
@@ -88,13 +93,13 @@ module SystemRDL
 
       private
 
-      def logical_negation
-        value = to_boolean(@operand)
+      def logical_negation(instance)
+        value = to_boolean(instance, @operand)
         [!value, :boolean]
       end
 
-      def reduction(operator, negate)
-        value, width = to_int(@operand)
+      def reduction(instance, operator, negate)
+        value, width = to_int(instance, @operand)
 
         init_value = { '&': 1, '|': 0, '^': 0 }[operator]
         result = width.times.inject(init_value) do |r, i|
@@ -108,9 +113,9 @@ module SystemRDL
         end
       end
 
-      def general_op(width)
+      def general_op(instance, width)
         width ||= @operand.expression_width
-        value, _ = to_int(@operand, width)
+        value, _ = to_int(instance, @operand, width)
 
         op = { '+': :+@, '-': :-@, '~': :~ }[@operator]
         result = value.__send__(op)
@@ -126,15 +131,21 @@ module SystemRDL
         super(range)
       end
 
-      def evaluate(width: nil)
+      def set_parent(node)
+        @parent = node
+        @l_operand.set_parent(node)
+        @r_operand.set_parent(node)
+      end
+
+      def evaluate(instance, width: nil)
         @value, @type, @width =
           case @operator
-          when :'&&', :'||' then logical_op
-          when :==, :!= then equality_op
-          when :<, :>, :<=, :>= then relational_op
-          when :<<, :>>, :** then shift_power_op(width)
-          when :'~^', :'^~' then general_op(:^, width, true)
-          else general_op(@operator, width, false)
+          when :'&&', :'||' then logical_op(instance)
+          when :==, :!= then equality_op(instance)
+          when :<, :>, :<=, :>= then relational_op(instance)
+          when :<<, :>>, :** then shift_power_op(instance, width)
+          when :'~^', :'^~' then general_op(instance, :^, width, true)
+          else general_op(instance, @operator, width, false)
           end
       end
 
@@ -161,9 +172,9 @@ module SystemRDL
         end
       end
 
-      def logical_op
-        lhs = to_boolean(@l_operand)
-        rhs = to_boolean(@r_operand)
+      def logical_op(instance)
+        lhs = to_boolean(instance, @l_operand)
+        rhs = to_boolean(instance, @r_operand)
         if @operator == :'&&'
           [lhs && rhs, :boolean]
         else
@@ -171,19 +182,19 @@ module SystemRDL
         end
       end
 
-      def equality_op
-        lhs, rhs = eval_eq_operands
+      def equality_op(instance)
+        lhs, rhs = eval_eq_operands(instance)
         [lhs.__send__(@operator, rhs), :boolean]
       end
 
-      def eval_eq_operands
+      def eval_eq_operands(instance)
         width = eval_expression_width
-        @l_operand.evaluate(width:)
-        @r_operand.evaluate(width:)
+        @l_operand.evaluate(instance, width:)
+        @r_operand.evaluate(instance, width:)
 
         if [@l_operand, @r_operand].all? { integral_operand?(_1) }
-          lhs, _ = to_int(@l_operand, evaluation: false)
-          rhs, _ = to_int(@r_operand, evaluation: false)
+          lhs, _ = to_int(instance, @l_operand, evaluation: false)
+          rhs, _ = to_int(instance, @r_operand, evaluation: false)
           [lhs, rhs]
         elsif @l_operand.type == @r_operand.type
           [@l_operand.value, @r_operand.value]
@@ -193,22 +204,22 @@ module SystemRDL
         end
       end
 
-      def relational_op
-        lhs, rhs, _ = integral_operands(nil)
+      def relational_op(instance)
+        lhs, rhs, _ = integral_operands(instance, nil)
         [lhs.__send__(@operator, rhs), :boolean]
       end
 
-      def shift_power_op(width)
+      def shift_power_op(instance, width)
         width ||= eval_expression_width
-        lhs, _ = to_int(@l_operand, width)
-        rhs, _ = to_int(@r_operand)
+        lhs, _ = to_int(instance, @l_operand, width)
+        rhs, _ = to_int(instance, @r_operand)
 
         result = lhs.__send__(@operator, rhs)
         [mask(result, width), :bit, width]
       end
 
-      def general_op(operator, width, negate)
-        lhs, rhs, width = integral_operands(width)
+      def general_op(instance, operator, width, negate)
+        lhs, rhs, width = integral_operands(instance, width)
 
         if div_by_0?(rhs)
           message = 'divisor should be non zero value'
@@ -224,10 +235,10 @@ module SystemRDL
         [:/, :%].include?(@operator) && rhs == 0
       end
 
-      def integral_operands(width)
+      def integral_operands(instance, width)
         width ||= eval_expression_width
-        lhs, _ = to_int(@l_operand, width)
-        rhs, _ = to_int(@r_operand, width)
+        lhs, _ = to_int(instance, @l_operand, width)
+        rhs, _ = to_int(instance, @r_operand, width)
         [lhs, rhs, width]
       end
     end

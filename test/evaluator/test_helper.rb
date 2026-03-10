@@ -10,8 +10,22 @@ module SystemRDL
         SystemRDL::Evaluator.evaluate(ast)
       end
 
+      def assert_property(instance, name, type)
+        property = instance.properties.find do |prop|
+          prop.name == name && prop.type == type
+        end
+        refute_nil(property)
+      end
+
+      def evaluate_value(code, **optargs)
+        ast = SystemRDL::Parser.parse(code, **optargs)
+        evaluator = SystemRDL::Evaluator.build_evaluator(ast)
+        evaluator.evaluate(nil)
+        evaluator
+      end
+
       def assert_evaluates_value(type, expected, code, **optargs)
-        output = evaluate(code, **optargs)
+        output = evaluate_value(code, **optargs)
         actual = [:type, *expected.keys].to_h do |key|
           [key, output.__send__(key)]
         end
