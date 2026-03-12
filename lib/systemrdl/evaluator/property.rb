@@ -3,10 +3,11 @@
 module SystemRDL
   module Evaluator
     class Property
-      def initialize(instance, name, type)
+      def initialize(instance, name, type, value)
         @instance = instance
         @name = name
         @type = type
+        @value = value
       end
 
       attr_reader :name

@@ -29,11 +29,16 @@ module SystemRDL
 
       private
 
-      def init_properties(_instance)
+      def init_properties(instance)
+        #
+        # Table 5—Universal component properties
+        #
+        create_property(instance, :name, :string, instance.name.to_s)
+        create_property(instance, :desc, :string, '')
       end
 
-      def create_property(instance, name, type)
-        property = Property.new(instance, name, type)
+      def create_property(instance, name, type, value)
+        property = Property.new(instance, name, type, value)
         instance.properties << property
       end
 
@@ -62,10 +67,21 @@ module SystemRDL
       private
 
       def init_properties(instance)
+        super
+
         #
         # Table 26—Address map properties
         #
-        create_property(instance, :alignment, :longint)
+        create_property(instance, :alignment, :longint, nil)
+        create_property(instance, :sharedextbus, :boolean, false)
+        create_property(instance, :errextbus, :boolean, false)
+        create_property(instance, :bigendian, :boolean, false)
+        create_property(instance, :littleendian, :boolean, false)
+        create_property(instance, :addressing, :addressingtype, :regalign)
+        create_property(instance, :rsvdset, :boolean, false)
+        create_property(instance, :rsvdsetX, :boolean, false)
+        create_property(instance, :msb0, :boolean, false)
+        create_property(instance, :lsb0, :boolean, false)
       end
     end
   end

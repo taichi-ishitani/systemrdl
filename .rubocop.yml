@@ -12,6 +12,9 @@ AllCops:
 Layout/EndOfLine:
   EnforcedStyle: lf
 
+Metrics/MethodLength:
+  Max: 30
+
 Naming/AccessorMethodName:
   Enabled: false
 
