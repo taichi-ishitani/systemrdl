@@ -72,6 +72,11 @@ module SystemRDL
       end
 
       def next_token
+        if @control_tokens.empty?
+          skip_blank
+          push_eos_tokens if eos?
+        end
+
         token =
           if @control_tokens.empty?
             scan_next_token
@@ -85,6 +90,15 @@ module SystemRDL
 
       def eos?
         @ss.eos?
+      end
+
+      def skip_blank
+        eos? || scan(WHITE_SPACES)
+      end
+
+      def push_eos_tokens
+        @control_tokens << create_control_token(:EOS)
+        @control_tokens << nil
       end
 
       def scan(pattern)
@@ -138,9 +152,13 @@ module SystemRDL
         Token.new(text, kind, position)
       end
 
+      def create_control_token(kind)
+        create_token(kind, '', @line, @column)
+      end
+
       def create_test_token(test)
         kind = :"__test_#{test}__".upcase
-        create_token(kind, '', @line, @column)
+        create_control_token(kind)
       end
 
       def current_position
@@ -148,19 +166,12 @@ module SystemRDL
       end
 
       def scan_next_token
-        skip_blank
-        return if eos?
-
         token =
           scan_string || scan_number || scan_symbol || scan_word
         return token if token
 
         char = peek_char
         raise_parse_error "illegal character `#{char}`", current_position
-      end
-
-      def skip_blank
-        eos? || scan(WHITE_SPACES)
       end
 
       def scan_string

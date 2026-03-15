@@ -20,7 +20,8 @@ token
   VERILOG_NUMBER
   # Identifier
   SIMPLE_ID
-  # Conrol tokens for test
+  # Conrol tokens
+  EOS
   __TEST_PROPERTY_ASSIGNMENT__
   __TEST_CONSTANT_EXPRESSION__
 
@@ -45,13 +46,13 @@ rule
   # B.1 SystemRDL source text
   #
   root
-    : description+ {
+    : description+ EOS {
       result = node(:root, val[0], val[0])
     }
-    | __TEST_PROPERTY_ASSIGNMENT__ property_assignment {
+    | __TEST_PROPERTY_ASSIGNMENT__ property_assignment EOS {
         result = val[1]
       }
-    | __TEST_CONSTANT_EXPRESSION__ constant_expression {
+    | __TEST_CONSTANT_EXPRESSION__ constant_expression EOS {
         result = val[1]
       }
   description
