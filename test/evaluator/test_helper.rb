@@ -16,7 +16,7 @@ module SystemRDL
           prop.type == type &&
           prop.value == value
         end
-        refute_nil(property)
+        refute_nil(property, "no such property found: #{name}")
       end
 
       def evaluate_value(code, **optargs)

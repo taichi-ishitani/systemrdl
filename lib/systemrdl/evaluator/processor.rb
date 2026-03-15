@@ -3,6 +3,10 @@
 module SystemRDL
   module Evaluator
     class Processor < AST::Processor
+      def on_id(node)
+        node.children[0].to_sym
+      end
+
       def on_boolean(node)
         Boolean.new(node)
       end
@@ -48,11 +52,28 @@ module SystemRDL
         BinaryOperation.new(operator, l_operand, r_operand, node.range)
       end
 
+      def on_component_inst(node)
+        id = process(node.children[0])
+        ComponentInst.new(id, node.range)
+      end
+
+      def on_component_insts(node)
+        insts = process_all(node.children)
+        ComponentInsts.new(insts[0].inst_id, insts, node.range)
+      end
+
       def on_component_named_def(node)
-        id = node.children[1].children[0].to_sym
-        elements = process_all(node.children[2..])
+        id, *elements = process_all(node.children[1..])
         case node.children[0].to_sym
-        when :addrmap then AddrMapDefinition.new(id, elements, node.range)
+        when :addrmap then AddrMapDefinition.new(id, elements, nil, node.range)
+        end
+      end
+
+      def on_component_anon_def(node)
+        *elements, insts = process_all(node.children[1..])
+        id = insts.component_id
+        case node.children[0].to_sym
+        when :reg then RegDefinition.new(id, elements, insts, node.range)
         end
       end
 

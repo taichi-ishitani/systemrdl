@@ -3,18 +3,15 @@
 module SystemRDL
   module Evaluator
     class Literal
-      include RaiseEvaluationError
+      include Common
 
       def initialize(node)
+        super(node.range)
         @node = node
         evaluate_literal
       end
 
       attr_reader :value
-
-      def set_parent(node)
-        @parent = node
-      end
 
       def evaluate(_instance, **_optargs)
       end

@@ -3,11 +3,7 @@
 module SystemRDL
   module Evaluator
     class Operation
-      include RaiseEvaluationError
-
-      def initialize(range)
-        @range = range
-      end
+      include Common
 
       attr_reader :type
       attr_reader :width
@@ -66,9 +62,9 @@ module SystemRDL
         super(range)
       end
 
-      def set_parent(node)
-        @parent = node
-        @operand.set_parent(node)
+      def connect(parent, component)
+        super
+        @operand.connect(self, component)
       end
 
       def evaluate(instance, width: nil)
@@ -131,10 +127,10 @@ module SystemRDL
         super(range)
       end
 
-      def set_parent(node)
-        @parent = node
-        @l_operand.set_parent(node)
-        @r_operand.set_parent(node)
+      def connect(parent, component)
+        super
+        @l_operand.connect(self, component)
+        @r_operand.connect(self, component)
       end
 
       def evaluate(instance, width: nil)

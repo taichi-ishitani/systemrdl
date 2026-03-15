@@ -3,19 +3,29 @@
 module SystemRDL
   module Evaluator
     class ComponentDefinition
-      def initialize(id, elements, range)
+      include Common
+
+      def initialize(id, elements, insts, range)
+        super(range)
         @id = id
-        @definitions = []
+        @definitions = {}
         @elements = elements
+        @insts = insts
         @range = range
-        @elements.each do |element|
-          element.set_parent(self)
-        end
+        @elements.each { |element| element.connect(self, self) }
+        @insts&.connect(self, self)
       end
 
-      def set_parent(node)
-        @parent = node
-        @parent.definitions << self
+      attr_reader :id
+      attr_reader :definitions
+
+      def connect(parent, component)
+        super
+        @component.add_definition(self)
+      end
+
+      def evaluate(instance, **optargs)
+        @insts&.evaluate(instance, **optargs)
       end
 
       def create_instance(parent_instance, name, **optargs)
@@ -44,12 +54,15 @@ module SystemRDL
 
       protected
 
-      attr_reader :definitions
+      def add_definition(definition)
+        id = definition.id
+        @definitions[id] = definition
+      end
     end
 
     class Root < ComponentDefinition
       def initialize(elements, range)
-        super(:root, elements, range)
+        super(:root, elements, nil, range)
       end
 
       def evaluate(instance, **optargs)
@@ -82,6 +95,22 @@ module SystemRDL
         create_property(instance, :rsvdsetX, :boolean, false)
         create_property(instance, :msb0, :boolean, false)
         create_property(instance, :lsb0, :boolean, false)
+      end
+    end
+
+    class RegDefinition < ComponentDefinition
+      private
+
+      def init_properties(instance)
+        super
+
+        #
+        # Table 23—Register properties
+        #
+        create_property(instance, :regwidth, :longint, nil)
+        create_property(instance, :accesswidth, :longint, nil)
+        create_property(instance, :errextbus, :boolean, false)
+        create_property(instance, :shared, :boolean, false)
       end
     end
   end
