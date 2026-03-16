@@ -11,9 +11,6 @@ module SystemRDL
         @definitions = {}
         @elements = elements
         @insts = insts
-        @range = range
-        @elements.each { |element| element.connect(self, self) }
-        @insts&.connect(self, self)
       end
 
       attr_reader :id
@@ -22,6 +19,8 @@ module SystemRDL
       def connect(parent, component)
         super
         @component.add_definition(self)
+        @elements.each { |element| element.connect(self, self) }
+        @insts&.connect(self, self)
       end
 
       def evaluate(instance, **optargs)
@@ -63,6 +62,7 @@ module SystemRDL
     class Root < ComponentDefinition
       def initialize(elements, range)
         super(:root, elements, nil, range)
+        connect(self, self)
       end
 
       def evaluate(instance, **optargs)
@@ -95,6 +95,21 @@ module SystemRDL
         create_property(instance, :rsvdsetX, :boolean, false)
         create_property(instance, :msb0, :boolean, false)
         create_property(instance, :lsb0, :boolean, false)
+      end
+    end
+
+    class RegFileDefinition < ComponentDefinition
+      private
+
+      def init_properties(instance)
+        super
+
+        #
+        # Table 25—Register file properties
+        #
+        create_property(instance, :alignment, :longint, nil)
+        create_property(instance, :sharedextbus, :boolean, false)
+        create_property(instance, :errextbus, :boolean, false)
       end
     end
 

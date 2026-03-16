@@ -64,22 +64,28 @@ module SystemRDL
 
       def on_component_named_def(node)
         id, *elements = process_all(node.children[1..])
-        case node.children[0].to_sym
-        when :addrmap then AddrMapDefinition.new(id, elements, nil, node.range)
-        end
+        component_definition(node).new(id, elements, nil, node.range)
       end
 
       def on_component_anon_def(node)
         *elements, insts = process_all(node.children[1..])
         id = insts.component_id
-        case node.children[0].to_sym
-        when :reg then RegDefinition.new(id, elements, insts, node.range)
-        end
+        component_definition(node).new(id, elements, insts, node.range)
       end
 
       def on_root(node)
         elements = process_all(node.children)
         Root.new(elements, node.range)
+      end
+
+      private
+
+      def component_definition(node)
+        case node.children[0].to_sym
+        when :addrmap then AddrMapDefinition
+        when :regfile then RegFileDefinition
+        when :reg then RegDefinition
+        end
       end
     end
   end
