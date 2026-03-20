@@ -10,10 +10,10 @@ module SystemRDL
         SystemRDL::Evaluator.evaluate(ast)
       end
 
-      def assert_property(instance, name, type, value: nil)
+      def assert_property(instance, name, types, value: nil)
         property = instance.properties.find do |prop|
           prop.name == name &&
-          prop.type == type &&
+          prop.types == types &&
           prop.value == value
         end
         refute_nil(property, "no such property found: #{name}")

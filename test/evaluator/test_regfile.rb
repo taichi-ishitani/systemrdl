@@ -12,11 +12,11 @@ module SystemRDL
           };
         RDL
 
-        assert_property(regfile, :name, :string, value: 'my_regfile')
-        assert_property(regfile, :desc, :string, value: '')
-        assert_property(regfile, :alignment, :longint)
-        assert_property(regfile, :sharedextbus, :boolean, value: false)
-        assert_property(regfile, :errextbus, :boolean, value: false)
+        assert_property(regfile, :name, [:string], value: 'my_regfile')
+        assert_property(regfile, :desc, [:string], value: '')
+        assert_property(regfile, :alignment, [:longint])
+        assert_property(regfile, :sharedextbus, [:boolean], value: false)
+        assert_property(regfile, :errextbus, [:boolean], value: false)
       end
     end
   end

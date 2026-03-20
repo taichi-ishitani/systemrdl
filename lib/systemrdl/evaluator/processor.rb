@@ -85,6 +85,7 @@ module SystemRDL
         when :addrmap then AddrMapDefinition
         when :regfile then RegFileDefinition
         when :reg then RegDefinition
+        when :field then FieldDefinition
         end
       end
     end

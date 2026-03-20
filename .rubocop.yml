@@ -15,6 +15,10 @@ Layout/EndOfLine:
 Metrics/MethodLength:
   Max: 30
 
+Metrics/AbcSize:
+  AllowedMethods:
+    - init_properties
+
 Naming/AccessorMethodName:
   Enabled: false
 
