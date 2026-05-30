@@ -5,7 +5,7 @@ module SystemRDL
     module_function
 
     def evaluate(ast)
-      root = Instance.new(nil, :root)
+      root = RootInstance.new
       evaluator = build_evaluator(ast)
       evaluator.evaluate(root)
       root
