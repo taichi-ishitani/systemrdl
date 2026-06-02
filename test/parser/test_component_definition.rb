@@ -20,7 +20,7 @@ module SystemRDL
         assert_parses(
           root(
             field_anonymous_definition(
-              component_insts(component_inst(:somefield, array(4)))
+              component_insts(component_inst(:somefield, array: [4]))
             )
           ),
           code
@@ -30,7 +30,7 @@ module SystemRDL
         assert_parses(
           root(
             field_anonymous_definition(
-              component_insts(component_inst(:somefield, range(3, 0)))
+              component_insts(component_inst(:somefield, range: [3, 0]))
             )
           ),
           code
@@ -40,7 +40,7 @@ module SystemRDL
         assert_parses(
           root(
             field_anonymous_definition(
-              component_insts(component_inst(:somefield, range(0, 31)))
+              component_insts(component_inst(:somefield, range: [0, 31]))
             )
           ),
           code
@@ -73,7 +73,7 @@ module SystemRDL
         assert_parses(
           root(
             field_anonymous_definition(
-              component_insts(component_inst(:b, reset_value(number(0))))
+              component_insts(component_inst(:b, reset_value: number(0)))
             )
           ),
           code
@@ -84,7 +84,7 @@ module SystemRDL
           root(
             field_anonymous_definition(
               prop_assignment(:anded),
-              component_insts(component_inst(:a, array(4), reset_value(number(0))))
+              component_insts(component_inst(:a, array: [4], reset_value: number(0)))
             )
           ),
           code
@@ -98,7 +98,7 @@ module SystemRDL
             reg_named_definition(
               id(:myReg),
               field_anonymous_definition(
-                component_insts(component_inst(:data, range(31, 0)))
+                component_insts(component_inst(:data, range: [31, 0]))
               )
             )
           ),
@@ -111,8 +111,8 @@ module SystemRDL
             reg_named_definition(
               id(:myReg),
               component_insts(
-                component_inst(:reg_a, array(2)),
-                component_inst(:reg_b, array(2), array(4))
+                component_inst(:reg_a, array: [2]),
+                component_inst(:reg_b, array: [2, 4])
               )
             )
           ),
@@ -125,7 +125,7 @@ module SystemRDL
             reg_named_definition(
               id(:myReg),
               component_insts(
-                component_inst(:reg_a, address_assignment(number('0x10')))
+                component_inst(:reg_a, address_assignment: number('0x10'))
               )
             )
           ),
@@ -140,9 +140,9 @@ module SystemRDL
               component_insts(
                 component_inst(
                   :reg_b,
-                  array(10),
-                  address_assignment(number('0x100')),
-                  address_stride(number('0x10')),
+                  array: [10],
+                  address_assignment: number('0x100'),
+                  address_stride: number('0x10'),
                 )
               )
             )
@@ -156,7 +156,7 @@ module SystemRDL
             reg_named_definition(
               id(:myReg),
               component_insts(
-                component_inst(:reg_a, address_alignment(number('0x10')))
+                component_inst(:reg_a, address_alignment: number('0x10'))
               )
             )
           ),
@@ -272,12 +272,12 @@ module SystemRDL
               prop_assignment(:accesswidth, number(16)),
               field_anonymous_definition(
                 component_insts(
-                  component_inst(:a, array(16), reset_value(number(0)))
+                  component_inst(:a, array: [16], reset_value: number(0))
                 )
               ),
               field_anonymous_definition(
                 component_insts(
-                  component_inst(:b, array(32), reset_value(number(1)))
+                  component_inst(:b, array: [32], reset_value: number(1))
                 )
               )
             )
@@ -388,7 +388,7 @@ module SystemRDL
               ),
               explicit_component_inst(
                 :fifo_rfile,
-                external_component_insts(component_inst(:fifo_b, array(64)))
+                external_component_insts(component_inst(:fifo_b, array: [64]))
               ),
               prop_assignment(:sharedextbus),
               component_insts(component_inst(:top_regfile))
@@ -527,7 +527,7 @@ module SystemRDL
                 component_insts(
                   component_inst(
                     :stat1,
-                    reset_value(verilog_number("1'b0"))
+                    reset_value: verilog_number("1'b0")
                   )
                 )
               )
@@ -542,8 +542,8 @@ module SystemRDL
                 component_insts(
                   component_inst(
                     :credits,
-                    array(4),
-                    reset_value(verilog_number("4'h7"))
+                    array: [4],
+                    reset_value: verilog_number("4'h7")
                   )
                 )
               )
@@ -558,8 +558,8 @@ module SystemRDL
                 component_insts(
                   component_inst(
                     :credits,
-                    array(8),
-                    reset_value(verilog_number("8'b00000011"))
+                    array: [8],
+                    reset_value: verilog_number("8'b00000011")
                   )
                 )
               )
@@ -577,7 +577,7 @@ module SystemRDL
                 component_insts(
                   component_inst(
                     :ahb_stat,
-                    address_assignment(number('0x20'))
+                    address_assignment: number('0x20')
                   )
                 )
               ),
@@ -638,7 +638,22 @@ module SystemRDL
         s(:component_insts, *children)
       end
 
-      def component_inst(id, *children)
+      def component_inst(id, **children)
+        children = [
+          :array, :range, :reset_value, :address_assignment, :address_stride, :address_alignment
+        ].map do |key|
+          if (value = children[key])
+            if key == :array
+              value.map { |v| __send__(key, v) }
+            elsif key == :range
+              __send__(key, *value)
+            else
+              __send__(key, value)
+            end
+          else
+            nil
+          end
+        end
         s(:component_inst, id(id), *children)
       end
 

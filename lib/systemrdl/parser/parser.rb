@@ -52,7 +52,7 @@ module SystemRDL
 
       def component_inst_node(values)
         array, range = values[1]
-        node(:component_inst, [values[0], *array, range, *values[2..]].compact, values)
+        node(:component_inst, [values[0], array, range, *values[2..]], values)
       end
 
       def uop_node(values)
