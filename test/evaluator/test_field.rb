@@ -63,6 +63,31 @@ module SystemRDL
         assert_property(field, :precedence, [:precedence_type], value: :sw)
         assert_property(field, :paritycheck, [:boolean], value: false)
       end
+
+      def test_bit_index
+        fields = evaluate(<<~'RDL').instances[0].instances[0].instances
+          addrmap my_map {
+            reg {
+              field {} a;
+              field {} b[3];
+              field {} c[15:8];
+              field {} d[5];
+            } my_reg;
+          };
+        RDL
+
+        assert_value(0, fields[0].lsb)
+        assert_value(0, fields[0].msb)
+
+        assert_value(1, fields[1].lsb)
+        assert_value(3, fields[1].msb)
+
+        assert_value(8 , fields[2].lsb)
+        assert_value(15, fields[2].msb)
+
+        assert_value(16, fields[3].lsb)
+        assert_value(20, fields[3].msb)
+      end
     end
   end
 end

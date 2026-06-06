@@ -11,12 +11,15 @@ module SystemRDL
       end
 
       def assert_property(instance, name, types, value: nil)
-        property = instance.properties.find do |prop|
-          prop.name == name &&
-          prop.types == types &&
-          prop.value == value
-        end
+        property = instance.property(name)
         refute_nil(property, "no such property found: #{name}")
+
+        assert_equal(types, property.types)
+        assert_equal(value, property.value.value) unless value.nil?
+      end
+
+      def assert_value(exp, act)
+        assert_equal(exp, act.value)
       end
 
       def evaluate_value(code, **optargs)

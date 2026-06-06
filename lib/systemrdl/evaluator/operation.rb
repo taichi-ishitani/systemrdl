@@ -13,6 +13,10 @@ module SystemRDL
         @token_range.head
       end
 
+      def to_value
+        Value.new(value, @token_range)
+      end
+
       private
 
       def integral_operand?(operand)

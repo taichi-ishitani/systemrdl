@@ -23,6 +23,10 @@ module SystemRDL
         @node.token_range.head
       end
 
+      def to_value
+        Value.new(value, @node.token_range)
+      end
+
       private
 
       def token

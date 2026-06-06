@@ -27,21 +27,18 @@ module SystemRDL
         @insts&.evaluate(instance, **optargs)
       end
 
-      def create_instance(parent_instance, name, **optargs)
-        instance = instnace_class.new(parent_instance, name)
+      def create_instance(parent_instance, inst_name, inst_values, **optargs)
+        instance = instnace_class.new(parent_instance, inst_name)
+
+        init_properties(instance)
+        eval_body(instance, **optargs)
+        apply_inst_values(instance, inst_values)
+
         parent_instance.instances << instance
-
-        init_instance(instance)
-        @elements.each { |element| element.evaluate(instance, **optargs) }
-
         instance
       end
 
       private
-
-      def init_instance(instance)
-        init_properties(instance)
-      end
 
       def init_properties(instance)
         #
@@ -52,8 +49,16 @@ module SystemRDL
       end
 
       def create_property(instance, name, types, value)
+        value = Value.new(value, nil) unless value.nil?
         property = Property.new(instance, name, types, value)
         instance.properties << property
+      end
+
+      def eval_body(instance, **optargs)
+        @elements.each { |element| element.evaluate(instance, **optargs) }
+      end
+
+      def apply_inst_values(_instance, _inst_values)
       end
 
       protected

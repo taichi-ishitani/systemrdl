@@ -71,9 +71,35 @@ module SystemRDL
         create_property(instance, :precedence, [:precedence_type], :sw)
         create_property(instance, :paritycheck, [:boolean], false)
       end
+
+      def apply_inst_values(instance, inst_values)
+        assign_bit_pos(instance, inst_values)
+      end
+
+      def assign_bit_pos(instance, inst_values)
+        msb, lsb =
+          if (range = inst_values[:range])
+            range.map(&:to_value)
+          else
+            calc_bit_pos(instance, inst_values)
+          end
+        instance.msb = msb
+        instance.lsb = lsb
+      end
+
+      def calc_bit_pos(instance, inst_values)
+        size = inst_values[:array]&.at(0)&.to_value
+        width = size&.value || 1
+        last_msb = instance.parent.instances.last&.msb
+        lsb = (last_msb&.value || -1) + 1
+        msb = lsb + width - 1
+        [msb, lsb].map { |pos| Value.new(pos, size&.token_range) }
+      end
     end
 
     class FieldInstance < Instance
+      attr_accessor :msb
+      attr_accessor :lsb
     end
   end
 end

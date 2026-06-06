@@ -52,9 +52,24 @@ module SystemRDL
         BinaryOperation.new(operator, l_operand, r_operand, node.token_range)
       end
 
+      def on_array(node)
+        process(node.children[0])
+      end
+
+      def on_range(node)
+        process_all(node.children)
+      end
+
       def on_component_inst(node)
-        id = process(node.children[0])
-        ComponentInst.new(id, node.token_range)
+        inst_id = process(node.children[0])
+        inst_values =
+          [:array, :range, :reset_value, :address_assignment, :address_stride, :address_assignment]
+            .zip(node.children[1..])
+            .to_h do |key, node|
+              value = key == :array ? process_all(node) : process(node)
+              [key, value]
+            end
+        ComponentInst.new(inst_id, inst_values, node.token_range)
       end
 
       def on_component_insts(node)

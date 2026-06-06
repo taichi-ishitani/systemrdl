@@ -4,7 +4,7 @@ module SystemRDL
   module Evaluator
     class AddrMapDefinition < ComponentDefinition
       def evaluate(instance, **optargs)
-        create_instance(instance, @id, **optargs)
+        create_instance(instance, @id, nil, **optargs)
       end
 
       private

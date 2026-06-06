@@ -44,15 +44,16 @@ module SystemRDL
     class ComponentInst
       include Common
 
-      def initialize(inst_id, token_range)
+      def initialize(inst_id, inst_values, token_range)
         super(token_range)
         @inst_id = inst_id
+        @inst_values = inst_values
       end
 
       attr_reader :inst_id
 
       def evaluate(instance, component_definition:, **optargs)
-        component_definition.create_instance(instance, @inst_id, **optargs)
+        component_definition.create_instance(instance, @inst_id, @inst_values, **optargs)
       end
     end
   end
