@@ -5,8 +5,8 @@ module SystemRDL
     class ComponentDefinition
       include Common
 
-      def initialize(id, elements, insts, range)
-        super(range)
+      def initialize(id, elements, insts, token_range)
+        super(token_range)
         @id = id
         @definitions = {}
         @elements = elements

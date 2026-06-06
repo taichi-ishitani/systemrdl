@@ -42,40 +42,40 @@ module SystemRDL
       def on_unary_operation(node)
         operator = node.children[0].to_sym
         operand = process(node.children[1])
-        UnaryOperation.new(operator, operand, node.range)
+        UnaryOperation.new(operator, operand, node.token_range)
       end
 
       def on_binary_operation(node)
         operator = node.children[0].to_sym
         l_operand = process(node.children[1])
         r_operand = process(node.children[2])
-        BinaryOperation.new(operator, l_operand, r_operand, node.range)
+        BinaryOperation.new(operator, l_operand, r_operand, node.token_range)
       end
 
       def on_component_inst(node)
         id = process(node.children[0])
-        ComponentInst.new(id, node.range)
+        ComponentInst.new(id, node.token_range)
       end
 
       def on_component_insts(node)
         insts = process_all(node.children)
-        ComponentInsts.new(insts[0].inst_id, insts, node.range)
+        ComponentInsts.new(insts[0].inst_id, insts, node.token_range)
       end
 
       def on_component_named_def(node)
         id, *elements = process_all(node.children[1..])
-        component_definition(node).new(id, elements, nil, node.range)
+        component_definition(node).new(id, elements, nil, node.token_range)
       end
 
       def on_component_anon_def(node)
         *elements, insts = process_all(node.children[1..])
         id = insts.component_id
-        component_definition(node).new(id, elements, insts, node.range)
+        component_definition(node).new(id, elements, insts, node.token_range)
       end
 
       def on_root(node)
         elements = process_all(node.children)
-        Root.new(elements, node.range)
+        Root.new(elements, node.token_range)
       end
 
       private

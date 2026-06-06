@@ -5,11 +5,11 @@ module SystemRDL
     module Common
       include RaiseEvaluationError
 
-      def initialize(range)
-        @range = range
+      def initialize(token_range)
+        @token_range = token_range
       end
 
-      attr_reader :range
+      attr_reader :token_range
       attr_reader :parent
       attr_reader :component
 

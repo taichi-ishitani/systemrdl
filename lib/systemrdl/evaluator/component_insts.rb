@@ -5,8 +5,8 @@ module SystemRDL
     class ComponentInsts
       include Common
 
-      def initialize(component_id, insts, range)
-        super(range)
+      def initialize(component_id, insts, token_range)
+        super(token_range)
         @component_id = component_id
         @insts = insts
       end
@@ -44,8 +44,8 @@ module SystemRDL
     class ComponentInst
       include Common
 
-      def initialize(inst_id, range)
-        super(range)
+      def initialize(inst_id, token_range)
+        super(token_range)
         @inst_id = inst_id
       end
 

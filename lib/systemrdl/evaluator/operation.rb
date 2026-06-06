@@ -10,7 +10,7 @@ module SystemRDL
       attr_reader :value
 
       def position
-        @range.head
+        @token_range.head
       end
 
       private
@@ -56,10 +56,10 @@ module SystemRDL
     end
 
     class UnaryOperation < Operation
-      def initialize(operator, operand, range)
+      def initialize(operator, operand, token_range)
         @operator = operator
         @operand = operand
-        super(range)
+        super(token_range)
       end
 
       def connect(parent, component)
@@ -120,11 +120,11 @@ module SystemRDL
     end
 
     class BinaryOperation < Operation
-      def initialize(operator, l_operand, r_operand, range)
+      def initialize(operator, l_operand, r_operand, token_range)
         @operator = operator
         @l_operand = l_operand
         @r_operand = r_operand
-        super(range)
+        super(token_range)
       end
 
       def connect(parent, component)

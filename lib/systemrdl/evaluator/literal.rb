@@ -6,7 +6,7 @@ module SystemRDL
       include Common
 
       def initialize(node)
-        super(node.range)
+        super(node.token_range)
         @node = node
         evaluate_literal
       end
@@ -20,7 +20,7 @@ module SystemRDL
       end
 
       def position
-        @node.range.head
+        @node.token_range.head
       end
 
       private

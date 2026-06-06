@@ -39,8 +39,8 @@ module SystemRDL
       end
 
       def node(kind, children, values)
-        range = to_token_range(values)
-        Node.new(kind, children, { range: range })
+        token_range = to_token_range(values)
+        Node.new(kind, children, { token_range: token_range })
       end
 
       def component_insts_node(type, insts)
@@ -51,8 +51,8 @@ module SystemRDL
       end
 
       def component_inst_node(values)
-        array, range = values[1]
-        node(:component_inst, [values[0], array, range, *values[2..]], values)
+        array, token_range = values[1]
+        node(:component_inst, [values[0], array, token_range, *values[2..]], values)
       end
 
       def uop_node(values)
@@ -68,11 +68,11 @@ module SystemRDL
         head = values.first
         tail = values.last
         if values.size == 1 && head.is_a?(Node)
-          head.range
+          head.token_range
         else
-          head_token = (head.is_a?(Node) && head.range.head) || head
-          tail_token = (tail.is_a?(Node) && tail.range.tail) || tail
-          TokenRange.new(head_token, tail_token)
+          head_token = (head.is_a?(Node) && head.token_range.head) || head
+          tail_token = (tail.is_a?(Node) && tail.token_range.tail) || tail
+          Tokentoken_range.new(head_token, tail_token)
         end
       end
     end

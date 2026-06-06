@@ -40,7 +40,7 @@ module SystemRDL
       end
     end
 
-    class TokenRange
+    class Tokentoken_range
       def initialize(head, tail = nil)
         @head = head
         @tail = tail || head

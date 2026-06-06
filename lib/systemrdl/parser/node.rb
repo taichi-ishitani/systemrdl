@@ -3,14 +3,14 @@
 module SystemRDL
   module Parser
     class Node < AST::Node
-      attr_reader :range
+      attr_reader :token_range
 
       def replace_type(type)
         updated(type, nil, nil)
       end
 
-      def replace_range(range)
-        updated(nil, nil, { range: range })
+      def replace_token_range(token_range)
+        updated(nil, nil, { token_range: token_range })
       end
     end
   end

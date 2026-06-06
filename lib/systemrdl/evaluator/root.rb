@@ -3,8 +3,8 @@
 module SystemRDL
   module Evaluator
     class Root < ComponentDefinition
-      def initialize(elements, range)
-        super(:root, elements, nil, range)
+      def initialize(elements, token_range)
+        super(:root, elements, nil, token_range)
         connect(self, self)
       end
 
