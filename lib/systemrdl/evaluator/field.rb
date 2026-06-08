@@ -88,12 +88,36 @@ module SystemRDL
       end
 
       def calc_bit_pos(instance, inst_values)
-        size = inst_values[:array]&.at(0)&.to_value
-        width = size&.value || 1
+        width = calc_bit_width(instance, inst_values)
         last_msb = instance.parent.instances.last&.msb
         lsb = (last_msb&.value || -1) + 1
-        msb = lsb + width - 1
-        [msb, lsb].map { |pos| Value.new(pos, size&.token_range) }
+        msb = lsb + (width&.value || 1) - 1
+        [msb, lsb].map { |pos| Value.new(pos, width&.token_range) }
+      end
+
+      def calc_bit_width(instnace, inst_values)
+        size = inst_values[:array]&.at(0)&.to_value
+        return size if size
+
+        instnace.property(:fieldwidth)&.value
+      end
+
+      def validate(instance)
+        check_fieldwidth(instance)
+      end
+
+      def check_fieldwidth(instance)
+        filedwidth = instance.property(:fieldwidth)&.value
+        return unless filedwidth
+
+        msb = instance.msb
+        lsb = instance.lsb
+        width = msb.value - lsb.value + 1
+        return if width == filedwidth.value
+
+        message = "bit width mismatch: instance width #{width} fieldwidth property #{filedwidth}"
+        position = (msb.token_range || lsb.token_range)&.head
+        raise_evaluation_error message, position
       end
     end
 

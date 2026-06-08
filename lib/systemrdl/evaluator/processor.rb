@@ -4,7 +4,8 @@ module SystemRDL
   module Evaluator
     class Processor < AST::Processor
       def on_id(node)
-        node.children[0].to_sym
+        id = node.children[0].to_sym
+        Value.new(id, node.token_range)
       end
 
       def on_boolean(node)
@@ -60,15 +61,38 @@ module SystemRDL
         process_all(node.children)
       end
 
+      def on_instance_ref_element(node)
+        id = process(node.chldren[0])
+        array = process_all(node.children[1..])
+        InstanceRefElement.new(id, array, node.token_range)
+      end
+
+      def on_instance_ref(node)
+        elements = process_all(node.children)
+        InstanceRef.new(elements, node.token_range)
+      end
+
+      def on_prop_ref(node)
+        instnace_ref = process(node.children[0])
+        prop = process(node.children[1])
+        PropRef.new(instnace_ref, prop, node.token_range)
+      end
+
+      def on_prop_assignment(node)
+        id, value = process_all(node.children)
+        prop_ref = PropRef.new(nil, id, node.children[0].token_range)
+        PropertyAssignment.new(prop_ref, value, node.token_range)
+      end
+
       def on_component_inst(node)
         inst_id = process(node.children[0])
         inst_values =
-          [:array, :range, :reset_value, :address_assignment, :address_stride, :address_assignment]
-            .zip(node.children[1..])
-            .to_h do |key, node|
-              value = key == :array ? process_all(node) : process(node)
-              [key, value]
-            end
+          [
+            :array, :range, :reset_value, :address_assignment, :address_stride, :address_assignment
+          ].zip(node.children[1..]).to_h do |key, node|
+            value = key == :array ? process_all(node) : process(node)
+            [key, value]
+          end
         ComponentInst.new(inst_id, inst_values, node.token_range)
       end
 

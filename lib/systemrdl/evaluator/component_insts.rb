@@ -28,9 +28,10 @@ module SystemRDL
       private
 
       def find_component_definition
+        id = @component_id.value
         component = @component
         while component
-          definition = component.definitions[@component_id]
+          definition = component.definitions[id]
           return definition if definition
 
           component = component.component
@@ -53,7 +54,7 @@ module SystemRDL
       attr_reader :inst_id
 
       def evaluate(instance, component_definition:, **optargs)
-        component_definition.create_instance(instance, @inst_id, @inst_values, **optargs)
+        component_definition.create_instance(instance, @inst_id.value, @inst_values, **optargs)
       end
     end
   end

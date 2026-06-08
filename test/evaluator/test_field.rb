@@ -88,6 +88,51 @@ module SystemRDL
         assert_value(16, fields[3].lsb)
         assert_value(20, fields[3].msb)
       end
+
+      def test_fieldwidth_provides_default_bit_width
+        fields = evaluate(<<~'RDL').instances[0].instances[0].instances
+          addrmap my_map {
+            reg {
+              field { fieldwidth = 1; } a;
+              field { fieldwidth = 2; } b;
+              field { fieldwidth = 2; } c[2];
+            } my_reg;
+          };
+        RDL
+
+        assert_value(0, fields[0].lsb)
+        assert_value(0, fields[0].msb)
+
+        assert_value(1, fields[1].lsb)
+        assert_value(2, fields[1].msb)
+
+        assert_value(3, fields[2].lsb)
+        assert_value(4, fields[2].msb)
+      end
+
+      def test_fieldwidth_forces_bit_width
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { fieldwidth = 2; } a[1];
+              } my_reg;
+            };
+          RDL
+          'bit width mismatch: instance width 1 fieldwidth property 2'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { fieldwidth = 2; } a[3];
+              } my_reg;
+            };
+          RDL
+          'bit width mismatch: instance width 3 fieldwidth property 2'
+        )
+      end
     end
   end
 end

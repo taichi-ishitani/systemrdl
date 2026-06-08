@@ -33,6 +33,7 @@ module SystemRDL
         init_properties(instance)
         eval_body(instance, **optargs)
         apply_inst_values(instance, inst_values)
+        validate(instance)
 
         parent_instance.instances << instance
         instance
@@ -61,10 +62,13 @@ module SystemRDL
       def apply_inst_values(_instance, _inst_values)
       end
 
+      def validate(_instance)
+      end
+
       protected
 
       def add_definition(definition)
-        id = definition.id
+        id = definition.id.value
         @definitions[id] = definition
       end
     end
