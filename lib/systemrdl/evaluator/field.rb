@@ -5,7 +5,7 @@ module SystemRDL
     class FieldDefinition < ComponentDefinition
       private
 
-      def instnace_class
+      def instance_class
         FieldInstance
       end
 
@@ -95,11 +95,11 @@ module SystemRDL
         [msb, lsb].map { |pos| Value.new(pos, width&.token_range) }
       end
 
-      def calc_bit_width(instnace, inst_values)
+      def calc_bit_width(instance, inst_values)
         size = inst_values[:array]&.at(0)&.to_value
         return size if size
 
-        instnace.property(:fieldwidth)&.value
+        instance.property(:fieldwidth)&.value
       end
 
       def validate(instance)
@@ -107,15 +107,15 @@ module SystemRDL
       end
 
       def check_fieldwidth(instance)
-        filedwidth = instance.property(:fieldwidth)&.value
-        return unless filedwidth
+        fieldwidth = instance.property(:fieldwidth)&.value
+        return unless fieldwidth
 
         msb = instance.msb
         lsb = instance.lsb
         width = msb.value - lsb.value + 1
-        return if width == filedwidth.value
+        return if width == fieldwidth.value
 
-        message = "bit width mismatch: instance width #{width} fieldwidth property #{filedwidth}"
+        message = "bit width mismatch: instance width #{width} fieldwidth property #{fieldwidth}"
         position = (msb.token_range || lsb.token_range)&.head
         raise_evaluation_error message, position
       end

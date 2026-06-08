@@ -5,7 +5,7 @@ module SystemRDL
     class RegFileDefinition < ComponentDefinition
       private
 
-      def instnace_class
+      def instance_class
         RegFileInstance
       end
 

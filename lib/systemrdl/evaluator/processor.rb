@@ -62,7 +62,7 @@ module SystemRDL
       end
 
       def on_instance_ref_element(node)
-        id = process(node.chldren[0])
+        id = process(node.children[0])
         array = process_all(node.children[1..])
         InstanceRefElement.new(id, array, node.token_range)
       end
@@ -73,9 +73,9 @@ module SystemRDL
       end
 
       def on_prop_ref(node)
-        instnace_ref = process(node.children[0])
+        instance_ref = process(node.children[0])
         prop = process(node.children[1])
-        PropRef.new(instnace_ref, prop, node.token_range)
+        PropRef.new(instance_ref, prop, node.token_range)
       end
 
       def on_prop_assignment(node)

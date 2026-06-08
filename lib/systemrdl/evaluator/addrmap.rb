@@ -9,7 +9,7 @@ module SystemRDL
 
       private
 
-      def instnace_class
+      def instance_class
         AddrMapInstance
       end
 

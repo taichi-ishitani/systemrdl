@@ -28,7 +28,7 @@ module SystemRDL
       end
 
       def create_instance(parent_instance, inst_name, inst_values, **optargs)
-        instance = instnace_class.new(parent_instance, inst_name)
+        instance = instance_class.new(parent_instance, inst_name)
 
         init_properties(instance)
         eval_body(instance, **optargs)
