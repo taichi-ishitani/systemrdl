@@ -17,7 +17,7 @@ module SystemRDL
 
     class RootInstance < Instance
       def initialize
-        super(nil, :root)
+        super(Root, nil, :root)
       end
     end
   end

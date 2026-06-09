@@ -133,6 +133,66 @@ module SystemRDL
           'bit width mismatch: instance width 3 fieldwidth property 2'
         )
       end
+
+      def test_reset_value_within_bit_width_is_accepted
+        fields = evaluate(<<~'RDL').instances[0].instances[0].instances
+          addrmap my_map {
+            reg {
+              field { reset = 0; } a[2];
+              field { reset = 3; } b[2];
+              field { reset = 3; } c[2] = 0;
+              field { reset = 0; } d[2] = 3;
+              field {} e[2] = 3;
+              field {} f[2] = 0;
+              e->reset = 0;
+              f->reset = 3;
+            } my_reg;
+          };
+        RDL
+
+        assert_property_value(fields[0], :reset, 0)
+        assert_property_value(fields[1], :reset, 3)
+        assert_property_value(fields[2], :reset, 0)
+        assert_property_value(fields[3], :reset, 3)
+        assert_property_value(fields[4], :reset, 0)
+        assert_property_value(fields[5], :reset, 3)
+      end
+
+      def test_reset_value_exceeding_bit_width_is_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { reset = 4; } a[2];
+              } my_reg;
+            };
+          RDL
+          'reset value out of range: value 0x4 range 0x0..0x3'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { reset = 0; } a[2] = 4;
+              } my_reg;
+            };
+          RDL
+          'reset value out of range: value 0x4 range 0x0..0x3'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field {} a[2] = 0;
+                a->reset = 4;
+              } my_reg;
+            };
+          RDL
+          'reset value out of range: value 0x4 range 0x0..0x3'
+        )
+      end
     end
   end
 end

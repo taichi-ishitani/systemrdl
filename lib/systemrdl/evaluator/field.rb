@@ -3,6 +3,15 @@
 module SystemRDL
   module Evaluator
     class FieldDefinition < ComponentDefinition
+      def validate(instance)
+        check_fieldwidth(instance)
+        check_reset_value(instance)
+      end
+
+      def revalidate(instance)
+        check_reset_value(instance)
+      end
+
       private
 
       def instance_class
@@ -74,6 +83,7 @@ module SystemRDL
 
       def apply_inst_values(instance, inst_values)
         assign_bit_pos(instance, inst_values)
+        apply_reset_value(instance, inst_values)
       end
 
       def assign_bit_pos(instance, inst_values)
@@ -102,10 +112,6 @@ module SystemRDL
         instance.property(:fieldwidth)&.value
       end
 
-      def validate(instance)
-        check_fieldwidth(instance)
-      end
-
       def check_fieldwidth(instance)
         fieldwidth = instance.property(:fieldwidth)&.value
         return unless fieldwidth
@@ -118,6 +124,30 @@ module SystemRDL
         message = "bit width mismatch: instance width #{width} fieldwidth property #{fieldwidth}"
         position = (msb.token_range || lsb.token_range)&.head
         raise_evaluation_error message, position
+      end
+
+      def apply_reset_value(instance, inst_values)
+        value = inst_values[:reset_value]
+        return unless value
+
+        property = instance.property(:reset)
+        property.assign(value.to_value)
+      end
+
+      def check_reset_value(instance)
+        reset_value = instance.property(:reset)&.value
+        return unless reset_value
+
+        width = instance.msb.value - instance.lsb.value + 1
+        range = 0..((2**width) - 1)
+        return if range.include?(reset_value.value)
+
+        message =
+          format(
+            'reset value out of range: value 0x%<reset_value>x range 0x%<begin>x..0x%<end>x',
+            reset_value: reset_value.value, begin: range.begin, end: range.end
+          )
+        raise_evaluation_error message, reset_value.token_range.head
       end
     end
 

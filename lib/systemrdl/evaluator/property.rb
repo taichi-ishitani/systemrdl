@@ -33,5 +33,20 @@ module SystemRDL
         property.assign(@value.to_value)
       end
     end
+
+    class PostPropertyAssignment
+      include Common
+
+      def initialize(prop_ref, value, token_range)
+        super(token_range)
+        @prop_ref = prop_ref
+        @value = value
+      end
+
+      def evaluate(instance, **_optargs)
+        property = @prop_ref.find(instance)
+        property.assign(@value.to_value)
+      end
+    end
   end
 end

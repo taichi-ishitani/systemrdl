@@ -18,6 +18,11 @@ module SystemRDL
         assert_equal(value, property.value.value) unless value.nil?
       end
 
+      def assert_property_value(instance, name, value)
+        property = instance.property(name)
+        assert_equal(value, property.value.value)
+      end
+
       def assert_value(exp, act)
         assert_equal(exp, act.value)
       end

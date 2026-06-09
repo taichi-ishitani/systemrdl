@@ -84,6 +84,15 @@ module SystemRDL
         PropertyAssignment.new(prop_ref, value, node.token_range)
       end
 
+      def on_post_prop_assignment(node)
+        prop_ref, value = process_all(node.children)
+        PostPropertyAssignment.new(prop_ref, value, node.token_range)
+      end
+
+      def on_reset_value(node)
+        process(node.children[0])
+      end
+
       def on_component_inst(node)
         inst_id = process(node.children[0])
         inst_values =

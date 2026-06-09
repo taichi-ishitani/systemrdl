@@ -28,15 +28,21 @@ module SystemRDL
       end
 
       def create_instance(parent_instance, inst_name, inst_values, **optargs)
-        instance = instance_class.new(parent_instance, inst_name)
+        instance = instance_class.new(self, parent_instance, inst_name)
 
         init_properties(instance)
         eval_body(instance, **optargs)
         apply_inst_values(instance, inst_values)
-        validate(instance)
+        instance.validate
 
         parent_instance.instances << instance
         instance
+      end
+
+      def validate(_instance)
+      end
+
+      def revalidate(_instance)
       end
 
       private
@@ -60,9 +66,6 @@ module SystemRDL
       end
 
       def apply_inst_values(_instance, _inst_values)
-      end
-
-      def validate(_instance)
       end
 
       protected
