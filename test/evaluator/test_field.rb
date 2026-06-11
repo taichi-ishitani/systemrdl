@@ -193,6 +193,91 @@ module SystemRDL
           'reset value out of range: value 0x4 range 0x0..0x3'
         )
       end
+
+      def test_valid_sw_hw_access_combinations
+        fields = evaluate(<<~'RDL').instances[0].instances[0].instances
+          addrmap my_map {
+            reg {
+              field { sw = rw; hw = rw; } a;
+              field { sw = rw; hw = r ; } b;
+              field { sw = rw; hw = w ; } c;
+              field { sw = rw; hw = na; } d;
+
+              field { sw = r ; hw = rw; } e;
+              field { sw = r ; hw = r ; } f;
+              field { sw = r ; hw = w ; } g;
+              field { sw = r ; hw = na; } h;
+
+              field { sw = w ; hw = rw; } i;
+              field { sw = w ; hw = r ; } j;
+            } my_reg;
+          };
+        RDL
+
+        assert_property_value(fields[0], :sw, :rw)
+        assert_property_value(fields[0], :hw, :rw)
+        assert_property_value(fields[1], :sw, :rw)
+        assert_property_value(fields[1], :hw, :r )
+        assert_property_value(fields[2], :sw, :rw)
+        assert_property_value(fields[2], :hw, :w )
+        assert_property_value(fields[3], :sw, :rw)
+        assert_property_value(fields[3], :hw, :na)
+
+        assert_property_value(fields[4], :sw, :r )
+        assert_property_value(fields[4], :hw, :rw)
+        assert_property_value(fields[5], :sw, :r )
+        assert_property_value(fields[5], :hw, :r )
+        assert_property_value(fields[6], :sw, :r )
+        assert_property_value(fields[6], :hw, :w )
+        assert_property_value(fields[7], :sw, :r )
+        assert_property_value(fields[7], :hw, :na)
+
+        assert_property_value(fields[8], :sw, :w )
+        assert_property_value(fields[8], :hw, :rw)
+        assert_property_value(fields[9], :sw, :w )
+        assert_property_value(fields[9], :hw, :r )
+      end
+
+      def test_invalid_sw_hw_access_combination
+        [['w', 'w'], ['w', 'na'], ['na', 'rw'], ['na', 'r'], ['na', 'w'], ['na', 'na']].each do |(sw, hw)|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = #{sw}; hw = #{hw}; } a;
+                } my_reg;
+              };
+            RDL
+            "invalid sw/hw access combination: sw = #{sw} hw = #{hw}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = rw; hw = #{hw}; } a;
+                  a->sw = #{sw};
+                } my_reg;
+              };
+            RDL
+            "invalid sw/hw access combination: sw = #{sw} hw = #{hw}"
+          )
+
+          next if sw == 'na'
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = #{sw}; hw = rw; } a;
+                  a->hw = #{hw};
+                } my_reg;
+              };
+            RDL
+            "invalid sw/hw access combination: sw = #{sw} hw = #{hw}"
+          )
+        end
+      end
     end
   end
 end

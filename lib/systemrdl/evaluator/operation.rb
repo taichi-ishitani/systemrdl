@@ -8,10 +8,7 @@ module SystemRDL
       attr_reader :type
       attr_reader :width
       attr_reader :value
-
-      def position
-        @token_range.head
-      end
+      attr_reader :token_range
 
       def to_value
         Value.new(value, @token_range)
@@ -27,7 +24,7 @@ module SystemRDL
         return if integral_operand?(operand)
 
         message = "non integral operand is given: #{operand.type}"
-        raise_evaluation_error message, position
+        raise_evaluation_error message, token_range
       end
 
       def to_boolean(instance, operand)
@@ -200,7 +197,7 @@ module SystemRDL
           [@l_operand.value, @r_operand.value]
         else
           message = "#{@r_operand.type} type is not compatible with #{@l_operand.type} type"
-          raise_evaluation_error message, @r_operand.position
+          raise_evaluation_error message, @r_operand.token_range
         end
       end
 
@@ -223,7 +220,7 @@ module SystemRDL
 
         if div_by_0?(rhs)
           message = 'divisor should be non zero value'
-          raise_evaluation_error message, @r_operand.position
+          raise_evaluation_error message, @r_operand.token_range
         end
 
         result = lhs.__send__(operator, rhs)

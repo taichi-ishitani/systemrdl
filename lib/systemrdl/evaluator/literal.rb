@@ -19,12 +19,12 @@ module SystemRDL
       def expression_width
       end
 
-      def position
-        @node.token_range.head
+      def token_range
+        @node.token_range
       end
 
       def to_value
-        Value.new(value, @node.token_range)
+        Value.new(value, token_range)
       end
 
       private
@@ -104,7 +104,7 @@ module SystemRDL
         return if value.bit_length <= width
 
         message = "value of number does not fit within the specified bit width: #{text}"
-        raise_evaluation_error(message, token.position)
+        raise_evaluation_error(message, token_range)
       end
     end
 

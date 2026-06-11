@@ -35,12 +35,16 @@ module SystemRDL
         text.to_sym
       end
 
+      def to_token_range
+        TokenRange.new(self)
+      end
+
       def ==(other)
         text == ((other.is_a?(Token) && other.text) || other)
       end
     end
 
-    class Tokentoken_range
+    class TokenRange
       def initialize(head, tail = nil)
         @head = head
         @tail = tail || head

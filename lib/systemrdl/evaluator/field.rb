@@ -6,10 +6,12 @@ module SystemRDL
       def validate(instance)
         check_fieldwidth(instance)
         check_reset_value(instance)
+        check_sw_hw_access_combination(instance)
       end
 
       def revalidate(instance)
         check_reset_value(instance)
+        check_sw_hw_access_combination(instance)
       end
 
       private
@@ -109,11 +111,11 @@ module SystemRDL
         size = inst_values[:array]&.at(0)&.to_value
         return size if size
 
-        instance.property(:fieldwidth)&.value
+        instance.property(:fieldwidth).value
       end
 
       def check_fieldwidth(instance)
-        fieldwidth = instance.property(:fieldwidth)&.value
+        fieldwidth = instance.property(:fieldwidth).value
         return unless fieldwidth
 
         msb = instance.msb
@@ -122,8 +124,7 @@ module SystemRDL
         return if width == fieldwidth.value
 
         message = "bit width mismatch: instance width #{width} fieldwidth property #{fieldwidth}"
-        position = (msb.token_range || lsb.token_range)&.head
-        raise_evaluation_error message, position
+        raise_evaluation_error message, msb.token_range, lsb.token_range
       end
 
       def apply_reset_value(instance, inst_values)
@@ -135,7 +136,7 @@ module SystemRDL
       end
 
       def check_reset_value(instance)
-        reset_value = instance.property(:reset)&.value
+        reset_value = instance.property(:reset).value
         return unless reset_value
 
         width = instance.msb.value - instance.lsb.value + 1
@@ -147,7 +148,18 @@ module SystemRDL
             'reset value out of range: value 0x%<reset_value>x range 0x%<begin>x..0x%<end>x',
             reset_value: reset_value.value, begin: range.begin, end: range.end
           )
-        raise_evaluation_error message, reset_value.token_range.head
+        raise_evaluation_error message, reset_value.token_range
+      end
+
+      def check_sw_hw_access_combination(instance)
+        sw = instance.property(:sw).value
+        hw = instance.property(:hw).value
+
+        combination = [sw.value, hw.value]
+        return unless combination in [:w, :w] | [:w, :na] | [:na, *]
+
+        message = "invalid sw/hw access combination: sw = #{sw} hw = #{hw}"
+        raise_evaluation_error message, sw.token_range, hw.token_range
       end
     end
 

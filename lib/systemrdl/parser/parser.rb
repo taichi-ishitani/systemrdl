@@ -72,7 +72,7 @@ module SystemRDL
         else
           head_token = (head.is_a?(Node) && head.token_range.head) || head
           tail_token = (tail.is_a?(Node) && tail.token_range.tail) || tail
-          Tokentoken_range.new(head_token, tail_token)
+          TokenRange.new(head_token, tail_token)
         end
       end
     end
