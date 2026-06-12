@@ -20,7 +20,11 @@ module SystemRDL
 
       def assert_property_value(instance, name, value)
         property = instance.property(name)
-        assert_equal(value, property.value.value)
+        if value.nil?
+          assert_nil(property.value)
+        else
+          assert_equal(value, property.value.value)
+        end
       end
 
       def assert_value(exp, act)

@@ -238,7 +238,7 @@ module SystemRDL
         assert_property_value(fields[9], :hw, :r )
       end
 
-      def test_invalid_sw_hw_access_combination
+      def test_invalid_sw_hw_access_combinations
         [['w', 'w'], ['w', 'na'], ['na', 'rw'], ['na', 'r'], ['na', 'w'], ['na', 'na']].each do |(sw, hw)|
           assert_raises_evaluation_error(
             <<~RDL,
@@ -275,6 +275,278 @@ module SystemRDL
               };
             RDL
             "invalid sw/hw access combination: sw = #{sw} hw = #{hw}"
+          )
+        end
+      end
+
+      def test_onread_rclr_rset_can_be_set_individually
+        fields = evaluate(<<~'RDL').instances[0].instances[0].instances
+          addrmap my_map {
+            reg {
+              field { onread = rclr ; } a;
+              field { onread = rset ; } b;
+              field { onread = ruser; } c;
+              field { rclr;           } d;
+              field { rclr = true;    } e;
+              field { rset;           } f;
+              field { rset = true;    } g;
+
+              field {} h;
+              h->onread = rclr;
+              field {} i;
+              i->onread = rset;
+              field {} j;
+              j->onread = ruser;
+              field {} k;
+              k->rclr;
+              field {} l;
+              l->rclr = true;
+              field {} m;
+              m->rset;
+              field {} n;
+              n->rset = true;
+            } my_reg;
+          };
+        RDL
+
+        assert_property_value(fields[0], :onread, :rclr)
+        assert_property_value(fields[0], :rclr  , false)
+        assert_property_value(fields[0], :rset  , false)
+
+        assert_property_value(fields[1], :onread, :rset)
+        assert_property_value(fields[1], :rclr  , false)
+        assert_property_value(fields[1], :rset  , false)
+
+        assert_property_value(fields[2], :onread, :ruser)
+        assert_property_value(fields[2], :rclr  , false)
+        assert_property_value(fields[2], :rset  , false)
+
+        assert_property_value(fields[3], :onread, nil)
+        assert_property_value(fields[3], :rclr  , true)
+        assert_property_value(fields[3], :rset  , false)
+
+        assert_property_value(fields[4], :onread, nil)
+        assert_property_value(fields[4], :rclr  , true)
+        assert_property_value(fields[4], :rset  , false)
+
+        assert_property_value(fields[5], :onread, nil)
+        assert_property_value(fields[5], :rclr  , false)
+        assert_property_value(fields[5], :rset  , true)
+
+        assert_property_value(fields[6], :onread, nil)
+        assert_property_value(fields[6], :rclr  , false)
+        assert_property_value(fields[6], :rset  , true)
+
+        assert_property_value(fields[7], :onread, :rclr)
+        assert_property_value(fields[7], :rclr  , false)
+        assert_property_value(fields[7], :rset  , false)
+
+        assert_property_value(fields[8], :onread, :rset)
+        assert_property_value(fields[8], :rclr  , false)
+        assert_property_value(fields[8], :rset  , false)
+
+        assert_property_value(fields[9], :onread, :ruser)
+        assert_property_value(fields[9], :rclr  , false)
+        assert_property_value(fields[9], :rset  , false)
+
+        assert_property_value(fields[10], :onread, nil)
+        assert_property_value(fields[10], :rclr  , true)
+        assert_property_value(fields[10], :rset  , false)
+
+        assert_property_value(fields[11], :onread, nil)
+        assert_property_value(fields[11], :rclr  , true)
+        assert_property_value(fields[11], :rset  , false)
+
+        assert_property_value(fields[12], :onread, nil)
+        assert_property_value(fields[12], :rclr  , false)
+        assert_property_value(fields[12], :rset  , true)
+
+        assert_property_value(fields[13], :onread, nil)
+        assert_property_value(fields[13], :rclr  , false)
+        assert_property_value(fields[13], :rset  , true)
+      end
+
+      def test_onread_rclr_rset_are_mutually_exclusive
+        ['rclr', 'rset', 'ruser'].each do |onread|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { onread = #{onread}; rclr; } a;
+                } my_reg;
+              };
+            RDL
+            'onread, rclr and rset properties are mutually exclusive'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { onread = #{onread}; rset; } a;
+                } my_reg;
+              };
+            RDL
+            'onread, rclr and rset properties are mutually exclusive'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { onread = #{onread}; } a;
+                  a->rclr;
+                } my_reg;
+              };
+            RDL
+            'onread, rclr and rset properties are mutually exclusive'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { onread = #{onread}; } a;
+                  a->rset;
+                } my_reg;
+              };
+            RDL
+            'onread, rclr and rset properties are mutually exclusive'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { rclr; } a;
+                  a->onread = #{onread};
+                } my_reg;
+              };
+            RDL
+            'onread, rclr and rset properties are mutually exclusive'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { rset; } a;
+                  a->onread = #{onread};
+                } my_reg;
+              };
+            RDL
+            'onread, rclr and rset properties are mutually exclusive'
+          )
+        end
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { rclr; rset; } a;
+              } my_reg;
+            };
+          RDL
+          'onread, rclr and rset properties are mutually exclusive'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { rset; } a;
+                a->rclr;
+              } my_reg;
+            };
+          RDL
+          'onread, rclr and rset properties are mutually exclusive'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { rclr; } a;
+                a->rset;
+              } my_reg;
+            };
+          RDL
+          'onread, rclr and rset properties are mutually exclusive'
+        )
+      end
+
+      def test_onread_requires_sw_read_access
+        ['rclr', 'rset', 'ruser'].each do |onread|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { onread = #{onread}; sw = w; } a;
+                } my_reg;
+              };
+            RDL
+            "sw read access required: onread = #{onread} sw = w"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { onread = #{onread}; } a;
+                  a->sw = w;
+                } my_reg;
+              };
+            RDL
+            "sw read access required: onread = #{onread} sw = w"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = w; } a;
+                  a->onread = #{onread};
+                } my_reg;
+              };
+            RDL
+            "sw read access required: onread = #{onread} sw = w"
+          )
+
+          next if onread == 'ruser'
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { #{onread}; sw = w; } a;
+                } my_reg;
+              };
+            RDL
+            "sw read access required: onread = #{onread} sw = w"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { #{onread}; } a;
+                  a->sw = w;
+                } my_reg;
+              };
+            RDL
+            "sw read access required: onread = #{onread} sw = w"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = w; } a;
+                  a->#{onread};
+                } my_reg;
+              };
+            RDL
+            "sw read access required: onread = #{onread} sw = w"
           )
         end
       end

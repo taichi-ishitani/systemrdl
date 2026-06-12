@@ -7,11 +7,15 @@ module SystemRDL
         check_fieldwidth(instance)
         check_reset_value(instance)
         check_sw_hw_access_combination(instance)
+        check_onread_individualy_set(instance)
+        check_sw_read_access_required(instance)
       end
 
       def revalidate(instance)
         check_reset_value(instance)
         check_sw_hw_access_combination(instance)
+        check_onread_individualy_set(instance)
+        check_sw_read_access_required(instance)
       end
 
       private
@@ -111,11 +115,11 @@ module SystemRDL
         size = inst_values[:array]&.at(0)&.to_value
         return size if size
 
-        instance.property(:fieldwidth).value
+        instance.property_value(:fieldwidth)
       end
 
       def check_fieldwidth(instance)
-        fieldwidth = instance.property(:fieldwidth).value
+        fieldwidth = instance.property_value(:fieldwidth)
         return unless fieldwidth
 
         msb = instance.msb
@@ -136,7 +140,7 @@ module SystemRDL
       end
 
       def check_reset_value(instance)
-        reset_value = instance.property(:reset).value
+        reset_value = instance.property_value(:reset)
         return unless reset_value
 
         width = instance.msb.value - instance.lsb.value + 1
@@ -152,14 +156,44 @@ module SystemRDL
       end
 
       def check_sw_hw_access_combination(instance)
-        sw = instance.property(:sw).value
-        hw = instance.property(:hw).value
+        sw = instance.property_value(:sw)
+        hw = instance.property_value(:hw)
 
         combination = [sw.value, hw.value]
         return unless combination in [:w, :w] | [:w, :na] | [:na, *]
 
         message = "invalid sw/hw access combination: sw = #{sw} hw = #{hw}"
         raise_evaluation_error message, sw.token_range, hw.token_range
+      end
+
+      def check_onread_individualy_set(instance)
+        onread = [
+          instance.property_value(:onread),
+          instance.property_value(:rclr),
+          instance.property_value(:rset)
+        ].compact
+
+        return if onread.count(&:value) <= 1
+
+        message = 'onread, rclr and rset properties are mutually exclusive'
+        raise_evaluation_error message, *onread.map(&:token_range)
+      end
+
+      def check_sw_read_access_required(instance)
+        kind, onread = {
+          onread: instance.property_value(:onread),
+          rclr: instance.property_value(:rclr),
+          rset: instance.property_value(:rset)
+        }.find { |_, v| v&.value }
+
+        return unless onread
+
+        sw = instance.property_value(:sw)
+        return if [:rw, :r].include?(sw.value)
+
+        onread_normalized = (kind == :onread && onread.value) || kind
+        message = "sw read access required: onread = #{onread_normalized} sw = #{sw}"
+        raise_evaluation_error message, onread.token_range, sw.token_range
       end
     end
 

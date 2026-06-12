@@ -19,9 +19,7 @@ module SystemRDL
       end
     end
 
-    class PropertyAssignment
-      include Common
-
+    module PropertyAssignmentCommon
       def initialize(prop_ref, value, token_range)
         super(token_range)
         @prop_ref = prop_ref
@@ -30,23 +28,26 @@ module SystemRDL
 
       def evaluate(instance, **_optargs)
         property = @prop_ref.find(instance)
-        property.assign(@value.to_value)
+        value =
+          if @value
+            @value.to_value
+          else
+            # true value is implicitly applied
+            # when the assignment value is omitted.
+            Value.new(true, @token_range)
+          end
+        property.assign(value)
       end
+    end
+
+    class PropertyAssignment
+      include Common
+      include PropertyAssignmentCommon
     end
 
     class PostPropertyAssignment
       include Common
-
-      def initialize(prop_ref, value, token_range)
-        super(token_range)
-        @prop_ref = prop_ref
-        @value = value
-      end
-
-      def evaluate(instance, **_optargs)
-        property = @prop_ref.find(instance)
-        property.assign(@value.to_value)
-      end
+      include PropertyAssignmentCommon
     end
   end
 end

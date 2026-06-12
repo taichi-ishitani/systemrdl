@@ -21,6 +21,10 @@ module SystemRDL
         properties.find { |prop| prop.name == name }
       end
 
+      def property_value(name)
+        property(name).value
+      end
+
       def validate
         @definition.validate(self)
         @instances.each(&:revalidate)
