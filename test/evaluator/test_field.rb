@@ -6,50 +6,51 @@ module SystemRDL
   module Evaluator
     class TestField < TestCase
       def test_property_initialization
-        field = evaluate(<<~'RDL').instances[0].instances[0].instances[0]
+        fields = evaluate(<<~'RDL').instances[0].instances[0].instances
           addrmap some_reg {
             reg {
-              field {} my_field;
+              field { sw = r; } my_field_0;
+              field { hw = r; } my_field_1;
             } my_reg;
           };
         RDL
 
-        assert_property(field, :name, [:string], value: 'my_field')
-        assert_property(field, :desc, [:string], value: '')
+        assert_property(fields[0], :name, [:string], value: 'my_field_0')
+        assert_property(fields[0], :desc, [:string], value: '')
 
         # Field access properties
-        assert_property(field, :hw, [:access_type], value: :rw)
-        assert_property(field, :sw, [:access_type], value: :rw)
+        assert_property(fields[0], :hw, [:access_type], value: :rw)
+        assert_property(fields[1], :sw, [:access_type], value: :rw)
 
         # Hardware signal properties
-        assert_property(field, :next, [:reference])
-        assert_property(field, :reset, [:bit, :reference])
-        assert_property(field, :resetsignal, [:reference])
+        assert_property(fields[0], :next, [:reference])
+        assert_property(fields[0], :reset, [:bit, :reference])
+        assert_property(fields[0], :resetsignal, [:reference])
 
         # Software access properties
-        assert_property(field, :rclr, [:boolean], value: false)
-        assert_property(field, :rset, [:boolean], value: false)
-        assert_property(field, :onread, [:on_read_type])
-        assert_property(field, :woset, [:boolean], value: false)
-        assert_property(field, :woclr, [:boolean], value: false)
-        assert_property(field, :onwrite, [:on_write_type])
-        assert_property(field, :swwe, [:boolean, :reference], value: false)
-        assert_property(field, :swwel, [:boolean, :reference], value: false)
-        assert_property(field, :swmod, [:boolean], value: false)
-        assert_property(field, :swacc, [:boolean], value: false)
-        assert_property(field, :singlepulse, [:boolean], value: false)
+        assert_property(fields[0], :rclr, [:boolean], value: false)
+        assert_property(fields[0], :rset, [:boolean], value: false)
+        assert_property(fields[0], :onread, [:on_read_type])
+        assert_property(fields[0], :woset, [:boolean], value: false)
+        assert_property(fields[0], :woclr, [:boolean], value: false)
+        assert_property(fields[0], :onwrite, [:on_write_type])
+        assert_property(fields[0], :swwe, [:boolean, :reference], value: false)
+        assert_property(fields[0], :swwel, [:boolean, :reference], value: false)
+        assert_property(fields[0], :swmod, [:boolean], value: false)
+        assert_property(fields[0], :swacc, [:boolean], value: false)
+        assert_property(fields[0], :singlepulse, [:boolean], value: false)
 
         # Hardware access properties
-        assert_property(field, :we, [:boolean, :reference], value: false)
-        assert_property(field, :wel, [:boolean, :reference], value: false)
-        assert_property(field, :anded, [:boolean], value: false)
-        assert_property(field, :ored, [:boolean], value: false)
-        assert_property(field, :xored, [:boolean], value: false)
-        assert_property(field, :fieldwidth, [:longint])
-        assert_property(field, :hwclr, [:boolean, :reference], value: false)
-        assert_property(field, :hwset, [:boolean, :reference], value: false)
-        assert_property(field, :hwenable, [:reference])
-        assert_property(field, :hwmask, [:reference])
+        assert_property(fields[0], :we, [:boolean, :reference], value: false)
+        assert_property(fields[0], :wel, [:boolean, :reference], value: false)
+        assert_property(fields[0], :anded, [:boolean], value: false)
+        assert_property(fields[0], :ored, [:boolean], value: false)
+        assert_property(fields[0], :xored, [:boolean], value: false)
+        assert_property(fields[0], :fieldwidth, [:longint])
+        assert_property(fields[0], :hwclr, [:boolean, :reference], value: false)
+        assert_property(fields[0], :hwset, [:boolean, :reference], value: false)
+        assert_property(fields[0], :hwenable, [:reference])
+        assert_property(fields[0], :hwmask, [:reference])
 
         # Counter properties
         # TODO
@@ -60,18 +61,18 @@ module SystemRDL
         # Miscellaneous field properties
         # TODO
         # assert_property(field, :encode)
-        assert_property(field, :precedence, [:precedence_type], value: :sw)
-        assert_property(field, :paritycheck, [:boolean], value: false)
+        assert_property(fields[0], :precedence, [:precedence_type], value: :sw)
+        assert_property(fields[0], :paritycheck, [:boolean], value: false)
       end
 
       def test_bit_index
         fields = evaluate(<<~'RDL').instances[0].instances[0].instances
           addrmap my_map {
             reg {
-              field {} a;
-              field {} b[3];
-              field {} c[15:8];
-              field {} d[5];
+              field { hw = r; } a;
+              field { hw = r; } b[3];
+              field { hw = r; } c[15:8];
+              field { hw = r; } d[5];
             } my_reg;
           };
         RDL
@@ -93,9 +94,9 @@ module SystemRDL
         fields = evaluate(<<~'RDL').instances[0].instances[0].instances
           addrmap my_map {
             reg {
-              field { fieldwidth = 1; } a;
-              field { fieldwidth = 2; } b;
-              field { fieldwidth = 2; } c[2];
+              field { fieldwidth = 1; hw = r; } a;
+              field { fieldwidth = 2; hw = r; } b;
+              field { fieldwidth = 2; hw = r; } c[2];
             } my_reg;
           };
         RDL
@@ -138,12 +139,12 @@ module SystemRDL
         fields = evaluate(<<~'RDL').instances[0].instances[0].instances
           addrmap my_map {
             reg {
-              field { reset = 0; } a[2];
-              field { reset = 3; } b[2];
-              field { reset = 3; } c[2] = 0;
-              field { reset = 0; } d[2] = 3;
-              field {} e[2] = 3;
-              field {} f[2] = 0;
+              field { reset = 0; hw = r; } a[2];
+              field { reset = 3; hw = r; } b[2];
+              field { reset = 3; hw = r; } c[2] = 0;
+              field { reset = 0; hw = r; } d[2] = 3;
+              field { hw = r; } e[2] = 3;
+              field { hw = r; } f[2] = 0;
               e->reset = 0;
               f->reset = 3;
             } my_reg;
@@ -185,7 +186,7 @@ module SystemRDL
           <<~'RDL',
             addrmap my_map {
               reg {
-                field {} a[2] = 0;
+                field { hw = r; } a[2] = 0;
                 a->reset = 4;
               } my_reg;
             };
@@ -198,18 +199,18 @@ module SystemRDL
         fields = evaluate(<<~'RDL').instances[0].instances[0].instances
           addrmap my_map {
             reg {
-              field { sw = rw; hw = rw; } a;
-              field { sw = rw; hw = r ; } b;
-              field { sw = rw; hw = w ; } c;
-              field { sw = rw; hw = na; } d;
+              field { sw = rw; hw = rw; we; } a;
+              field { sw = rw; hw = r ;     } b;
+              field { sw = rw; hw = w ; we; } c;
+              field { sw = rw; hw = na;     } d;
 
               field { sw = r ; hw = rw; } e;
               field { sw = r ; hw = r ; } f;
               field { sw = r ; hw = w ; } g;
               field { sw = r ; hw = na; } h;
 
-              field { sw = w ; hw = rw; } i;
-              field { sw = w ; hw = r ; } j;
+              field { sw = w ; hw = rw; we; } i;
+              field { sw = w ; hw = r ;     } j;
             } my_reg;
           };
         RDL
@@ -255,7 +256,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { sw = rw; hw = #{hw}; } a;
+                  field { sw = rw; hw = #{hw}; we; } a;
                   a->sw = #{sw};
                 } my_reg;
               };
@@ -269,7 +270,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { sw = #{sw}; hw = rw; } a;
+                  field { sw = #{sw}; hw = rw; we; } a;
                   a->hw = #{hw};
                 } my_reg;
               };
@@ -284,8 +285,8 @@ module SystemRDL
           fields = evaluate(<<~RDL).instances[0].instances[0].instances
             addrmap my_map {
               reg {
-                field { onread = #{onread}; } a;
-                field {} b;
+                field { onread = #{onread}; hw = r; } a;
+                field { hw = r; } b;
                 b->onread = #{onread};
               } my_reg;
             };
@@ -303,11 +304,11 @@ module SystemRDL
         fields = evaluate(<<~RDL).instances[0].instances[0].instances
           addrmap my_map {
             reg {
-              field { rclr;        } a;
-              field { rclr = true; } b;
-              field {} c;
+              field { rclr; hw = r;        } a;
+              field { rclr = true; hw = r; } b;
+              field { hw = r; } c;
               c->rclr;
-              field {} d;
+              field { hw = r; } d;
               d->rclr = true;
             } my_reg;
           };
@@ -332,11 +333,11 @@ module SystemRDL
         fields = evaluate(<<~RDL).instances[0].instances[0].instances
           addrmap my_map {
             reg {
-              field { rset;        } a;
-              field { rset = true; } b;
-              field {} c;
+              field { hw = r; rset;        } a;
+              field { hw = r; rset = true; } b;
+              field { hw = r; } c;
               c->rset;
-              field {} d;
+              field { hw = r; } d;
               d->rset = true;
             } my_reg;
           };
@@ -365,7 +366,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { onread = #{onread}; rclr; } a;
+                  field { onread = #{onread}; rclr; hw = r; } a;
                 } my_reg;
               };
             RDL
@@ -376,7 +377,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { onread = #{onread}; rset; } a;
+                  field { onread = #{onread}; rset; hw = r; } a;
                 } my_reg;
               };
             RDL
@@ -387,7 +388,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { onread = #{onread}; } a;
+                  field { onread = #{onread}; hw = r; } a;
                   a->rclr;
                 } my_reg;
               };
@@ -399,7 +400,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { onread = #{onread}; } a;
+                  field { onread = #{onread}; hw = r; } a;
                   a->rset;
                 } my_reg;
               };
@@ -411,7 +412,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { rclr; } a;
+                  field { rclr; hw = r; } a;
                   a->onread = #{onread};
                 } my_reg;
               };
@@ -423,7 +424,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { rset; } a;
+                  field { rset; hw = r; } a;
                   a->onread = #{onread};
                 } my_reg;
               };
@@ -436,7 +437,7 @@ module SystemRDL
           <<~'RDL',
             addrmap my_map {
               reg {
-                field { rclr; rset; } a;
+                field { rclr; rset; hw = r; } a;
               } my_reg;
             };
           RDL
@@ -447,7 +448,7 @@ module SystemRDL
           <<~'RDL',
             addrmap my_map {
               reg {
-                field { rset; } a;
+                field { rset; hw = r; } a;
                 a->rclr;
               } my_reg;
             };
@@ -459,7 +460,7 @@ module SystemRDL
           <<~'RDL',
             addrmap my_map {
               reg {
-                field { rclr; } a;
+                field { rclr; hw = r; } a;
                 a->rset;
               } my_reg;
             };
@@ -474,7 +475,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { onread = #{onread}; sw = w; } a;
+                  field { onread = #{onread}; sw = w; hw = r; } a;
                 } my_reg;
               };
             RDL
@@ -485,7 +486,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { onread = #{onread}; } a;
+                  field { onread = #{onread}; hw = r; } a;
                   a->sw = w;
                 } my_reg;
               };
@@ -497,7 +498,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { sw = w; } a;
+                  field { sw = w; hw = r; } a;
                   a->onread = #{onread};
                 } my_reg;
               };
@@ -511,7 +512,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { #{onread}; sw = w; } a;
+                  field { #{onread}; sw = w; hw = r; } a;
                 } my_reg;
               };
             RDL
@@ -522,7 +523,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { #{onread}; } a;
+                  field { #{onread}; hw = r; } a;
                   a->sw = w;
                 } my_reg;
               };
@@ -534,7 +535,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { sw = w; } a;
+                  field { sw = w; hw = r; } a;
                   a->#{onread};
                 } my_reg;
               };
@@ -549,8 +550,8 @@ module SystemRDL
           fields = evaluate(<<~RDL).instances[0].instances[0].instances
             addrmap my_map {
               reg {
-                field { onwrite = #{onwrite}; } a;
-                field {} b;
+                field { onwrite = #{onwrite}; hw = r; } a;
+                field { hw = r; } b;
                 b->onwrite = #{onwrite};
               } my_reg;
             };
@@ -568,11 +569,11 @@ module SystemRDL
         fields = evaluate(<<~RDL).instances[0].instances[0].instances
           addrmap my_map {
             reg {
-              field { woset;        } a;
-              field { woset = true; } b;
-              field {} c;
+              field { hw = r; woset;        } a;
+              field { hw = r; woset = true; } b;
+              field { hw = r; } c;
               c->woset;
-              field {} d;
+              field { hw = r; } d;
               d->woset = true;
             } my_reg;
           };
@@ -597,11 +598,11 @@ module SystemRDL
         fields = evaluate(<<~RDL).instances[0].instances[0].instances
           addrmap my_map {
             reg {
-              field { woclr;        } a;
-              field { woclr = true; } b;
-              field {} c;
+              field { hw = r; woclr;        } a;
+              field { hw = r; woclr = true; } b;
+              field { hw = r; } c;
               c->woclr;
-              field {} d;
+              field { hw = r; } d;
               d->woclr = true;
             } my_reg;
           };
@@ -630,7 +631,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { onwrite = #{onwrite}; woset; } a;
+                  field { onwrite = #{onwrite}; woset; hw = r; } a;
                 } my_reg;
               };
             RDL
@@ -641,7 +642,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { onwrite = #{onwrite}; woclr; } a;
+                  field { onwrite = #{onwrite}; woclr; hw = r; } a;
                 } my_reg;
               };
             RDL
@@ -652,7 +653,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { onwrite = #{onwrite}; } a;
+                  field { onwrite = #{onwrite}; hw = r; } a;
                   a->woset;
                 } my_reg;
               };
@@ -664,7 +665,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { onwrite = #{onwrite}; } a;
+                  field { onwrite = #{onwrite}; hw = r; } a;
                   a->woclr;
                 } my_reg;
               };
@@ -676,7 +677,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { woset; } a;
+                  field { woset; hw = r; } a;
                   a->onwrite = #{onwrite};
                 } my_reg;
               };
@@ -688,7 +689,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { woclr; } a;
+                  field { woclr; hw = r; } a;
                   a->onwrite = #{onwrite};
                 } my_reg;
               };
@@ -701,7 +702,7 @@ module SystemRDL
           <<~'RDL',
             addrmap my_map {
               reg {
-                field { woset; woclr; } a;
+                field { woset; woclr; hw = r; } a;
               } my_reg;
             };
           RDL
@@ -712,7 +713,7 @@ module SystemRDL
           <<~'RDL',
             addrmap my_map {
               reg {
-                field { woclr; } a;
+                field { woclr; hw = r; } a;
                 a->woset;
               } my_reg;
             };
@@ -724,7 +725,7 @@ module SystemRDL
           <<~'RDL',
             addrmap my_map {
               reg {
-                field { woset; } a;
+                field { woset; hw = r; } a;
                 a->woclr;
               } my_reg;
             };
@@ -739,7 +740,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { onwrite = #{onwrite}; sw = r; } a;
+                  field { onwrite = #{onwrite}; sw = r; hw = r; } a;
                 } my_reg;
               };
             RDL
@@ -750,7 +751,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { onwrite = #{onwrite}; } a;
+                  field { onwrite = #{onwrite}; hw = r; } a;
                   a->sw = r;
                 } my_reg;
               };
@@ -762,7 +763,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { sw = r; } a;
+                  field { sw = r; hw = r; } a;
                   a->onwrite = #{onwrite};
                 } my_reg;
               };
@@ -776,7 +777,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { #{onwrite}; sw = r; } a;
+                  field { #{onwrite}; sw = r; hw = r; } a;
                 } my_reg;
               };
             RDL
@@ -787,7 +788,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { #{onwrite}; } a;
+                  field { #{onwrite}; hw = r; } a;
                   a->sw = r;
                 } my_reg;
               };
@@ -799,7 +800,7 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 reg {
-                  field { sw = r; } a;
+                  field { sw = r; hw = r; } a;
                   a->#{onwrite};
                 } my_reg;
               };
@@ -813,18 +814,18 @@ module SystemRDL
         fields = evaluate(<<~RDL).instances[0].instances[0].instances
           addrmap my_map {
             reg {
-              field { swwe;         } a;
-              field { swwe = true;  } b;
-              field { swwel;        } c;
-              field { swwel = true; } d;
+              field { hw = r; swwe;         } a;
+              field { hw = r; swwe = true;  } b;
+              field { hw = r; swwel;        } c;
+              field { hw = r; swwel = true; } d;
 
-              field {} e;
+              field { hw = r; } e;
               e->swwe;
-              field {} f;
+              field { hw = r; } f;
               f->swwe = true;
-              field {} g;
+              field { hw = r; } g;
               g->swwel;
-              field {} h;
+              field { hw = r; } h;
               h->swwel = true;
             } my_reg;
           };
@@ -854,7 +855,7 @@ module SystemRDL
           <<~'RDL',
             addrmap my_map {
               reg {
-                field { swwe; swwel; } a;
+                field { swwe; swwel; hw = r; } a;
               } my_reg;
             };
           RDL
@@ -865,7 +866,7 @@ module SystemRDL
           <<~'RDL',
             addrmap my_map {
               reg {
-                field { swwel; } a;
+                field { swwel; hw = r; } a;
                 a->swwe;
               } my_reg;
             };
@@ -877,7 +878,7 @@ module SystemRDL
           <<~'RDL',
             addrmap my_map {
               reg {
-                field { swwe; } a;
+                field { swwe; hw = r; } a;
                 a->swwel;
               } my_reg;
             };
@@ -895,13 +896,13 @@ module SystemRDL
               field { wel;        } c;
               field { wel = true; } d;
 
-              field {} e;
+              field { sw = r; } e;
               e->we;
-              field {} f;
+              field { sw = r; } f;
               f->we = true;
-              field {} g;
+              field { sw = r; } g;
               g->wel;
-              field {} h;
+              field { sw = r; } h;
               h->wel = true;
             } my_reg;
           };
@@ -961,6 +962,109 @@ module SystemRDL
           RDL
           'we and wel properties are mutually exclusive'
         )
+      end
+
+      def test_valid_hw_writable_field
+        fields = evaluate(<<~'RDL').instances[0].instances[0].instances
+          addrmap my_map {
+            reg {
+              field { sw = r; hw = rw; } a;
+              field { sw = r; hw = w ; } b;
+            } my_reg;
+          };
+        RDL
+
+        assert_property_value(fields[0], :sw , :r)
+        assert_property_value(fields[0], :hw , :rw)
+        assert_property_value(fields[0], :we , false)
+        assert_property_value(fields[0], :wel, false)
+        assert_property_value(fields[1], :sw , :r)
+        assert_property_value(fields[1], :hw , :w)
+        assert_property_value(fields[1], :we , false)
+        assert_property_value(fields[1], :wel, false)
+
+        [[:rw, :rw], [:rw, :w], [:w, :rw]].each do |(sw, hw)|
+          fields = evaluate(<<~RDL).instances[0].instances[0].instances
+            addrmap my_map {
+              reg {
+                field { sw = #{sw}; hw = #{hw}; we;  } a;
+                field { sw = #{sw}; hw = #{hw}; wel; } b;
+              } my_reg;
+            };
+          RDL
+
+          assert_property_value(fields[0], :sw , sw)
+          assert_property_value(fields[0], :hw , hw)
+          assert_property_value(fields[0], :we , true)
+          assert_property_value(fields[0], :wel, false)
+          assert_property_value(fields[1], :sw , sw)
+          assert_property_value(fields[1], :hw , hw)
+          assert_property_value(fields[1], :we , false)
+          assert_property_value(fields[1], :wel, true)
+        end
+      end
+
+      def test_we_wel_required_for_sw_hw_writable_field
+        [[:rw, :rw], [:rw, :w], [:w, :rw]].each do |(sw, hw)|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = #{sw}; hw = #{hw}; } a;
+                } my_reg;
+              };
+            RDL
+            "hw write enable required: sw = #{sw} hw = #{hw}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = r; hw = #{hw}; } a;
+                  a->sw = #{sw};
+                } my_reg;
+              };
+            RDL
+            "hw write enable required: sw = #{sw} hw = #{hw}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = #{sw}; hw = r; } a;
+                  a->hw = #{hw};
+                } my_reg;
+              };
+            RDL
+            "hw write enable required: sw = #{sw} hw = #{hw}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = #{sw}; hw = #{hw}; we; } a;
+                  a->we = false;
+                } my_reg;
+              };
+            RDL
+            "hw write enable required: sw = #{sw} hw = #{hw}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = #{sw}; hw = #{hw}; wel; } a;
+                  a->wel = false;
+                } my_reg;
+              };
+            RDL
+            "hw write enable required: sw = #{sw} hw = #{hw}"
+          )
+        end
       end
     end
   end

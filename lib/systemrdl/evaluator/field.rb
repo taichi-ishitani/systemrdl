@@ -13,6 +13,7 @@ module SystemRDL
         check_sw_write_access_required(instance)
         check_swwe_swwel_exclusivity(instance)
         check_we_wel_exclusivity(instance)
+        check_we_required(instance)
       end
 
       def revalidate(instance)
@@ -24,6 +25,7 @@ module SystemRDL
         check_sw_write_access_required(instance)
         check_swwe_swwel_exclusivity(instance)
         check_we_wel_exclusivity(instance)
+        check_we_required(instance)
       end
 
       private
@@ -175,13 +177,13 @@ module SystemRDL
       end
 
       def check_property_exclusivity(instance, names, error_message)
-        propertyes =
+        properties =
           names
             .map { |name| instance.property_value(name) }
             .select { |v| v&.value }
-        return if propertyes.size <= 1
+        return if properties.size <= 1
 
-        raise_evaluation_error error_message, *propertyes.map(&:token_range)
+        raise_evaluation_error error_message, *properties.map(&:token_range)
       end
 
       def check_onread_exclusivity(instance)
@@ -244,6 +246,23 @@ module SystemRDL
           instance, [:we, :wel],
           'we and wel properties are mutually exclusive'
         )
+      end
+
+      def check_we_required(instance)
+        sw = instance.property_value(:sw)
+        return if sw.value == :r
+
+        hw = instance.property_value(:hw)
+        return if hw.value in :r | :na
+
+        we = instance.property_value(:we)
+        return if we.value
+
+        wel = instance.property_value(:wel)
+        return if wel.value
+
+        message = "hw write enable required: sw = #{sw} hw = #{hw}"
+        raise_evaluation_error message, sw.token_range, hw.token_range
       end
     end
 
