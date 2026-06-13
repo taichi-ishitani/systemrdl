@@ -9,6 +9,8 @@ Policy:
 - Violations of `shall` rules in the specification are obviously errors (out of scope for this document).
 - Combinations not addressed by the specification but logically contradictory based on property semantics are treated as errors.
 - Combinations classified as "Undefined" by the specification are also treated as errors.
+- Combinations where a property's effect is simply nullified by other property settings (i.e., the property acts as a no-op) are not treated as errors, as long as the field itself still behaves correctly according to its other declared properties. Such cases are merely meaningless but cause no observable harm.
+- Combinations where a property's primary purpose is silently defeated (i.e., the field cannot function as declared) are treated as errors. These are silent failures even if no incorrect value is produced.
 
 Items are listed in the order they appear in the specification (9.4 → 9.6 → 9.7).
 
@@ -86,37 +88,7 @@ All 6 non-valid combinations in Table 12 (2 meaningless + 2 undefined + 1 unload
 
 ---
 
-## 3. `swwe` / `swwel` Requires `sw = rw`
-
-### Background
-
-Specification 9.6.1 (d) example:
-> if a field is declared as `sw=rw`, has a `swwe` property, and the value is currently false, the effective software access property is `sw=r`.
-
-The purpose of `swwe`/`swwel` is to dynamically gate write access. When gated off, the field's effective access degrades from write-capable to read-only.
-
-### Specification Coverage
-
-Section 9.6.1 (d) uses `sw=rw` only as an example and does not impose any explicit constraint on the `sw` value. Section 9.6.1 (e) specifies only the mutual exclusion of `swwe` and `swwel`.
-
-### Rationale
-
-| `sw` | Meaning of `swwe`/`swwel` | Validity |
-| --- | --- | --- |
-| `sw=rw` | enabled → rw, disabled → r | **Only valid case** |
-| `sw=w` | enabled → w, disabled → **na** (violates Table 12) | Invalid |
-| `sw=r` | No write access to gate | Meaningless |
-| `sw=na` | Already rejected by Table 12 | N/A |
-
-`swwe`/`swwel` is only meaningful with `sw=rw`. All other combinations are semantically contradictory.
-
-### Error Condition
-
-`swwe = true` OR `swwel = true`, AND `sw ≠ rw`.
-
----
-
-## 4. `singlepulse` Constraints
+## 3. `singlepulse` Constraints
 
 `singlepulse` has the behavior: a software write of 1 causes the field to assert for one cycle, then automatically clear back to 0. Section 9.6.1 (g) explicitly mandates `fieldwidth = 1` and `reset = 0`, which indicates that `singlepulse` is a **storage-based, value-oriented property** (a pure derived-signal property like `anded`/`ored` would not require a reset specification).
 
@@ -130,7 +102,7 @@ The semantics are:
 
 This value-based interpretation entails several semantic constraints.
 
-### 4.1 SW Access Must Include Write
+### 3.1 SW Access Must Include Write
 
 #### Background
 
@@ -151,7 +123,7 @@ No explicit rule.
 
 ---
 
-### 4.2 Conflict with `onwrite` / `woset` / `woclr`
+### 3.2 Conflict with `onwrite` / `woset` / `woclr`
 
 #### Background
 
@@ -172,41 +144,7 @@ No explicit rule. Section 9.6.1 (k) mandates mutual exclusion among `onwrite`, `
 
 ---
 
-## 5. `we` / `wel` Requires `hw = w` or `hw = rw`
-
-### Background
-
-Specification Section 9.7 introduction:
-> Hardware access properties can be applied to fields to determine **when hardware can update a hardware writable field** (`we` and `wel`), ...
-
-Specification 9.7.1 (a) (b):
-> a) `we` determines this field is hardware-writable when set, resulting in a generated input which enables hardware access.
-> b) `wel` determines this field is hardware-writable when not set, ...
-
-`we`/`wel` is a mechanism for dynamically gating hardware writes, and **presupposes that the field is hardware-writable**.
-
-### Specification Coverage
-
-Section 9.7 introduction and 9.7.1 (a)(b) describe `we`/`wel` as mechanisms for "hardware-writable fields", but do not include an explicit `shall have ... access` rule comparable to 9.6.1 (i)(l) for `onread`/`onwrite`. Section 9.7.1 (c) only specifies the mutual exclusion of `we` and `wel`.
-
-### Rationale
-
-| `hw` | Meaning of `we`/`wel` | Validity |
-| --- | --- | --- |
-| `hw=w` | enabled → writable, disabled → write stopped | Valid |
-| `hw=rw` | enabled → read/write, disabled → read-only | Valid |
-| `hw=r` | No write access to gate | Meaningless |
-| `hw=na` | No hardware interface at all | Meaningless |
-
-This is symmetric with the relationship between `swwe`/`swwel` and `sw` (see Section 3): **a property that gates write access presupposes the existence of write capability**.
-
-### Error Condition
-
-`we = true` OR `wel = true`, AND `hw ∉ {w, rw}`.
-
----
-
-## 6. Mutual Exclusion of Field Type Properties
+## 4. Mutual Exclusion of Field Type Properties
 
 ### Background
 
@@ -255,13 +193,40 @@ Specifically:
 
 ---
 
-## 7. Edge Cases (Under Consideration)
+## 5. Edge Cases (Under Consideration)
 
 The following cases are not yet definitively classified as errors but are noted for future evaluation:
 
-### 7.1 Consistency of `intr`-Related Properties
+### 5.1 Consistency of `intr`-Related Properties
 
 Semantic consistency between aggregation properties (`intr`, `anded`, `ored`, `xored`) and the field declaration.
+
+---
+
+## Combinations Not Treated as Errors
+
+The following combinations involve properties whose effect is nullified by other settings, but where the field itself continues to behave correctly according to its remaining properties. These are no-ops rather than silent failures, and are deliberately not classified as errors.
+
+### `swwe`/`swwel` with `sw ≠ rw`
+
+`swwe`/`swwel` is a modifier that dynamically gates SW write access. Its effect is meaningful only when SW has full read/write access (`sw = rw`):
+
+- With `sw = w`: gating the write turns the field's effective access into `na`, but the field still functions as a write-only field when the gate is open.
+- With `sw = r`: there is no SW write to gate; the modifier is a no-op.
+- With `sw = na`: independently rejected by Table 12.
+
+In all of these cases, the field's primary behavior is unchanged; only the modifier is rendered ineffective. The combination is therefore allowed without error.
+
+### `we`/`wel` with `hw ∉ {w, rw}`
+
+`we`/`wel` is a modifier that dynamically gates HW write access. Its effect is meaningful only when HW has write capability:
+
+- With `hw = r`: there is no HW write to gate; the modifier is a no-op. The field still functions as a hardware-readable field.
+- With `hw = na`: there is no hardware interface to gate; the modifier is a no-op.
+
+In both cases, the field's primary behavior is unchanged; only the modifier is rendered ineffective. The combination is therefore allowed without error.
+
+This is the symmetric counterpart of the `swwe`/`swwel` case above.
 
 ---
 
