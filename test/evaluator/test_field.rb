@@ -808,6 +808,160 @@ module SystemRDL
           )
         end
       end
+
+      def test_swwe_swwel_can_be_set_individually
+        fields = evaluate(<<~RDL).instances[0].instances[0].instances
+          addrmap my_map {
+            reg {
+              field { swwe;         } a;
+              field { swwe = true;  } b;
+              field { swwel;        } c;
+              field { swwel = true; } d;
+
+              field {} e;
+              e->swwe;
+              field {} f;
+              f->swwe = true;
+              field {} g;
+              g->swwel;
+              field {} h;
+              h->swwel = true;
+            } my_reg;
+          };
+        RDL
+
+        assert_property_value(fields[0], :swwe , true)
+        assert_property_value(fields[0], :swwel, false)
+        assert_property_value(fields[1], :swwe , true)
+        assert_property_value(fields[1], :swwel, false)
+        assert_property_value(fields[2], :swwe , false)
+        assert_property_value(fields[2], :swwel, true)
+        assert_property_value(fields[3], :swwe , false)
+        assert_property_value(fields[3], :swwel, true)
+
+        assert_property_value(fields[4], :swwe , true)
+        assert_property_value(fields[4], :swwel, false)
+        assert_property_value(fields[5], :swwe , true)
+        assert_property_value(fields[5], :swwel, false)
+        assert_property_value(fields[6], :swwe , false)
+        assert_property_value(fields[6], :swwel, true)
+        assert_property_value(fields[7], :swwe , false)
+        assert_property_value(fields[7], :swwel, true)
+      end
+
+      def test_swwe_swwel_are_mutually_exclusive
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { swwe; swwel; } a;
+              } my_reg;
+            };
+          RDL
+          'swwe and swwel properties are mutually exclusive'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { swwel; } a;
+                a->swwe;
+              } my_reg;
+            };
+          RDL
+          'swwe and swwel properties are mutually exclusive'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { swwe; } a;
+                a->swwel;
+              } my_reg;
+            };
+          RDL
+          'swwe and swwel properties are mutually exclusive'
+        )
+      end
+
+      def test_we_wel_can_be_set_individually
+        fields = evaluate(<<~RDL).instances[0].instances[0].instances
+          addrmap my_map {
+            reg {
+              field { we;         } a;
+              field { we = true;  } b;
+              field { wel;        } c;
+              field { wel = true; } d;
+
+              field {} e;
+              e->we;
+              field {} f;
+              f->we = true;
+              field {} g;
+              g->wel;
+              field {} h;
+              h->wel = true;
+            } my_reg;
+          };
+        RDL
+
+        assert_property_value(fields[0], :we , true)
+        assert_property_value(fields[0], :wel, false)
+        assert_property_value(fields[1], :we , true)
+        assert_property_value(fields[1], :wel, false)
+        assert_property_value(fields[2], :we , false)
+        assert_property_value(fields[2], :wel, true)
+        assert_property_value(fields[3], :we , false)
+        assert_property_value(fields[3], :wel, true)
+
+        assert_property_value(fields[4], :we , true)
+        assert_property_value(fields[4], :wel, false)
+        assert_property_value(fields[5], :we , true)
+        assert_property_value(fields[5], :wel, false)
+        assert_property_value(fields[6], :we , false)
+        assert_property_value(fields[6], :wel, true)
+        assert_property_value(fields[7], :we , false)
+        assert_property_value(fields[7], :wel, true)
+      end
+
+      def test_we_wel_are_mutually_exclusive
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { we; wel; } a;
+              } my_reg;
+            };
+          RDL
+          'we and wel properties are mutually exclusive'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { wel; } a;
+                a->we;
+              } my_reg;
+            };
+          RDL
+          'we and wel properties are mutually exclusive'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { we; } a;
+                a->wel;
+              } my_reg;
+            };
+          RDL
+          'we and wel properties are mutually exclusive'
+        )
+      end
     end
   end
 end
