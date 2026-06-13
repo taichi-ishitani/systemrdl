@@ -239,7 +239,7 @@ module SystemRDL
       end
 
       def test_invalid_sw_hw_access_combinations
-        [['w', 'w'], ['w', 'na'], ['na', 'rw'], ['na', 'r'], ['na', 'w'], ['na', 'na']].each do |(sw, hw)|
+        [[:w, :w], [:w, :na], [:na, :rw], [:na, :r], [:na, :w], [:na, :na]].each do |(sw, hw)|
           assert_raises_evaluation_error(
             <<~RDL,
               addrmap my_map {
@@ -263,7 +263,7 @@ module SystemRDL
             "invalid sw/hw access combination: sw = #{sw} hw = #{hw}"
           )
 
-          next if sw == 'na'
+          next if sw == :na
 
           assert_raises_evaluation_error(
             <<~RDL,
@@ -280,94 +280,87 @@ module SystemRDL
       end
 
       def test_onread_rclr_rset_can_be_set_individually
-        fields = evaluate(<<~'RDL').instances[0].instances[0].instances
+        [:rclr, :rset, :ruser].each do |onread|
+          fields = evaluate(<<~RDL).instances[0].instances[0].instances
+            addrmap my_map {
+              reg {
+                field { onread = #{onread}; } a;
+                field {} b;
+                b->onread = #{onread};
+              } my_reg;
+            };
+          RDL
+
+          assert_property_value(fields[0], :onread, onread)
+          assert_property_value(fields[0], :rclr  , false)
+          assert_property_value(fields[0], :rset  , false)
+
+          assert_property_value(fields[1], :onread, onread)
+          assert_property_value(fields[1], :rclr  , false)
+          assert_property_value(fields[1], :rset  , false)
+        end
+
+        fields = evaluate(<<~RDL).instances[0].instances[0].instances
           addrmap my_map {
             reg {
-              field { onread = rclr ; } a;
-              field { onread = rset ; } b;
-              field { onread = ruser; } c;
-              field { rclr;           } d;
-              field { rclr = true;    } e;
-              field { rset;           } f;
-              field { rset = true;    } g;
-
-              field {} h;
-              h->onread = rclr;
-              field {} i;
-              i->onread = rset;
-              field {} j;
-              j->onread = ruser;
-              field {} k;
-              k->rclr;
-              field {} l;
-              l->rclr = true;
-              field {} m;
-              m->rset;
-              field {} n;
-              n->rset = true;
+              field { rclr;        } a;
+              field { rclr = true; } b;
+              field {} c;
+              c->rclr;
+              field {} d;
+              d->rclr = true;
             } my_reg;
           };
         RDL
 
-        assert_property_value(fields[0], :onread, :rclr)
-        assert_property_value(fields[0], :rclr  , false)
+        assert_property_value(fields[0], :onread, nil)
+        assert_property_value(fields[0], :rclr  , true)
         assert_property_value(fields[0], :rset  , false)
 
-        assert_property_value(fields[1], :onread, :rset)
-        assert_property_value(fields[1], :rclr  , false)
+        assert_property_value(fields[1], :onread, nil)
+        assert_property_value(fields[1], :rclr  , true)
         assert_property_value(fields[1], :rset  , false)
 
-        assert_property_value(fields[2], :onread, :ruser)
-        assert_property_value(fields[2], :rclr  , false)
+        assert_property_value(fields[2], :onread, nil)
+        assert_property_value(fields[2], :rclr  , true)
         assert_property_value(fields[2], :rset  , false)
 
         assert_property_value(fields[3], :onread, nil)
         assert_property_value(fields[3], :rclr  , true)
         assert_property_value(fields[3], :rset  , false)
 
-        assert_property_value(fields[4], :onread, nil)
-        assert_property_value(fields[4], :rclr  , true)
-        assert_property_value(fields[4], :rset  , false)
+        fields = evaluate(<<~RDL).instances[0].instances[0].instances
+          addrmap my_map {
+            reg {
+              field { rset;        } a;
+              field { rset = true; } b;
+              field {} c;
+              c->rset;
+              field {} d;
+              d->rset = true;
+            } my_reg;
+          };
+        RDL
 
-        assert_property_value(fields[5], :onread, nil)
-        assert_property_value(fields[5], :rclr  , false)
-        assert_property_value(fields[5], :rset  , true)
+        assert_property_value(fields[0], :onread, nil)
+        assert_property_value(fields[0], :rclr  , false)
+        assert_property_value(fields[0], :rset  , true)
 
-        assert_property_value(fields[6], :onread, nil)
-        assert_property_value(fields[6], :rclr  , false)
-        assert_property_value(fields[6], :rset  , true)
+        assert_property_value(fields[1], :onread, nil)
+        assert_property_value(fields[1], :rclr  , false)
+        assert_property_value(fields[1], :rset  , true)
 
-        assert_property_value(fields[7], :onread, :rclr)
-        assert_property_value(fields[7], :rclr  , false)
-        assert_property_value(fields[7], :rset  , false)
+        assert_property_value(fields[2], :onread, nil)
+        assert_property_value(fields[2], :rclr  , false)
+        assert_property_value(fields[2], :rset  , true)
 
-        assert_property_value(fields[8], :onread, :rset)
-        assert_property_value(fields[8], :rclr  , false)
-        assert_property_value(fields[8], :rset  , false)
-
-        assert_property_value(fields[9], :onread, :ruser)
-        assert_property_value(fields[9], :rclr  , false)
-        assert_property_value(fields[9], :rset  , false)
-
-        assert_property_value(fields[10], :onread, nil)
-        assert_property_value(fields[10], :rclr  , true)
-        assert_property_value(fields[10], :rset  , false)
-
-        assert_property_value(fields[11], :onread, nil)
-        assert_property_value(fields[11], :rclr  , true)
-        assert_property_value(fields[11], :rset  , false)
-
-        assert_property_value(fields[12], :onread, nil)
-        assert_property_value(fields[12], :rclr  , false)
-        assert_property_value(fields[12], :rset  , true)
-
-        assert_property_value(fields[13], :onread, nil)
-        assert_property_value(fields[13], :rclr  , false)
-        assert_property_value(fields[13], :rset  , true)
+        assert_property_value(fields[3], :onread, nil)
+        assert_property_value(fields[3], :rclr  , false)
+        assert_property_value(fields[3], :rset  , true)
       end
 
       def test_onread_rclr_rset_are_mutually_exclusive
-        ['rclr', 'rset', 'ruser'].each do |onread|
+        [:rclr, :rset, :ruser].each do |onread|
           assert_raises_evaluation_error(
             <<~RDL,
               addrmap my_map {
@@ -476,7 +469,7 @@ module SystemRDL
       end
 
       def test_onread_requires_sw_read_access
-        ['rclr', 'rset', 'ruser'].each do |onread|
+        [:rclr, :rset, :ruser].each do |onread|
           assert_raises_evaluation_error(
             <<~RDL,
               addrmap my_map {
@@ -512,7 +505,7 @@ module SystemRDL
             "sw read access required: onread = #{onread} sw = w"
           )
 
-          next if onread == 'ruser'
+          next if onread == :ruser
 
           assert_raises_evaluation_error(
             <<~RDL,
@@ -547,6 +540,271 @@ module SystemRDL
               };
             RDL
             "sw read access required: onread = #{onread} sw = w"
+          )
+        end
+      end
+
+      def test_onwrite_woset_woclr_can_be_set_individually
+        [:woset, :woclr, :wot, :wzs, :wzc, :wzt, :wclr, :wset, :wuser].each do |onwrite|
+          fields = evaluate(<<~RDL).instances[0].instances[0].instances
+            addrmap my_map {
+              reg {
+                field { onwrite = #{onwrite}; } a;
+                field {} b;
+                b->onwrite = #{onwrite};
+              } my_reg;
+            };
+          RDL
+
+          assert_property_value(fields[0], :onwrite, onwrite)
+          assert_property_value(fields[0], :woset  , false)
+          assert_property_value(fields[0], :woclr  , false)
+
+          assert_property_value(fields[1], :onwrite, onwrite)
+          assert_property_value(fields[1], :woset  , false)
+          assert_property_value(fields[1], :woclr  , false)
+        end
+
+        fields = evaluate(<<~RDL).instances[0].instances[0].instances
+          addrmap my_map {
+            reg {
+              field { woset;        } a;
+              field { woset = true; } b;
+              field {} c;
+              c->woset;
+              field {} d;
+              d->woset = true;
+            } my_reg;
+          };
+        RDL
+
+        assert_property_value(fields[0], :onwrite, nil)
+        assert_property_value(fields[0], :woset  , true)
+        assert_property_value(fields[0], :woclr  , false)
+
+        assert_property_value(fields[1], :onwrite, nil)
+        assert_property_value(fields[1], :woset  , true)
+        assert_property_value(fields[1], :woclr  , false)
+
+        assert_property_value(fields[2], :onwrite, nil)
+        assert_property_value(fields[2], :woset  , true)
+        assert_property_value(fields[2], :woclr  , false)
+
+        assert_property_value(fields[3], :onwrite, nil)
+        assert_property_value(fields[3], :woset  , true)
+        assert_property_value(fields[3], :woclr  , false)
+
+        fields = evaluate(<<~RDL).instances[0].instances[0].instances
+          addrmap my_map {
+            reg {
+              field { woclr;        } a;
+              field { woclr = true; } b;
+              field {} c;
+              c->woclr;
+              field {} d;
+              d->woclr = true;
+            } my_reg;
+          };
+        RDL
+
+        assert_property_value(fields[0], :onwrite, nil)
+        assert_property_value(fields[0], :woset  , false)
+        assert_property_value(fields[0], :woclr  , true)
+
+        assert_property_value(fields[1], :onwrite, nil)
+        assert_property_value(fields[1], :woset  , false)
+        assert_property_value(fields[1], :woclr  , true)
+
+        assert_property_value(fields[2], :onwrite, nil)
+        assert_property_value(fields[2], :woset  , false)
+        assert_property_value(fields[2], :woclr  , true)
+
+        assert_property_value(fields[3], :onwrite, nil)
+        assert_property_value(fields[3], :woset  , false)
+        assert_property_value(fields[3], :woclr  , true)
+      end
+
+      def test_onwrite_woset_woclr_are_mutually_exclusive
+        [:woset, :woclr, :wot, :wzs, :wzc, :wzt, :wclr, :wset, :wuser].each do |onwrite|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { onwrite = #{onwrite}; woset; } a;
+                } my_reg;
+              };
+            RDL
+            'onwrite, woset and woclr properties are mutually exclusive'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { onwrite = #{onwrite}; woclr; } a;
+                } my_reg;
+              };
+            RDL
+            'onwrite, woset and woclr properties are mutually exclusive'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { onwrite = #{onwrite}; } a;
+                  a->woset;
+                } my_reg;
+              };
+            RDL
+            'onwrite, woset and woclr properties are mutually exclusive'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { onwrite = #{onwrite}; } a;
+                  a->woclr;
+                } my_reg;
+              };
+            RDL
+            'onwrite, woset and woclr properties are mutually exclusive'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { woset; } a;
+                  a->onwrite = #{onwrite};
+                } my_reg;
+              };
+            RDL
+            'onwrite, woset and woclr properties are mutually exclusive'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { woclr; } a;
+                  a->onwrite = #{onwrite};
+                } my_reg;
+              };
+            RDL
+            'onwrite, woset and woclr properties are mutually exclusive'
+          )
+        end
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { woset; woclr; } a;
+              } my_reg;
+            };
+          RDL
+          'onwrite, woset and woclr properties are mutually exclusive'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { woclr; } a;
+                a->woset;
+              } my_reg;
+            };
+          RDL
+          'onwrite, woset and woclr properties are mutually exclusive'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { woset; } a;
+                a->woclr;
+              } my_reg;
+            };
+          RDL
+          'onwrite, woset and woclr properties are mutually exclusive'
+        )
+      end
+
+      def test_onwrite_requires_sw_write_access
+        [:woset, :woclr, :wot, :wzs, :wzc, :wzt, :wclr, :wset, :wuser].each do |onwrite|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { onwrite = #{onwrite}; sw = r; } a;
+                } my_reg;
+              };
+            RDL
+            "sw write access required: onwrite = #{onwrite} sw = r"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { onwrite = #{onwrite}; } a;
+                  a->sw = r;
+                } my_reg;
+              };
+            RDL
+            "sw write access required: onwrite = #{onwrite} sw = r"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = r; } a;
+                  a->onwrite = #{onwrite};
+                } my_reg;
+              };
+            RDL
+            "sw write access required: onwrite = #{onwrite} sw = r"
+          )
+
+          next unless onwrite in :woset | :woclr
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { #{onwrite}; sw = r; } a;
+                } my_reg;
+              };
+            RDL
+            "sw write access required: onwrite = #{onwrite} sw = r"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { #{onwrite}; } a;
+                  a->sw = r;
+                } my_reg;
+              };
+            RDL
+            "sw write access required: onwrite = #{onwrite} sw = r"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = r; } a;
+                  a->#{onwrite};
+                } my_reg;
+              };
+            RDL
+            "sw write access required: onwrite = #{onwrite} sw = r"
           )
         end
       end

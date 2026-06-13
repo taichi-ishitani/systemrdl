@@ -7,15 +7,19 @@ module SystemRDL
         check_fieldwidth(instance)
         check_reset_value(instance)
         check_sw_hw_access_combination(instance)
-        check_onread_individualy_set(instance)
+        check_onread_exclusivity(instance)
         check_sw_read_access_required(instance)
+        check_onwrite_exclusivity(instance)
+        check_sw_write_access_required(instance)
       end
 
       def revalidate(instance)
         check_reset_value(instance)
         check_sw_hw_access_combination(instance)
-        check_onread_individualy_set(instance)
+        check_onread_exclusivity(instance)
         check_sw_read_access_required(instance)
+        check_onwrite_exclusivity(instance)
+        check_sw_write_access_required(instance)
       end
 
       private
@@ -166,14 +170,14 @@ module SystemRDL
         raise_evaluation_error message, sw.token_range, hw.token_range
       end
 
-      def check_onread_individualy_set(instance)
+      def check_onread_exclusivity(instance)
         onread = [
           instance.property_value(:onread),
           instance.property_value(:rclr),
           instance.property_value(:rset)
-        ].compact
+        ].select { |v| v&.value }
 
-        return if onread.count(&:value) <= 1
+        return if onread.size <= 1
 
         message = 'onread, rclr and rset properties are mutually exclusive'
         raise_evaluation_error message, *onread.map(&:token_range)
@@ -189,11 +193,41 @@ module SystemRDL
         return unless onread
 
         sw = instance.property_value(:sw)
-        return if [:rw, :r].include?(sw.value)
+        return if sw.value in :rw | :r
 
         onread_normalized = (kind == :onread && onread.value) || kind
         message = "sw read access required: onread = #{onread_normalized} sw = #{sw}"
         raise_evaluation_error message, onread.token_range, sw.token_range
+      end
+
+      def check_onwrite_exclusivity(instance)
+        onwrite = [
+          instance.property_value(:onwrite),
+          instance.property_value(:woset),
+          instance.property_value(:woclr)
+        ].select { |v| v&.value }
+
+        return if onwrite.size <= 1
+
+        message = 'onwrite, woset and woclr properties are mutually exclusive'
+        raise_evaluation_error message, *onwrite.map(&:token_range)
+      end
+
+      def check_sw_write_access_required(instance)
+        kind, onwrite = {
+          onwrite: instance.property_value(:onwrite),
+          woset: instance.property_value(:woset),
+          woclr: instance.property_value(:woclr)
+        }.find { |(_, v)| v&.value }
+
+        return unless onwrite
+
+        sw = instance.property_value(:sw)
+        return if sw.value in :rw | :w
+
+        onwrite_normaized = (kind == :onwrite && onwrite.value) || kind
+        message = "sw write access required: onwrite = #{onwrite_normaized} sw = #{sw}"
+        raise_evaluation_error message, onwrite.token_range, sw.token_range
       end
     end
 
