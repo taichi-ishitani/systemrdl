@@ -135,6 +135,43 @@ module SystemRDL
         )
       end
 
+      def test_bit_width_must_be_positive
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { hw = r; } a[0];
+              } my_reg;
+            };
+          RDL
+          'bit width must be positive'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { hw = r; fieldwidth = 0; } a;
+              } my_reg;
+            };
+          RDL
+          'fieldwidth must be positive'
+        )
+      end
+
+      def test_multidimensional_size_specification_is_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field { hw = r; } a[1][2];
+              } my_reg;
+            };
+          RDL
+          'multidimensional size specification not allowed for field'
+        )
+      end
+
       def test_reset_value_within_bit_width_is_accepted
         fields = evaluate(<<~'RDL').instances[0].instances[0].instances
           addrmap my_map {

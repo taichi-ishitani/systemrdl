@@ -643,9 +643,7 @@ module SystemRDL
           :array, :range, :reset_value, :address_assignment, :address_stride, :address_alignment
         ].map do |key|
           if (value = children[key])
-            if key == :array
-              value.map { |v| __send__(key, v) }
-            elsif key == :range
+            if key in :array | :range
               __send__(key, *value)
             else
               __send__(key, value)
@@ -673,8 +671,8 @@ module SystemRDL
         s(:id, name.to_s)
       end
 
-      def array(size)
-        s(:array, number(size))
+      def array(*sizes)
+        s(:array, *sizes.map { |s| number(s) })
       end
 
       def range(head, tail)

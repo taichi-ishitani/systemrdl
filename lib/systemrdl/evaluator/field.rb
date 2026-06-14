@@ -122,15 +122,31 @@ module SystemRDL
       end
 
       def calc_bit_width(instance, inst_values)
-        size = inst_values[:array]&.at(0)&.to_value
-        return size if size
+        size = inst_values[:array]
+        return instance.property_value(:fieldwidth) unless size
 
-        instance.property_value(:fieldwidth)
+        if size.values.size >= 2
+          message = 'multidimensional size specification not allowed for field'
+          raise_evaluation_error message, size.token_range
+        end
+
+        size = size.values[0]
+        if size.value == 0
+          message = 'bit width must be positive'
+          raise_evaluation_error message, size.token_range
+        end
+
+        size
       end
 
       def check_fieldwidth(instance)
         fieldwidth = instance.property_value(:fieldwidth)
         return unless fieldwidth
+
+        if fieldwidth.value == 0
+          message = 'fieldwidth must be positive'
+          raise_evaluation_error message, fieldwidth.token_range
+        end
 
         msb = instance.msb
         lsb = instance.lsb

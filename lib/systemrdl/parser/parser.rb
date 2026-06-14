@@ -43,6 +43,12 @@ module SystemRDL
         Node.new(kind, children, { token_range: token_range })
       end
 
+      def array_node(values)
+        values = values.flatten
+        children = values.filter_map.with_index { |v, i| i % 3 == 1 ? v : nil }
+        node(:array, children, values)
+      end
+
       def component_insts_node(type, insts)
         case type&.kind
         when :EXTERNAL then insts.replace_type(:external_component_insts)
@@ -51,8 +57,8 @@ module SystemRDL
       end
 
       def component_inst_node(values)
-        array, token_range = values[1]
-        node(:component_inst, [values[0], array, token_range, *values[2..]], values)
+        array, range = values[1]
+        node(:component_inst, [values[0], array, range, *values[2..]], values)
       end
 
       def uop_node(values)

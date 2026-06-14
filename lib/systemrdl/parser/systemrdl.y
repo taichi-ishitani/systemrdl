@@ -129,7 +129,7 @@ rule
     : EXTERNAL
     | INTERNAL
   component_inst_array_or_range
-    : array+ {
+    : array {
         result = [val[0], nil]
       }
     | range {
@@ -229,8 +229,11 @@ rule
     : prop_ref
     | instance_ref
   instance_ref_element
-    : id array* {
-      result = node(:instance_ref_element, to_list(val, include_separator: false), val)
+    : id array {
+      result = node(:instance_ref_element, val, val)
+    }
+    | id {
+      result = node(:instance_ref_element, val, val)
     }
 
   #
@@ -241,8 +244,8 @@ rule
         result = node(:range, [val[1], val[3]], val)
       }
   array
-    : "[" constant_expression "]" {
-        result = node(:array, [val[1]], val)
+    : ("[" constant_expression "]")+ {
+        result = array_node(val)
       }
 
   #

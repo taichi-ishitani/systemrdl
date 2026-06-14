@@ -25,7 +25,7 @@ module SystemRDL
         code = 'a[0][1]'
         assert_parses_expression(
           s(:instance_ref,
-            s(:instance_ref_element, s(:id, 'a'), s(:array, s(:number, '0')), s(:array, s(:number, '1')))
+            s(:instance_ref_element, s(:id, 'a'), s(:array, s(:number, '0'), s(:number, '1')))
           ),
           code
         )
@@ -51,8 +51,8 @@ module SystemRDL
         code = 'regA[0][1].a[2][3]'
         assert_parses_expression(
           s(:instance_ref,
-            s(:instance_ref_element, s(:id, 'regA'), s(:array, s(:number, '0')), s(:array, s(:number, '1'))),
-            s(:instance_ref_element, s(:id, 'a'), s(:array, s(:number, '2')), s(:array, s(:number, '3')))
+            s(:instance_ref_element, s(:id, 'regA'), s(:array, s(:number, '0'), s(:number, '1'))),
+            s(:instance_ref_element, s(:id, 'a'), s(:array, s(:number, '2'), s(:number, '3')))
           ),
           code
         )
@@ -80,9 +80,9 @@ module SystemRDL
         code = 'regFA[0][1].regA[2][3].a[4][5]'
         assert_parses_expression(
           s(:instance_ref,
-            s(:instance_ref_element, s(:id, 'regFA'), s(:array, s(:number, '0')), s(:array, s(:number, '1'))),
-            s(:instance_ref_element, s(:id, 'regA'), s(:array, s(:number, '2')), s(:array, s(:number, '3'))),
-            s(:instance_ref_element, s(:id, 'a'), s(:array, s(:number, '4')), s(:array, s(:number, '5')))
+            s(:instance_ref_element, s(:id, 'regFA'), s(:array, s(:number, '0'), s(:number, '1'))),
+            s(:instance_ref_element, s(:id, 'regA'), s(:array, s(:number, '2'), s(:number, '3'))),
+            s(:instance_ref_element, s(:id, 'a'), s(:array, s(:number, '4'), s(:number, '5')))
           ),
           code
         )
@@ -115,7 +115,7 @@ module SystemRDL
         assert_parses_expression(
           s(:prop_ref,
             s(:instance_ref,
-              s(:instance_ref_element, s(:id, 'a'), s(:array, s(:number, '0')), s(:array, s(:number, '1')))
+              s(:instance_ref_element, s(:id, 'a'), s(:array, s(:number, '0'), s(:number, '1')))
             ),
             s(:id, 'b')
           ),
@@ -150,8 +150,8 @@ module SystemRDL
         assert_parses_expression(
           s(:prop_ref,
             s(:instance_ref,
-              s(:instance_ref_element, s(:id, 'regA'), s(:array, s(:number, '0')), s(:array, s(:number, '1'))),
-              s(:instance_ref_element, s(:id, 'a'), s(:array, s(:number, '2')), s(:array, s(:number, '3')))
+              s(:instance_ref_element, s(:id, 'regA'), s(:array, s(:number, '0'), s(:number, '1'))),
+              s(:instance_ref_element, s(:id, 'a'), s(:array, s(:number, '2'), s(:number, '3')))
             ),
             s(:id, 'b')
           ),
@@ -188,9 +188,9 @@ module SystemRDL
         assert_parses_expression(
           s(:prop_ref,
             s(:instance_ref,
-              s(:instance_ref_element, s(:id, 'regFA'), s(:array, s(:number, '0')), s(:array, s(:number, '1'))),
-              s(:instance_ref_element, s(:id, 'regA'), s(:array, s(:number, '2')), s(:array, s(:number, '3'))),
-              s(:instance_ref_element, s(:id, 'a'), s(:array, s(:number, '4')), s(:array, s(:number, '5')))
+              s(:instance_ref_element, s(:id, 'regFA'), s(:array, s(:number, '0'), s(:number, '1'))),
+              s(:instance_ref_element, s(:id, 'regA'), s(:array, s(:number, '2'), s(:number, '3'))),
+              s(:instance_ref_element, s(:id, 'a'), s(:array, s(:number, '4'), s(:number, '5')))
             ),
             s(:id, 'b')
           ),

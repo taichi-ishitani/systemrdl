@@ -7,5 +7,7 @@ module SystemRDL
         value.to_s
       end
     end
+
+    Values = Data.define(:values, :token_range)
   end
 end
