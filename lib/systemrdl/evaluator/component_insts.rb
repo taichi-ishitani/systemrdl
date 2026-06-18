@@ -5,33 +5,33 @@ module SystemRDL
     class ComponentInsts
       include Common
 
-      def initialize(component_id, insts, token_range)
+      def initialize(insts, token_range)
         super(token_range)
-        @component_id = component_id
         @insts = insts
       end
 
-      attr_reader :component_id
+      attr_reader :insts
 
       def connect(parent, component)
         super
         @insts.each { |inst| inst.connect(self, component) }
       end
 
-      def evaluate(instance, **optargs)
-        component_definition = find_component_definition
+      def evaluate(instance, base, id, **optargs)
+        component_definition = find_component_definition(base, id)
+        check_instantiable(instance, component_definition)
+
         @insts.each do |inst|
-          inst.evaluate(instance, component_definition:, **optargs)
+          inst.evaluate(instance, component_definition, **optargs)
         end
       end
 
       private
 
-      def find_component_definition
-        id = @component_id.value
-        component = @component
+      def find_component_definition(base, id)
+        component = base
         while component
-          definition = component.definitions[id]
+          definition = component.definitions[id.value]
           return definition if definition
 
           component = component.component
@@ -39,6 +39,13 @@ module SystemRDL
 
         # TODO
         # report error
+      end
+
+      def check_instantiable(instance, component_definition)
+        return if instance.instantiable?(component_definition)
+
+        message = "#{component_definition.layer} instance not allowed in #{instance.layer}"
+        raise_evaluation_error message, token_range
       end
     end
 
@@ -53,8 +60,27 @@ module SystemRDL
 
       attr_reader :inst_id
 
-      def evaluate(instance, component_definition:, **optargs)
+      def evaluate(instance, component_definition, **optargs)
         component_definition.create_instance(instance, @inst_id.value, @inst_values, **optargs)
+      end
+    end
+
+    class ExplicitComponentInst
+      include Common
+
+      def initialize(id, insts, token_range)
+        super(token_range)
+        @id = id
+        @insts = insts
+      end
+
+      def connect(parent, component)
+        super
+        @insts.connect(self, component)
+      end
+
+      def evaluate(instance, **optargs)
+        @insts.evaluate(instance, @component, @id, **optargs)
       end
     end
   end

@@ -105,7 +105,13 @@ module SystemRDL
 
       def on_component_insts(node)
         insts = process_all(node.children)
-        ComponentInsts.new(insts[0].inst_id, insts, node.token_range)
+        ComponentInsts.new(insts, node.token_range)
+      end
+
+      def on_explicit_component_inst(node)
+        id = process(node.children[0])
+        insts = process(node.children[1])
+        ExplicitComponentInst.new(id, insts, node.token_range)
       end
 
       def on_component_named_def(node)
@@ -115,8 +121,7 @@ module SystemRDL
 
       def on_component_anon_def(node)
         *elements, insts = process_all(node.children[1..])
-        id = insts.component_id
-        component_definition(node).new(id, elements, insts, node.token_range)
+        component_definition(node).new(nil, elements, insts, node.token_range)
       end
 
       def on_root(node)

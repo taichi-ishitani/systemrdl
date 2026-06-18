@@ -7,6 +7,10 @@ module SystemRDL
         create_instance(instance, @id, nil, **optargs)
       end
 
+      def layer
+        :addrmap
+      end
+
       private
 
       def instance_class
@@ -33,6 +37,13 @@ module SystemRDL
     end
 
     class AddrMapInstance < Instance
+      def layer
+        :addrmap
+      end
+
+      def instantiable?(definition)
+        definition.layer in :addrmap | :regfile | :reg
+      end
     end
   end
 end

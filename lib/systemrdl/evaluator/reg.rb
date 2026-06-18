@@ -3,6 +3,10 @@
 module SystemRDL
   module Evaluator
     class RegDefinition < ComponentDefinition
+      def layer
+        :reg
+      end
+
       private
 
       def instance_class
@@ -23,6 +27,13 @@ module SystemRDL
     end
 
     class RegInstance < Instance
+      def layer
+        :reg
+      end
+
+      def instantiable?(definition)
+        definition.layer in :field
+      end
     end
   end
 end

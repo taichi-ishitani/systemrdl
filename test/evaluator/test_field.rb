@@ -1103,6 +1103,66 @@ module SystemRDL
           )
         end
       end
+
+      def test_no_component_instances_are_allowed
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap a_addrmap {
+              reg {
+                field { hw=r; } a;
+              } a;
+            };
+            addrmap b_addrmap {
+              reg {
+                field { hw=r; a_addrmap a; } b;
+              } b;
+            };
+          RDL
+          "addrmap instance not allowed in field"
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap a_addrmap {
+              regfile a_regfile {
+                reg {
+                  field { hw=r; } a;
+                } a;
+              };
+              reg {
+                field { hw=r; a_regfile a; } b;
+              } b;
+            };
+          RDL
+          "regfile instance not allowed in field"
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap a_addrmap {
+              reg a_reg {
+                field { hw=r; } a;
+              };
+              reg {
+                field { hw=r; a_reg a; } b;
+              } b;
+            };
+          RDL
+          "reg instance not allowed in field"
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap a_addrmap {
+              reg {
+                field a_field { hw=r; };
+                field { hw=r; a_field a; } b;
+              } a;
+            };
+          RDL
+          "field instance not allowed in field"
+        )
+      end
     end
   end
 end

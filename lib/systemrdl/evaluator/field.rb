@@ -28,6 +28,10 @@ module SystemRDL
         check_we_required(instance)
       end
 
+      def layer
+        :field
+      end
+
       private
 
       def instance_class
@@ -285,6 +289,14 @@ module SystemRDL
     class FieldInstance < Instance
       attr_accessor :msb
       attr_accessor :lsb
+
+      def layer
+        :field
+      end
+
+      def instantiable?(_definition)
+        false
+      end
     end
   end
 end

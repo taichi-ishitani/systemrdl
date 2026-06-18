@@ -7,7 +7,7 @@ module SystemRDL
 
       def initialize(id, elements, insts, token_range)
         super(token_range)
-        @id = id
+        @id = id || insts.insts[0].inst_id
         @definitions = {}
         @elements = elements
         @insts = insts
@@ -24,7 +24,7 @@ module SystemRDL
       end
 
       def evaluate(instance, **optargs)
-        @insts&.evaluate(instance, **optargs)
+        @insts&.evaluate(instance, @parent, @id, **optargs)
       end
 
       def create_instance(parent_instance, inst_name, inst_values, **optargs)
