@@ -24,6 +24,7 @@ module SystemRDL
       end
 
       def evaluate(instance, **optargs)
+        check_definable(instance)
         @insts&.evaluate(instance, @parent, @id, **optargs)
       end
 
@@ -46,6 +47,13 @@ module SystemRDL
       end
 
       private
+
+      def check_definable(instance)
+        return if instance.definable?(self)
+
+        message = "#{layer} definition not allowed in #{instance.layer}"
+        raise_evaluation_error message, token_range
+      end
 
       def init_properties(instance)
         #

@@ -42,7 +42,7 @@ module SystemRDL
       end
 
       def check_instantiable(instance, component_definition)
-        return if instance.instantiable?(component_definition)
+        return if instance.definable?(component_definition)
 
         message = "#{component_definition.layer} instance not allowed in #{instance.layer}"
         raise_evaluation_error message, token_range

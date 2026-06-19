@@ -4,7 +4,11 @@ module SystemRDL
   module Evaluator
     class AddrMapDefinition < ComponentDefinition
       def evaluate(instance, **optargs)
-        create_instance(instance, @id, nil, **optargs)
+        if instance.root?
+          create_instance(instance, @id, nil, **optargs)
+        else
+          super
+        end
       end
 
       def layer
@@ -41,7 +45,7 @@ module SystemRDL
         :addrmap
       end
 
-      def instantiable?(definition)
+      def definable?(definition)
         definition.layer in :addrmap | :regfile | :reg
       end
     end

@@ -19,6 +19,10 @@ module SystemRDL
       def initialize
         super(Root, nil, :root)
       end
+
+      def layer
+        :root
+      end
     end
   end
 end

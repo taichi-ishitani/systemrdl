@@ -17,6 +17,26 @@ module SystemRDL
       attr_reader :properties
       attr_reader :instances
 
+      def root?
+        layer == :root
+      end
+
+      def addrmap?
+        layer == :addrmap
+      end
+
+      def regfile?
+        layer == :regfile
+      end
+
+      def reg?
+        layer == :reg
+      end
+
+      def field?
+        layer == :field
+      end
+
       def property(name)
         properties.find { |prop| prop.name == name }
       end

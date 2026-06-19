@@ -31,7 +31,7 @@ module SystemRDL
         :reg
       end
 
-      def instantiable?(definition)
+      def definable?(definition)
         definition.layer in :field
       end
     end

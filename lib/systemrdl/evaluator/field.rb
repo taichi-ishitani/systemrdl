@@ -294,7 +294,7 @@ module SystemRDL
         :field
       end
 
-      def instantiable?(_definition)
+      def definable?(_definition)
         false
       end
     end

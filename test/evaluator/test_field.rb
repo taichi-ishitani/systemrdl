@@ -1163,6 +1163,74 @@ module SystemRDL
           "field instance not allowed in field"
         )
       end
+
+      def test_no_component_definitions_are_allowed
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap a_addrmap {
+              reg {
+                field {
+                  addrmap b_addrmap {
+                    reg b_reg {
+                      field b_field { hw = r; };
+                    };
+                  };
+                  hw = r;
+                } a;
+              } a;
+            };
+          RDL
+          'addrmap definition not allowed in field'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap a_addrmap {
+              reg {
+                field {
+                  regfile b_regfile {
+                    reg b_reg {
+                      field b_field { hw = r; };
+                    };
+                  };
+                  hw = r;
+                } a;
+              } a;
+            };
+          RDL
+          'regfile definition not allowed in field'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap a_addrmap {
+              reg {
+                field {
+                  reg b_reg {
+                    field b_field { hw = r; };
+                  };
+                  hw = r;
+                } a;
+              } a;
+            };
+          RDL
+          'reg definition not allowed in field'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap a_addrmap {
+              reg {
+                field {
+                  field b_field { hw = r; };
+                  hw = r;
+                } a;
+              } a;
+            };
+          RDL
+          'field definition not allowed in field'
+        )
+      end
     end
   end
 end
