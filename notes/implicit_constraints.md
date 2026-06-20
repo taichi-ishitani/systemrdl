@@ -272,11 +272,43 @@ The literal enumeration in 10.6.1 (f) is treated as an incomplete listing. The r
 
 A field spans multiple software-accessible sub-words AND (field is software-writable OR `onread` is set to any of `rclr`, `rset`, `ruser`).
 
-## 7. Alias Register Constraints
+## 7. Register Address and Accesswidth Compatibility
+
+### Background
+
+A register has an `accesswidth` property (Table 23) that specifies the minimum software access width, in bits. The address at which a register is placed is determined either by the address allocation operators (`@`, `+=`, `%=`; see 5.1.2.3 and Table 4) or, when no operator is given, by the `alignment` property of the enclosing addrmap/regfile and the addressing mode (5.1.2.2). The specification states neither a relationship between the register's address and its `accesswidth`, nor a relationship between an enclosing `alignment` and the `accesswidth` of the registers it contains.
+
+### The Implicit Premise
+
+For a register's `accesswidth` to be meaningful, the register must begin at an address that is a multiple of `accesswidth` (in bytes). If a register's first byte falls part way through an `accesswidth`-wide sub-word boundary, the sub-word boundaries of 10.6.1 (f) lose their meaning -- a single software access of `accesswidth` would straddle the register's boundary or split the register across two accesses, neither of which matches how the register is described. The specification's treatment of sub-words in 10.6.1 (f), and the default alignment rule in 5.1.2.2.1 ("aligned to a multiple of their width"), both implicitly assume that registers sit on `accesswidth`-aligned addresses.
+
+The specification leaves the constraint unstated, presumably on the assumption that users will not write addresses that violate it. The same alignment must also hold for `alignment` itself: an enclosing `alignment` value that is not a multiple of an enclosed register's `accesswidth` would, under automatic allocation, place that register at an address not aligned to `accesswidth`, producing the same break.
+
+### Rules
+
+Two related constraints apply to every register, regardless of whether its address was assigned via an operator or via automatic allocation:
+
+- The address (byte offset within its parent) of every register shall be a multiple of that register's `accesswidth` (in bytes). This is checked for `@`-specified addresses, for `+=`-based array strides, and for addresses produced by automatic allocation under any addressing mode.
+- The `alignment` property of an addrmap or regfile shall be a multiple of the `accesswidth` (in bytes) of every register the container contains (directly or through nested regfiles), so that automatic allocation cannot place a register at an address misaligned to its own `accesswidth`.
+
+Both quantities are powers of two (5.1.2.2.1 for `alignment`, 10.6.1 b for `accesswidth`), so "multiple of" is equivalent to "at least as large as" in either direction; the formulation as "multiple of" is used for symmetry between the two rules and to make the modular condition explicit.
+
+### Error Condition
+
+Either of the following holds:
+
+- A register's address (byte offset within its parent) is not a multiple of that register's `accesswidth` (in bytes).
+- An addrmap or regfile has an `alignment` value that is not a multiple of the `accesswidth` (in bytes) of some register it contains.
+
+### Status of This Decision
+
+The constraints are not stated by the specification but are necessary for the sub-word access model of 10.6.1 (f) to remain coherent and for the default alignment of 5.1.2.2.1 to behave as the specification describes. They are enforced at the elaborator (the frontend) rather than deferred to a backend: an address that breaks `accesswidth` alignment makes the SystemRDL model itself incoherent, regardless of what any backend does with it, so detecting and reporting the violation belongs to the layer that builds the model.
+
+## 8. Alias Register Constraints
 
 An alias register shares a single physical register with its primary (10.5 introduction). A change at one location is observable at all locations. This physical sharing underlies both of the constraints in this section: any difference between primary and alias must be realizable on the shared storage.
 
-### 7.1 Property Changes Restricted to the Specified List (10.5.1 e)
+### 8.1 Property Changes Restricted to the Specified List (10.5.1 e)
 
 #### Background
 
@@ -299,7 +331,7 @@ Note: this same rule applies whether the difference is stated as a direct alias-
 
 An alias register has a property differing from the corresponding primary register's property, where the differing property is not in the list of (e).
 
-### 7.2 Alias Field Must Exist in Primary (10.5.1 b)
+### 8.2 Alias Field Must Exist in Primary (10.5.1 b)
 
 #### Background
 
@@ -319,7 +351,7 @@ An alias register contains a field whose instance name does not match any field 
 
 The complementary case -- accessing positions where the alias has *omitted* a field that exists in the primary -- is a behavioral choice on the backend rather than an error, and is described in [alias_handling_policy.md](alias_handling_policy.md).
 
-## 8. `intr` / `halt` Register Properties on the Left-Hand Side (10.8.1 a)
+## 9. `intr` / `halt` Register Properties on the Left-Hand Side (10.8.1 a)
 
 Specification 10.8.1 (a) states that the `intr` and `halt` register properties are *outputs* and should only occur on the right-hand side of an assignment.
 
@@ -329,11 +361,11 @@ This is recorded here for completeness; no separate check is implemented.
 
 ---
 
-## 9. Edge Cases (Under Consideration)
+## 10. Edge Cases (Under Consideration)
 
 The following cases are not yet definitively classified as errors but are noted for future evaluation:
 
-### 9.1 Consistency of `intr`-Related Properties
+### 10.1 Consistency of `intr`-Related Properties
 
 Semantic consistency between aggregation properties (`intr`, `anded`, `ored`, `xored`) and the field declaration.
 
