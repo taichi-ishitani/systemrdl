@@ -3,10 +3,11 @@
 module SystemRDL
   module Evaluator
     class Instance
-      def initialize(definition, parent, name)
+      def initialize(definition, parent, name, token_range)
         @definition = definition
         @parent = parent
         @name = name
+        @token_range = token_range
         @properties = []
         @instances = []
       end
@@ -14,6 +15,7 @@ module SystemRDL
       attr_reader :definition
       attr_reader :parent
       attr_reader :name
+      attr_reader :token_range
       attr_reader :properties
       attr_reader :instances
 

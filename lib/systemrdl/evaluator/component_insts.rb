@@ -61,7 +61,7 @@ module SystemRDL
       attr_reader :inst_id
 
       def evaluate(instance, component_definition, **optargs)
-        component_definition.create_instance(instance, @inst_id.value, @inst_values, **optargs)
+        component_definition.create_instance(instance, @inst_id.value, @inst_values, @token_range, **optargs)
       end
     end
 

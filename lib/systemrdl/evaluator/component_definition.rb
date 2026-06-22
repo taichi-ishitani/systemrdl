@@ -28,15 +28,15 @@ module SystemRDL
         @insts&.evaluate(instance, @parent, @id, **optargs)
       end
 
-      def create_instance(parent_instance, inst_name, inst_values, **optargs)
-        instance = instance_class.new(self, parent_instance, inst_name)
+      def create_instance(parent_instance, inst_name, inst_values, token_range, **optargs)
+        instance = instance_class.new(self, parent_instance, inst_name, token_range)
 
         init_properties(instance)
         eval_body(instance, **optargs)
         apply_inst_values(instance, inst_values)
         instance.validate
 
-        parent_instance.instances << instance
+        parent_instance.instances << instance if parent_instance
         instance
       end
 

@@ -8,18 +8,22 @@ module SystemRDL
         connect(self, self)
       end
 
-      def evaluate(instance, **optargs)
+      def evaluate(_instance, **optargs)
+        root = create_instance(nil, :root, nil, nil, **optargs)
         @elements.each do |element|
-          element.evaluate(instance, **optargs)
+          element.evaluate(root, **optargs)
         end
+        root
+      end
+
+      private
+
+      def instance_class
+        RootInstance
       end
     end
 
     class RootInstance < Instance
-      def initialize
-        super(Root, nil, :root)
-      end
-
       def layer
         :root
       end
