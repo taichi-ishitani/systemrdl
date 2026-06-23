@@ -14,7 +14,7 @@ module SystemRDL
 
         assert_property(reg, :name, [:string], value: 'my_reg')
         assert_property(reg, :desc, [:string], value: '')
-        assert_property(reg, :regwidth, [:longint])
+        assert_property(reg, :regwidth, [:longint], value: 32)
         assert_property(reg, :accesswidth, [:longint])
         assert_property(reg, :errextbus, [:boolean], value: false)
         # todo
@@ -128,6 +128,82 @@ module SystemRDL
           assert_value(7, fields[0].msb);
           assert_value(7, fields[1].lsb);
           assert_value(8, fields[1].msb);
+        end
+      end
+
+      def test_power_of_2_regwidth_is_accepted
+        [8, 16, 32, 64, 128].each do |width|
+          regs = evaluate(<<~RDL).instances[0].instances
+            addrmap my_map {
+              reg {
+                regwidth = #{width};
+                field { sw = rw; hw = r; } a;
+              } my_reg;
+            };
+          RDL
+
+          assert_property_value(regs[0], :regwidth, width)
+        end
+      end
+
+      def test_non_power_of_2_regwidth_is_rejected
+        [7, 9, 15, 17, 31, 33, 63, 65, 127, 129].each do |width|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{width};
+                  field { sw = rw; hw = r; } a;
+                } my_reg;
+              };
+            RDL
+            "regwidth must be a power of 2: #{width}"
+          )
+        end
+      end
+
+      def test_field_out_of_register
+        [8, 16, 32, 64, 128].each do |width|
+          msb = width
+          lsb = width - 1
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{width};
+                  field { sw = rw; hw = r; } a[#{msb}:#{lsb}];
+                } my_reg;
+              };
+            RDL
+            "field out of register: bit position [#{msb}:#{lsb}] regwidth #{width}"
+          )
+
+          msb = width
+          lsb = msb
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{width};
+                  field { sw = rw; hw = r; } a[#{msb}:#{lsb}];
+                } my_reg;
+              };
+            RDL
+            "field out of register: bit position [#{msb}:#{lsb}] regwidth #{width}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{width};
+                  field { sw = rw; hw = r; } a[#{width - 1}:0];
+                  field { sw = rw; hw = r; } b;
+                } my_reg;
+              };
+            RDL
+            "field out of register: bit position [#{msb}:#{lsb}] regwidth #{width}"
+          )
         end
       end
     end
