@@ -33,6 +33,8 @@ From the perspective of a software programmer using the alias, an omitted field 
 
 This view aligns with the spec's framing in 10.5 that "accessibility of this register may be different in each location" and that software access properties may differ between primary and alias. Omitting a field from an alias is a stronger form of that location-specific accessibility: not just a different access type, but no access at all through this window.
 
+Two specification rules together reinforce this interpretation. Clause 10.1 (c) requires that at least one field be instantiated within a register. Clause 10.5.1 (c) then relaxes the full-field requirement for alias registers specifically. Read together, the natural implication is that an alias register declares exactly the fields it intends to expose: the designer instantiates the fields that should be visible through this alias window, and omits the rest. Field omission is therefore an intentional act of hiding, not an implicit inheritance of the primary's behavior.
+
 Implementing this requires the backend's decode and side-effect logic to be gated by the alias's field set: the alias's decode path produces write strobes and read-side-effect triggers only for the bit positions that the alias actually declares. The primary's access path is unaffected; accesses through the primary continue to trigger its side effects normally.
 
 ### Status
