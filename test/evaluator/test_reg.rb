@@ -15,7 +15,7 @@ module SystemRDL
         assert_property(reg, :name, [:string], value: 'my_reg')
         assert_property(reg, :desc, [:string], value: '')
         assert_property(reg, :regwidth, [:longint], value: 32)
-        assert_property(reg, :accesswidth, [:longint])
+        assert_property(reg, :accesswidth, [:longint], value: 32)
         assert_property(reg, :errextbus, [:boolean], value: false)
         # todo
         # assert_property(reg, :intr)
@@ -204,6 +204,274 @@ module SystemRDL
             RDL
             "field out of register: bit position [#{msb}:#{lsb}] regwidth #{width}"
           )
+        end
+      end
+
+      def test_regwidth_forces_default_value_of_accesswidth
+        [8, 16, 32, 64, 128].each do |width|
+          regs = evaluate(<<~RDL).instances[0].instances
+            addrmap my_map {
+              reg {
+                regwidth = #{width};
+                field { sw = rw; hw = r; } a;
+              } my_reg;
+            };
+          RDL
+
+          assert_property_value(regs[0], :accesswidth, width)
+        end
+      end
+
+      def test_power_of_2_accesswidth_is_accepted
+        [8, 16, 32, 64, 128].each do |width|
+          regs = evaluate(<<~RDL).instances[0].instances
+            addrmap my_map {
+              reg {
+                regwidth = 128;
+                accesswidth = #{width};
+                field { sw = rw; hw = r; } a;
+              } a;
+              reg {
+                regwidth = 128;
+                field { sw = rw; hw = r; } b;
+              } b;
+              b->accesswidth = #{width};
+            };
+          RDL
+
+          assert_property_value(regs[0], :accesswidth, width)
+          assert_property_value(regs[1], :accesswidth, width)
+        end
+      end
+
+      def test_non_power_of_2_accesswidth_is_rejected
+        [7, 9, 15, 17, 31, 33, 63, 65, 127].each do |width|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = 128;
+                  accesswidth = #{width};
+                  field { sw = rw; hw = r; } a;
+                } a;
+              };
+            RDL
+            "accesswidth must be a power of 2: #{width}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = 128;
+                  field { sw = rw; hw = r; } a;
+                } a;
+                a->accesswidth = #{width};
+              };
+            RDL
+            "accesswidth must be a power of 2: #{width}"
+          )
+        end
+      end
+
+      def test_accesswidth_exceeds_regwidth
+        [[8, 16], [16, 32], [32, 64], [64, 128]].each do |(regwidth, accesswidth)|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  accesswidth = #{accesswidth};
+                  regwidth = #{regwidth};
+                  field { sw = rw; hw = r; } a;
+                } a;
+              };
+            RDL
+            "accesswidth exceeds regwidth: accesswidth = #{accesswidth} regwidth = #{regwidth}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{regwidth};
+                  field { sw = rw; hw = r; } a;
+                } a;
+                a->accesswidth = #{accesswidth};
+              };
+            RDL
+            "accesswidth exceeds regwidth: accesswidth = #{accesswidth} regwidth = #{regwidth}"
+          )
+        end
+      end
+
+      def test_writable_fields_spanning_sub_word_boundary_are_rejected
+        [[16, 8], [32, 16], [64, 32], [128, 64]].product(['rw', 'w']).each do |(regwidth, accesswidth), sw|
+          lsb = accesswidth - 1
+          msb = accesswidth
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{regwidth};
+                  accesswidth = #{accesswidth};
+                  field { sw = #{sw}; hw = r; } a[#{msb}:#{lsb}];
+                } a;
+              };
+            RDL
+            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{regwidth};
+                  field { sw = #{sw}; hw = r; } a[#{msb}:#{lsb}];
+                } a;
+                a->accesswidth = #{accesswidth};
+              };
+            RDL
+            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{regwidth};
+                  accesswidth = #{accesswidth};
+                  field { sw = r; hw = r; } a[#{msb}:#{lsb}];
+                } a;
+                a.a->sw = #{sw};
+              };
+            RDL
+            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+          )
+        end
+      end
+
+      def test_ro_fields_with_side_effect_spanning_sub_word_boundary_are_rejected
+        [
+          [16, 8], [32, 16], [64, 32], [128, 64]
+        ].product(['rclr', 'rset', 'ruser']).each do |(regwidth, accesswidth), onread|
+          lsb = accesswidth - 1
+          msb = accesswidth
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{regwidth};
+                  accesswidth = #{accesswidth};
+                  field { sw = r; hw = r; onread = #{onread}; } a[#{msb}:#{lsb}];
+                } a;
+              };
+            RDL
+            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{regwidth};
+                  field { sw = r; hw = r; onread = #{onread}; } a[#{msb}:#{lsb}];
+                } a;
+                a->accesswidth = #{accesswidth};
+              };
+            RDL
+            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{regwidth};
+                  accesswidth = #{accesswidth};
+                  field { sw = r; hw = r; } a[#{msb}:#{lsb}];
+                } a;
+                a.a->onread = #{onread};
+              };
+            RDL
+            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+          )
+
+          next if onread == 'ruser'
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{regwidth};
+                  accesswidth = #{accesswidth};
+                  field { sw = r; hw = r; #{onread}; } a[#{msb}:#{lsb}];
+                } a;
+              };
+            RDL
+            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{regwidth};
+                  field { sw = r; hw = r; #{onread}; } a[#{msb}:#{lsb}];
+                } a;
+                a->accesswidth = #{accesswidth};
+              };
+            RDL
+            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  regwidth = #{regwidth};
+                  accesswidth = #{accesswidth};
+                  field { sw = r; hw = r; } a[#{msb}:#{lsb}];
+                } a;
+                a.a->#{onread};
+              };
+            RDL
+            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+          )
+        end
+      end
+
+      def test_ro_fields_without_side_effect_spanning_sub_word_boundary_are_allowed
+        [[16, 8], [32, 16], [64, 32], [128, 64]].each do |(regwidth, accesswidth)|
+          lsb = accesswidth - 1
+          msb = accesswidth
+
+          fields = evaluate(<<~RDL).instances[0].instances[0].instances
+            addrmap my_map {
+              reg {
+                regwidth = #{regwidth};
+                accesswidth = #{accesswidth};
+                field { sw = r; hw = r; } a[#{msb}:#{lsb}];
+              } a;
+            };
+          RDL
+
+          assert_value(lsb, fields[0].lsb);
+          assert_value(msb, fields[0].msb);
+
+          fields = evaluate(<<~RDL).instances[0].instances[0].instances
+            addrmap my_map {
+              reg {
+                regwidth = #{regwidth};
+                field { sw = r; hw = r; } a[#{msb}:#{lsb}];
+              } a;
+              a->accesswidth = #{accesswidth};
+            };
+          RDL
+
+          assert_value(lsb, fields[0].lsb);
+          assert_value(msb, fields[0].msb);
         end
       end
     end

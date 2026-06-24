@@ -5,8 +5,15 @@ module SystemRDL
     class RegDefinition < ComponentDefinition
       def validate(instance)
         check_regwidth(instance)
+        check_accesswidth(instance)
         check_overlapping_fields(instance)
         check_fields_out_of_register(instance)
+        check_fields_spanning_sub_word_boundary(instance)
+      end
+
+      def revalidate(instance)
+        check_accesswidth(instance)
+        check_fields_spanning_sub_word_boundary(instance)
       end
 
       def layer
@@ -31,6 +38,18 @@ module SystemRDL
         create_property(instance, :shared, [:boolean], false)
       end
 
+      def post_build(instance)
+        apply_default_accesswidth(instance)
+      end
+
+      def apply_default_accesswidth(instance)
+        property = instance.property(:accesswidth)
+        return if property.value
+
+        regwidth = instance.property_value(:regwidth)
+        property.assign(regwidth)
+      end
+
       def check_power_of_2(instance, name)
         value = instance.property_value(name)
         return if power_of_2?(value.value)
@@ -45,6 +64,17 @@ module SystemRDL
 
       def check_regwidth(instance)
         check_power_of_2(instance, :regwidth)
+      end
+
+      def check_accesswidth(instance)
+        check_power_of_2(instance, :accesswidth)
+
+        regwidth = instance.property_value(:regwidth)
+        accesswidth = instance.property_value(:accesswidth)
+        return if accesswidth.value <= regwidth.value
+
+        message = "accesswidth exceeds regwidth: accesswidth = #{accesswidth} regwidth = #{regwidth}"
+        raise_evaluation_error message, accesswidth.token_range, regwidth.token_range
       end
 
       def check_overlapping_fields(instance)
@@ -83,6 +113,30 @@ module SystemRDL
           message = "field out of register: bit position [#{msb}:#{lsb}] regwidth #{regwidth}"
           raise_evaluation_error message, field.token_range
         end
+      end
+
+      def check_fields_spanning_sub_word_boundary(instance)
+        accesswidth = instance.property_value(:accesswidth).value
+        instance.instances.each do |field|
+          next unless field_with_side_effect?(field)
+
+          msb = field.msb.value
+          lsb = field.lsb.value
+          next if (msb / accesswidth) == (lsb / accesswidth)
+
+          message =
+            'field spanning sub-word boundary not allowed: ' \
+            "bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+          raise_evaluation_error message, field.token_range
+        end
+      end
+
+      def field_with_side_effect?(field)
+        sw = field.property_value(:sw).value
+        return true if sw in :rw | :w
+
+        [:onread, :rclr, :rset]
+          .any? { |prop| field.property_value(prop)&.value }
       end
     end
 

@@ -34,6 +34,7 @@ module SystemRDL
         init_properties(instance)
         eval_body(instance, **optargs)
         apply_inst_values(instance, inst_values)
+        post_build(instance)
         instance.validate
 
         parent_instance.instances << instance if parent_instance
@@ -74,6 +75,9 @@ module SystemRDL
       end
 
       def apply_inst_values(_instance, _inst_values)
+      end
+
+      def post_build(_instance)
       end
 
       protected
