@@ -329,47 +329,9 @@ This is recorded here for completeness; no separate check is implemented.
 
 ---
 
-## 9. Array Stride Lower Bound
+## 9. Address Placement Constraints
 
-### Background
-
-Specification Table 4 defines the `+=` operator as the address stride when instantiating an array of components:
-
-> Specifies the address stride when instantiating an array of components (controls the spacing of the components). The address stride is relative to the previous instance's address.
-
-Section 5.1.2.3 (e) further restricts its use:
-
-> The `+=` operator is only used when instantiating arrayed addrmap, regfile, reg, or mem components.
-
-These provisions establish the meaning of `+=` (the spacing between consecutive array elements) and limit its applicability (array instantiations only), but the specification does not state any lower bound on the stride value itself. A stride smaller than the element size is not explicitly forbidden.
-
-### The Problem with Stride Smaller Than Element Size
-
-A stride smaller than the element size causes consecutive array elements to occupy overlapping address ranges. For example, with a 4-byte `reg` and `+= 0x2`:
-
-- `reg[0]` occupies bytes 0x0 - 0x3
-- `reg[1]` occupies bytes 0x2 - 0x5
-- `reg[2]` occupies bytes 0x4 - 0x7
-
-Each element overlaps with its neighbors, which has no coherent hardware realization: the same byte cannot simultaneously belong to two distinct register instances. This is conceptually similar to the same-address restriction in 10.1 (h) for non-array registers, but arises here from a stride choice rather than from explicit `@` addressing.
-
-### Rationale
-
-Although the resulting overlap could in principle be detected by a general address-overlap check after the array is expanded, doing so loses the root cause from the user's perspective: the error appears as "elements N and N+1 of array X overlap" rather than as "stride is too small". The user must work backward from a downstream symptom to the upstream cause.
-
-Catching the condition directly at the stride value -- before array expansion -- makes the diagnostic point straight at the user's choice of stride. This also keeps the responsibilities of the later overlap check focused on overlaps that arise from independent address decisions across siblings, rather than from the internal structure of a single array.
-
-### Error Condition
-
-A `+=` stride value is less than the size of the array element.
-
-For a `reg` element, the size is `regwidth` in bytes. For `regfile`, `addrmap`, or `mem` elements, the size is determined by the element's structure.
-
-### Note: `+=` on Non-Array Instantiations
-
-Section 5.1.2.3 (e) limits `+=` to "arrayed" components, but does not state the consequence of writing `+=` on a non-array instantiation. The grammar of Annex B admits `+=` independently of array syntax, so a non-array instance may carry a `+=` value at the parser level.
-
-This implementation treats such a `+=` as a no-op rather than an error: the value has no array elements to space, so it has no effect, but the instance itself is otherwise well-formed. This places the case in the same category as the no-op conditions listed at the end of this document.
+Constraints on where instances are placed in the address space -- including stride, alignment, and the operands of the explicit `@` / `%=` / `+=` operators -- are address-wide concerns rather than field-property combinations, and are documented separately in [address_allocation_policy.md](address_allocation_policy.md).
 
 ---
 
