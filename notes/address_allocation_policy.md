@@ -24,16 +24,18 @@ When an instance *is* assigned an explicit operator (`@`, `%=`, or `+=`), the ad
 
 Bypassing the addressing-mode logic does not make the operands unconstrained. The value supplied to an operator is subject to the constraints defined elsewhere in this document:
 
-- **Sub-word boundary invariant** (Section 4): for the registers it covers, the resolved absolute address (`@`, or the address produced by `%=`) and the array stride (`+=`) must be a multiple of `accesswidth`. This is a condition on the final absolute address, so it applies to every operator and to automatic allocation alike.
+- **Sub-word boundary** (Section 4): for the registers it covers, the resolved absolute address (`@`, or the address produced by `%=`) and the array stride (`+=`) must be a multiple of `accesswidth`. This is a condition on the final absolute address, so it applies to every operator and to automatic allocation alike.
 - **Stride bounds** (Section 3): a `+=` stride must be at least the element size (to prevent overlap) and a multiple of `accesswidth` (the same sub-word requirement, applied to the spacing between array elements).
 
 These are not "automatic-allocation rules" in the sense excluded by 5.1.2.2; they derive from requirements that hold no matter how an address was chosen.
+
+The `regfile` `alignment` property (Appendix A) is treated differently: it constrains placement only under automatic allocation and is *not* imposed on an explicit operator's value. A user who places an instance explicitly may therefore land off the `alignment` boundary without error. Appendix B explains why this differs from the sub-word boundary.
 
 ---
 
 ## 2. Size and `accesswidth` of Instances
 
-The addressing modes (5.1.2.2.2), the stride bounds (Section 3), and the sub-word boundary invariant (Section 4) all rely on two per-instance quantities:
+The addressing modes (5.1.2.2.2), the stride bounds (Section 3), and the sub-word boundary (Section 4) all rely on two per-instance quantities:
 
 - `accesswidth` (in bytes) -- used by `compact`, which packs components tightly while keeping each aligned to the `accesswidth` parameter.
 - `size` (in bytes) -- used by `regalign` (each component's start address is a multiple of its size) and `fullalign` (an array's first element aligns to the size of the whole array, rounded up to a power of two).
@@ -58,16 +60,9 @@ A `regfile` does not have an `accesswidth` property in the specification, and th
 
 #### `accesswidth`
 
-The `accesswidth` of a `regfile` is defined as:
+The `accesswidth` of a `regfile` is defined as `max_internal_accesswidth`: the maximum of the `accesswidth` values of the components instantiated inside the `regfile` (i.e., the contained `reg` and `regfile` instances, the latter resolved recursively by this same rule).
 
-- `max(alignment_value, max_internal_accesswidth)`, where `alignment_value` is the `alignment` property of the `regfile` if explicitly set, and `max_internal_accesswidth` is the maximum of the `accesswidth` values of the components instantiated inside the `regfile` (i.e., the contained `reg` and `regfile` instances, the latter resolved recursively by this same rule).
-- If `alignment` is not explicitly set, the value is simply `max_internal_accesswidth`.
-
-The motivation is to keep each internal `reg`'s software-access boundary intact in absolute-address terms. When the `regfile` is placed under `compact` mode at an address that is a multiple of this value, every internal `reg` placed by automatic allocation lands on an address that respects its own `accesswidth`. Taking the maximum across the explicit `alignment` and the internal `accesswidth` values is the smallest value that simultaneously satisfies the user's explicit alignment request (if any) and every internal `reg`'s software-access boundary.
-
-If the user sets `alignment` to a value smaller than `max_internal_accesswidth`, the internal value still governs: an explicit `alignment` cannot relax the boundary required by the internal contents, because doing so would break the internal `reg`'s addressing in the array case.
-
-If the user sets `alignment` to a value larger than `max_internal_accesswidth`, the explicit value governs: the user is asking for a stricter boundary than the contents require, and that request is honored.
+The motivation is to keep each internal `reg`'s software-access boundary intact in absolute-address terms. When the `regfile` is placed at an address that is a multiple of this value, every internal `reg` placed by automatic allocation lands on an address that respects its own `accesswidth`. Taking the maximum is the smallest value that satisfies every internal `reg`'s software-access boundary simultaneously.
 
 A `regfile` always contains at least one register or register file (per 12.2), so `max_internal_accesswidth` is always well-defined.
 
@@ -136,7 +131,7 @@ A stride -- whether supplied with `+=` or taken as the default of 3.1 -- is subj
 
 1. **Lower bound: `stride >= size`.** A stride smaller than the element size causes consecutive array elements to occupy overlapping address ranges (e.g., a 4-byte `reg` with `+= 0x2` places `c[0]` at 0x0-0x3, `c[1]` at 0x2-0x5, and so on). Such a layout has no coherent hardware realization, since the same byte cannot simultaneously belong to two distinct instances; this is closer in character to the same-address restriction in 10.1 (h) than to a software-access concern. The element `size` is `regwidth / 8` for a `reg` and the `regfile`'s `size` (2.2) for a `regfile`. The elaborator rejects a too-small stride directly at the stride value, before array expansion, so the diagnostic points at the user's choice rather than at the resulting overlap. (A `+=` written on a non-array instantiation has no elements to space and is treated as a harmless no-op.)
 
-2. **Multiple of `accesswidth`.** For the instances covered by the sub-word boundary invariant (Section 4), the stride must be a multiple of `accesswidth`, so that every element -- not just the first -- lands on an `accesswidth` boundary. The stride determines `c[i]`'s address as `base + stride * i`; a non-multiple stride pushes later elements off the boundary even when the first element is aligned. This is also why a `regfile`'s default stride (3.1) rounds the `regfile`'s raw `size` up to an `accesswidth` multiple: for the `rf` example in 2.2 (`size = 20`, `accesswidth = 8`), a stride of 20 would put `rf[1].b` at `0x14 + 0x08 = 0x1C`, off the 8-byte boundary, whereas the rounded stride of 24 puts it at `0x18 + 0x08 = 0x20`. Folding the rounding into the stride rather than into `size` confines it to the array case, where it is actually needed.
+2. **Multiple of `accesswidth`.** For the instances covered by the sub-word boundary (Section 4), the stride must be a multiple of `accesswidth`, so that every element -- not just the first -- lands on an `accesswidth` boundary. The stride determines `c[i]`'s address as `base + stride * i`; a non-multiple stride pushes later elements off the boundary even when the first element is aligned. This is also why a `regfile`'s default stride (3.1) rounds the `regfile`'s raw `size` up to an `accesswidth` multiple: for the `rf` example in 2.2 (`size = 20`, `accesswidth = 8`), a stride of 20 would put `rf[1].b` at `0x14 + 0x08 = 0x1C`, off the 8-byte boundary, whereas the rounded stride of 24 puts it at `0x18 + 0x08 = 0x20`. Folding the rounding into the stride rather than into `size` confines it to the array case, where it is actually needed.
 
 Both constraints apply equally to a `+=` operand and to a default stride; the default stride is simply constructed to satisfy them from the outset.
 
@@ -197,3 +192,29 @@ The justification has two layers, and they are not equally strong:
 - **Design judgment, not specification (weakest)**: including read-only registers (4.4). This has no specification basis and rests purely on the cost/benefit argument given there.
 
 The invariant is well-founded enough to be enforced as an error for the core case. It is, however, a derived interpretation, not a clause the specification states directly. A different implementation that reads 10.6.1 (f) as a pure bit-layout rule, with no implication for placement, could permit off-boundary placement without being clearly non-conformant. Users who need cross-tool portability should not rely on other tools enforcing -- or declining to enforce -- this invariant identically.
+
+---
+
+## Appendix A: The `alignment` Property
+
+The `alignment` property is used in two ways. The first is defined by the specification; the second is this implementation's interpretation of a silent area.
+
+### Used as a condition on a container's children
+
+Per 5.1.2.2.1, `alignment` "defines the byte value of which the container's instance addresses shall be a multiple." Set on an `addrmap` or `regfile` (12.3, Table 25), it requires each child placed by automatic allocation to sit at an address that is a multiple of `alignment` (in addition to the child's own `accesswidth` boundary). This is the specification's stated meaning; no interpretation is involved.
+
+### Used as a condition on the container's own address
+
+The specification does not state whether `alignment` also constrains the *container's own* address. It is silent here, but the answer follows from relative addressing: a child's offset is relative to the `regfile` base (5.1.2.2), so the child's absolute address is a multiple of `alignment` only if the base is too. To make the child-level requirement hold in absolute terms, this implementation places a `regfile` carrying an `alignment` property so that its own base address is a multiple of `alignment` -- and, combined with the sub-word boundary, a multiple of `max(accesswidth, alignment)` (both being powers of two).
+
+This propagation applies **under automatic allocation only**. When the `regfile` is placed with an explicit operator (`@`, `%=`, `+=`), the resulting address or stride is accepted even if it is not a multiple of `alignment`; see Appendix B.
+
+## Appendix B: Sub-Word Boundary vs. `alignment`
+
+Both the sub-word boundary (Section 4) and `alignment` propagation (Appendix A) require an instance's absolute address to be a multiple of some boundary, and both propagate to a `regfile` base through relative addressing. They are nevertheless enforced on different placement paths: the sub-word boundary on every path (automatic, `@`, `%=`, `+=`), `alignment` on automatic allocation only. The difference comes from the strength of the underlying requirement.
+
+The sub-word boundary derives from a hardware requirement. A side-effecting field split across software-access sub-words breaks the atomicity that 10.6.1 (f) mandates; the layout has no faithful hardware realization. Because the harm is real regardless of how the address was chosen, the boundary is enforced on explicit operators too -- even though 5.1.2.2 might be read as exempting them -- since the requirement originates in 10.6.1 (f), outside the scope of that exemption.
+
+`alignment` derives from a user preference, not a hardware requirement. A child placed off its `alignment` boundary is still fully accessible; only the user's stated preference is unmet. And `alignment` is exactly the input that 5.1.2.2 names for automatic allocation and exempts from explicit operators, so imposing it on an explicit operator would both contradict 5.1.2.2 and defeat the purpose of explicit placement (a user who writes `@0x8` has deliberately opted out). It is therefore enforced only where 5.1.2.2 calls for it, and an explicit operator may override it without error.
+
+The propagation *reasoning* is actually firmer for `alignment` (5.1.2.2.1 speaks of addresses directly, needing no reconstruction like the 10.6.1 (f) reading of 4.5). The narrower scope reflects not weaker grounding but the benign cost of violation and the conflict with 5.1.2.2 -- a well-grounded requirement can still be the one that yields to an explicit operator.
