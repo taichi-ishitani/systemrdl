@@ -182,14 +182,16 @@ The invariant is applied uniformly to all `reg` and `regfile` instances, but the
 
 - **Split register with a side-effecting field** (`regwidth > accesswidth`, has a writable or read-side-effecting field): constrained by 10.6.1 (f) as derived above. This is the core case.
 - **Non-split register** (`regwidth == accesswidth`): aligning to `accesswidth` is identical to aligning to the register's own width, which is just the default alignment of 5.1.2.2.1 ("aligned to a multiple of their width"). The invariant coincides with existing behavior; no separate justification is needed.
-- **Read-only / no side-effect register**: strictly, 10.6.1 (e) permits partial reads, so such a register is *not* required by the specification to sit on an `accesswidth` boundary. This implementation nonetheless includes it in the invariant. The reason is not a specification requirement but the absence of any benefit to exempting it: the set of layouts the exemption would unlock is nearly empty (automatic allocation already aligns to width), while exempting it would require per-register access-type analysis -- complicated further by the fact that access-type and on-read properties can be set dynamically -- and would produce maps where registers of the same width sit on different boundaries depending on access type. A uniform rule is simpler for the elaborator and for downstream tools, at no real cost in expressiveness.
+- **Read-only / no side-effect register**: 10.6.1 (e) permits partial reads, so such a register does not break atomicity when placed off boundary. But "permitted to read in parts" is not the same as "harmless to place off boundary." The bit position at which a field appears within a software access is measured from the register's base; when the register is not on an `accesswidth` boundary, those positions shift relative to the absolute access words, so the field a given access returns -- and the number of accesses needed to read the whole register -- change from the natural register-relative layout. The data is still recoverable, but the access pattern is no longer the predictable one. This is a weaker concern than the atomicity break of a side-effecting field (the register still works; only the read shape degrades), but it shows that off-boundary placement of a read-only register is not entirely harmless. The invariant therefore covers it as well -- to preserve read predictability, and, secondarily, because exempting it would require per-register access-type analysis (complicated by access-type and on-read properties being dynamically assignable) and would produce maps where registers of the same width sit on different boundaries by access type, for no gain in expressiveness.
 
 ### 4.5 Strength of This Reasoning
 
-The justification has two layers, and they are not equally strong:
+The invariant rests on interpretations of the same kind throughout: each takes a clause of 10.6.1 together with how software actually accesses the address space, and deduces a placement requirement on the absolute address. None is a verbatim placement rule in the specification. They differ in the strength of the premise they start from -- both in whether that clause is a prohibition or a permission, and in how severe a violation is:
 
-- **Derived from the specification's invariant (moderate)**: the requirement that an instance's base address -- and, for a `regfile`, every enclosing parent's base -- be a multiple of `accesswidth`. This rests on reading 10.6.1 (f) as presupposing that the register's base sits on an `accesswidth` boundary, which the specification does not state explicitly but which is reconstructed from the fact that, without it, 10.6.1 (f) would not actually protect the field it names. The `regfile` propagation follows from this by the relative-address rule of 5.1.2.2; that step is a clean deduction, but it inherits the strength of the reconstructed premise it builds on, so the whole layer is only as strong as that reading. Both the register's own boundary and the propagation to its parent are parts of one interpretation serving 10.6.1 (f), not separately-grounded claims.
-- **Design judgment, not specification (weakest)**: including read-only registers (4.4). This has no specification basis and rests purely on the cost/benefit argument given there.
+- **Strong premise -- side-effecting fields (4.3, 4.4 core case)**: derived from 10.6.1 (f), a prohibition ("shall not span"). A violation breaks the atomicity of a write or read side-effect, so the layout has no faithful hardware realization. The one reconstructed step is reading (f) as presupposing the register's base sits on an `accesswidth` boundary -- not stated outright, but forced by the fact that otherwise (f) would not protect the field it names. The `regfile` propagation then follows by the relative-address rule of 5.1.2.2 as a clean deduction; it inherits the strength of that premise, so base requirement and propagation are one interpretation, not separate claims.
+- **Weaker premise -- read-only registers (4.4)**: derived from 10.6.1 (e), a permission ("partial reads are valid"). Going from "readable in parts" to "the base should be on a boundary" needs the added premise that the register-relative bit positions and access count should remain predictable on the absolute address line -- which the specification does not state. And a violation only degrades the read shape rather than breaking the register. Both the permission starting point and the milder harm make this weaker than the side-effecting case, though it is the same species of deduction.
+
+Below these sits a non-deductive consideration that does not by itself justify the invariant but reinforces applying it uniformly: exempting any case would cost per-register access-type analysis and yield boundary differences by access type, for no expressiveness gained.
 
 The invariant is well-founded enough to be enforced as an error for the core case. It is, however, a derived interpretation, not a clause the specification states directly. A different implementation that reads 10.6.1 (f) as a pure bit-layout rule, with no implication for placement, could permit off-boundary placement without being clearly non-conformant. Users who need cross-tool portability should not rely on other tools enforcing -- or declining to enforce -- this invariant identically.
 
@@ -218,3 +220,49 @@ The sub-word boundary derives from a hardware requirement. A side-effecting fiel
 `alignment` derives from a user preference, not a hardware requirement. A child placed off its `alignment` boundary is still fully accessible; only the user's stated preference is unmet. And `alignment` is exactly the input that 5.1.2.2 names for automatic allocation and exempts from explicit operators, so imposing it on an explicit operator would both contradict 5.1.2.2 and defeat the purpose of explicit placement (a user who writes `@0x8` has deliberately opted out). It is therefore enforced only where 5.1.2.2 calls for it, and an explicit operator may override it without error.
 
 The propagation *reasoning* is actually firmer for `alignment` (5.1.2.2.1 speaks of addresses directly, needing no reconstruction like the 10.6.1 (f) reading of 4.5). The narrower scope reflects not weaker grounding but the benign cost of violation and the conflict with 5.1.2.2 -- a well-grounded requirement can still be the one that yields to an explicit operator.
+
+## Appendix C: Address Ordering and RO/WO Sharing
+
+### Incrementing order
+
+5.1.2.4 b) states that "addresses are assigned in incrementing order." Read literally, b) sits in the Semantics clause and draws no distinction between automatic and explicit placement, so it can be taken to require incrementing order on every path -- including explicit operators. This implementation honors it for automatic allocation (which packs instances forward, each at a higher address than the one before), but **declines to enforce it on explicit placement**: an explicit operator may place a later instance (in source order) at a lower address than an earlier one. The requirement is acknowledged as applying on a literal reading, and deliberately not imposed where it serves no purpose.
+
+For example, the following is accepted even though `b` appears after `a` in source yet sits at a lower address:
+
+```
+reg { ... } a @0x4;
+reg { ... } b @0x0;
+```
+
+The justification is the same as for `alignment` (Appendix B): the `@` operator exists precisely to let the user choose an address freely, and a backward jump in source order harms nothing -- no overlap, no broken decode. Enforcing source/address order agreement on explicit operators would reject legitimate layouts (e.g. reserving a region first, then filling space before it) and would add cross-space source-order tracking for no real benefit. What an explicit placement *is* still checked against is overlap, handled by 10.1 (h): two registers may occupy the same address only when one is read-only and the other is write-only. Whether a given overlap is permitted therefore depends on the software-access character of both registers, not on their addresses alone.
+
+### Automatic allocation does not consider access type
+
+When an address is assigned automatically, the access type of the registers involved is **not** taken into account. The next address is computed from the occupied end of the immediately preceding instance in source order -- the literal "previous register" -- regardless of whether the two registers could legally share an address under 10.1 (h).
+
+The reason is that the addressing modes of 5.1.2.2.2 take only `accesswidth` and size as input, not access type; automatic allocation has no notion of "find a read-only/write-only partner to overlap with." A design that genuinely wants two registers to share an address can express that directly with the `@` operator, which 10.1 (h) then permits. Automatic allocation is therefore left to do the simple, predictable thing -- pack forward -- and sharing is reserved for explicit intent.
+
+### Examples
+
+Explicit placement, where 10.1 (h) decides whether an overlap is legal:
+
+```
+reg {} a @0x0;  // a has RW fields
+reg {} b @0x0;  // b has RO fields  -> ERROR: collides with a's read side
+```
+
+```
+reg {} a @0x0;  // a has WO fields
+reg {} b @0x0;  // b has RO fields  -> OK (10.1 (h)): WO and RO may share
+```
+
+The same source-order pair (`b` after `a`) is rejected in the first case and accepted in the second; the difference is entirely in the access types, which determine whether the two registers occupy the same access "side."
+
+Automatic placement, where access type is ignored:
+
+```
+reg { field { sw = w; } f; } a;  // WO, occupies 0x0-0x3
+reg { field { sw = r; } f; } b;  // RO -> placed at 0x4, NOT shared at 0x0
+```
+
+Here `a` (WO) and `b` (RO) *could* legally share `0x0` if written explicitly, as in the second explicit example above. Under automatic allocation they do not: `b` is placed after `a`'s occupied end, at `0x4`. To share, the design must say so with `@`.
