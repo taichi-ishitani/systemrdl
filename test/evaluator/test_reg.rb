@@ -474,6 +474,99 @@ module SystemRDL
           assert_value(msb, fields[0].msb);
         end
       end
+
+      def test_non_field_component_instances_are_rejected
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap a_addrmap {
+              reg {
+                field { hw=r; } a;
+              } a;
+            };
+            addrmap b_addrmap {
+              reg {
+                a_addrmap b;
+              } b;
+            };
+          RDL
+          "addrmap instance not allowed in reg"
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap a_addrmap {
+              regfile a_regfile {
+                reg {
+                  field { hw=r; } a;
+                } a;
+              };
+              reg {
+                a_regfile b;
+              } b;
+            };
+          RDL
+          "regfile instance not allowed in reg"
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap a_addrmap {
+              reg a_reg {
+                field { hw=r; } a;
+              };
+              reg {
+                a_reg b;
+              } b;
+            };
+          RDL
+          "reg instance not allowed in reg"
+        )
+      end
+
+      def test_non_field_component_definitions_are_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap a_addrmap {
+              reg {
+                addrmap b_addrmap {
+                  reg b_reg {
+                    field b_field { hw = r; };
+                  };
+                };
+              } a;
+            };
+          RDL
+          'addrmap definition not allowed in reg'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap a_addrmap {
+              reg {
+                regfile b_regfile {
+                  reg b_reg {
+                    field b_field { hw = r; };
+                  };
+                };
+              } a;
+            };
+          RDL
+          'regfile definition not allowed in reg'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap a_addrmap {
+              reg {
+                reg b_reg {
+                  field b_field { hw = r; };
+                };
+              } a;
+            };
+          RDL
+          'reg definition not allowed in reg'
+        )
+      end
     end
   end
 end
