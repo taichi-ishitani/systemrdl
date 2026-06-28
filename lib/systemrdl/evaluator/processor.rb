@@ -94,11 +94,15 @@ module SystemRDL
         process(node.children[0])
       end
 
+      def on_address_assignment(node)
+        process(node.children[0])
+      end
+
       def on_component_inst(node)
         inst_id = process(node.children[0])
         inst_values =
           [
-            :array, :range, :reset_value, :address_assignment, :address_stride, :address_assignment
+            :array, :range, :reset_value, :address_assignment, :address_stride, :address_alignment
           ].zip(node.children[1..]).to_h { |k, n| [k, process(n)] }
         ComponentInst.new(inst_id, inst_values, node.token_range)
       end

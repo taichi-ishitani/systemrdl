@@ -304,6 +304,96 @@ module SystemRDL
         end
       end
 
+      def test_address_aligned_to_accesswidth_is_allowed
+        [[16, 8], [32, 16], [64, 32], [128, 64]].each do |(regwidth, accesswidth)|
+          addresses = Array.new(3) { |i| i * (accesswidth / 8) }
+
+          regs = evaluate(<<~RDL).instances[0].instances
+            addrmap my_map {
+              reg {
+                regwidth = #{regwidth};
+                accesswidth = #{accesswidth};
+                field { sw = rw; hw = r; } a;
+              } a @#{addresses[0]};
+              reg {
+                regwidth = #{regwidth};
+                accesswidth = #{accesswidth};
+                field { sw = rw; hw = r; } a;
+              } b @#{addresses[1]};
+              reg {
+                regwidth = #{regwidth};
+                accesswidth = #{accesswidth};
+                field { sw = rw; hw = r; } a;
+              } c @#{addresses[2]};
+            };
+          RDL
+
+          assert_value(addresses[0], regs[0].address)
+          assert_value(addresses[1], regs[1].address)
+          assert_value(addresses[2], regs[2].address)
+
+          regs = evaluate(<<~RDL).instances[0].instances
+            addrmap my_map {
+              reg {
+                regwidth = #{regwidth};
+                accesswidth = 8;
+                field { sw = rw; hw = r; } a;
+              } a @#{addresses[0]};
+              a->accesswidth = #{accesswidth};
+              reg {
+                regwidth = #{regwidth};
+                accesswidth = 8;
+                field { sw = rw; hw = r; } a;
+              } b @#{addresses[1]};
+              b->accesswidth = #{accesswidth};
+              reg {
+                regwidth = #{regwidth};
+                accesswidth = 8;
+                field { sw = rw; hw = r; } a;
+              } c @#{addresses[2]};
+              c->accesswidth = #{accesswidth};
+            };
+          RDL
+
+          assert_value(addresses[0], regs[0].address)
+          assert_value(addresses[1], regs[1].address)
+          assert_value(addresses[2], regs[2].address)
+        end
+      end
+
+      def test_address_not_aligned_to_accesswidth_is_rejected
+        [16, 32, 64, 128].each do |accesswidth|
+          [(accesswidth / 8) - 1, (accesswidth / 8) + 1].each do |address|
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  reg {
+                    regwidth = #{accesswidth};
+                    accesswidth = #{accesswidth};
+                    field { sw = r; hw = r; } a;
+                  } a @#{address};
+                };
+              RDL
+              "address not aligned to accesswidth: address 0x#{address.to_s(16)} accesswidth #{accesswidth}"
+            )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  reg {
+                    regwidth = #{accesswidth};
+                    accesswidth = 8;
+                    field { sw = r; hw = r; } a;
+                  } a @#{address};
+                  a->accesswidth = #{accesswidth};
+                };
+              RDL
+              "address not aligned to accesswidth: address 0x#{address.to_s(16)} accesswidth #{accesswidth}"
+            )
+          end
+        end
+      end
+
       def test_writable_fields_spanning_sub_word_boundary_are_rejected
         [[16, 8], [32, 16], [64, 32], [128, 64]].product(['rw', 'w']).each do |(regwidth, accesswidth), sw|
           lsb = accesswidth - 1
