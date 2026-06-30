@@ -11,13 +11,13 @@ module SystemRDL
         check_overlapping_fields(instance)
         check_fields_out_of_register(instance)
         check_fields_spanning_sub_word_boundary(instance)
-        check_address(instance)
+        check_address_operations(instance)
       end
 
       def revalidate(instance)
         check_accesswidth(instance)
         check_fields_spanning_sub_word_boundary(instance)
-        check_address(instance)
+        check_address_operations(instance)
       end
 
       def layer
@@ -43,7 +43,7 @@ module SystemRDL
       end
 
       def apply_inst_values(instance, inst_values)
-        apply_explicit_address(instance, inst_values)
+        apply_address_operations(instance, inst_values)
       end
 
       def post_build(instance)
@@ -146,14 +146,12 @@ module SystemRDL
         [:onread, :rclr, :rset]
           .any? { |prop| field.property_value(prop)&.value }
       end
-
-      def inst_accesswidth(instance)
-        instance.property_value(:accesswidth).value
-      end
     end
 
     class RegInstance < Instance
       attr_accessor :address
+      attr_accessor :stride
+      attr_accessor :alignment
 
       def layer
         :reg
@@ -161,6 +159,14 @@ module SystemRDL
 
       def definable?(definition)
         definition.layer in :field
+      end
+
+      def accesswidth
+        property_value(:accesswidth).value
+      end
+
+      def size
+        property_value(:regwidth).value / 8
       end
     end
   end

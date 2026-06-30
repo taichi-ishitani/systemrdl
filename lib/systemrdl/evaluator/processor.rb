@@ -98,6 +98,14 @@ module SystemRDL
         process(node.children[0])
       end
 
+      def on_address_stride(node)
+        process(node.children[0])
+      end
+
+      def on_address_alignment(node)
+        process(node.children[0])
+      end
+
       def on_component_inst(node)
         inst_id = process(node.children[0])
         inst_values =
