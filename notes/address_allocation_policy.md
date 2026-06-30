@@ -29,7 +29,7 @@ Bypassing the addressing-mode logic does not make the operands unconstrained. Th
 
 These are not "automatic-allocation rules" in the sense excluded by 5.1.2.2; they derive from requirements that hold no matter how an address was chosen.
 
-The `regfile` `alignment` property (Appendix A) is treated differently: it constrains placement only under automatic allocation and is *not* imposed on an explicit operator's value. A user who places an instance explicitly may therefore land off the `alignment` boundary without error. Appendix B explains why this differs from the sub-word boundary.
+The `regfile` `alignment` property (Appendix A) is treated differently: it constrains placement only under automatic allocation and is *not* imposed on an explicit operator's value. A user who places an instance explicitly may therefore land off the `alignment` boundary without error. Appendix C explains why this differs from the sub-word boundary.
 
 ---
 
@@ -209,9 +209,40 @@ Per 5.1.2.2.1, `alignment` "defines the byte value of which the container's inst
 
 The specification does not state whether `alignment` also constrains the *container's own* address. It is silent here, but the answer follows from relative addressing: a child's offset is relative to the `regfile` base (5.1.2.2), so the child's absolute address is a multiple of `alignment` only if the base is too. To make the child-level requirement hold in absolute terms, this implementation places a `regfile` carrying an `alignment` property so that its own base address is a multiple of `alignment` -- and, combined with the sub-word boundary, a multiple of `max(accesswidth, alignment)` (both being powers of two).
 
-This propagation applies **under automatic allocation only**. When the `regfile` is placed with an explicit operator (`@`, `%=`, `+=`), the resulting address or stride is accepted even if it is not a multiple of `alignment`; see Appendix B.
+This propagation applies **under automatic allocation only**. When the `regfile` is placed with an explicit operator (`@`, `%=`, `+=`), the resulting address or stride is accepted even if it is not a multiple of `alignment`; see Appendix C.
 
-## Appendix B: Sub-Word Boundary vs. `alignment`
+### Interpretation: a preference, not a floor
+
+A question runs through both uses above and the `%=` operator: when an instance is placed by an explicit operator, must it still respect an `alignment` in effect on its container? Two readings are possible. Under a *floor* reading, `alignment` is a minimum the container guarantees for everything in it, which even an explicit operator must satisfy. Under a *preference* reading, `alignment` expresses how automatic allocation should place children, and an explicit operator -- which by 5.1.2.2 bypasses automatic allocation -- is free of it.
+
+This implementation takes the **preference** reading. The grounds:
+
+- **5.1.2.2 names `alignment` alongside the addressing mode as an input to automatic allocation**, applied only "if an instance is not explicitly assigned an address allocation operator." The addressing mode is uncontroversially bypassed by an explicit operator; `alignment`, named in the same clause for the same condition, is bypassed on the same basis. Singling `alignment` out as a floor that survives explicit placement has no support in that text.
+- **An `alignment` violation breaks no hardware invariant** (unlike the sub-word boundary, Appendix C) -- it only leaves the user's stated alignment preference unmet. A preference is exactly the kind of thing an explicit, per-instance choice may override.
+- **The escape hatch is the right granularity.** A user who wants free placement can simply place explicitly; a user who wants no alignment at all can leave the property unset. Treating `alignment` as a floor would, by contrast, force a user who wants one off-boundary instance to drop the property for the whole container.
+- **A floor guarantee is a back-end concern, not an elaborator one.** The view behind the floor reading -- "if `alignment` is set, it should hold for every placement path" -- is a check on design-intent consistency, not on whether the elaborated model is valid. The elaborator's job is to produce a well-formed CSR model (one whose addresses respect `accesswidth` and the sub-word boundary, so the hardware is realizable); whether a set `alignment` is honored even where the user explicitly overrode it is a question that only matters against a concrete bus/implementation, which the elaborator does not know. Enforcing the floor at elaboration would reject valid layouts (the 2-byte-in-4-byte case) for a constraint the elaborator cannot actually justify. Such a check, if wanted, belongs to a back-end or lint pass that knows the target. This mirrors the division used throughout: the elaborator guarantees model validity, downstream tools judge implementation-specific fitness.
+
+Concretely, this is what each placement path must satisfy:
+
+```
+automatic placement:  (addr % accesswidth) == 0  &&  (addr % global_alignment) == 0
+%= local alignment:   (addr % accesswidth) == 0  &&  (addr % local_alignment) == 0
+@ explicit address:   (addr % accesswidth) == 0
+```
+
+Under automatic allocation the container's `global_alignment` applies. A `%=` operand replaces it with the locally specified `local_alignment` for that instance (the "more localized version" of 5.1.2.4 c), rather than adding to it -- the global value is not also imposed. An `@` address is subject to neither; only the model-validity boundary (`accesswidth`, and the sub-word requirement of Section 4) remains. This lets a design place, say, 2-byte registers contiguously in a 4-byte-`accesswidth` map by writing explicit addresses, which a floor reading would reject.
+
+## Appendix B: Value of a `%=` Operand
+
+5.1.2.4 c) calls `%=` "a more localized version of the alignment property," and 5.1.2.2.1 requires the `alignment` property's value to be a power of two. Read together, these can be taken to impose the **power-of-two** constraint on a `%=` operand as well, so that a value like `%= 12` would be rejected.
+
+This implementation does **not** apply that constraint. A `%=` operand is required only to keep the resolved address valid as a CSR model -- in practice, to be a multiple of the relevant `accesswidth` -- and is otherwise accepted even when it is not a power of two. A value such as `%= 12` (a multiple of a 4-byte `accesswidth`) is allowed.
+
+The reason is the purpose of explicit allocation operators: they exist to let the user's intent override what automatic allocation would choose. The power-of-two requirement on the `alignment` property arises because that value applies to *all* children of the container at once (5.1.2.2.1: it is inherited by every non-addrmap child): a single value must combine consistently with the arbitrary `accesswidth` of each of them, and only a power of two does so for all simultaneously. A `%=` operand applies to one instance only, so that justification does not carry over. Where honoring the user's explicit value does not compromise the validity of the resulting CSR model, this implementation honors it.
+
+Note that this is a deliberate relaxation of one possible reading of the specification. A processor that reads c) as inheriting the full value domain of the `alignment` property -- including the power-of-two restriction -- may reject `%=` operands that this implementation accepts. As with the other explicit-operator decisions in this document, the value supplied to an explicit operator is therefore not guaranteed to be interpreted identically across tools; a design needing cross-tool portability should keep `%=` operands to powers of two.
+
+## Appendix C: Sub-Word Boundary vs. `alignment`
 
 Both the sub-word boundary (Section 4) and `alignment` propagation (Appendix A) require an instance's absolute address to be a multiple of some boundary, and both propagate to a `regfile` base through relative addressing. They are nevertheless enforced on different placement paths: the sub-word boundary on every path (automatic, `@`, `%=`, `+=`), `alignment` on automatic allocation only. The difference comes from the strength of the underlying requirement.
 
@@ -221,7 +252,7 @@ The sub-word boundary derives from a hardware requirement. A side-effecting fiel
 
 The propagation *reasoning* is actually firmer for `alignment` (5.1.2.2.1 speaks of addresses directly, needing no reconstruction like the 10.6.1 (f) reading of 4.5). The narrower scope reflects not weaker grounding but the benign cost of violation and the conflict with 5.1.2.2 -- a well-grounded requirement can still be the one that yields to an explicit operator.
 
-## Appendix C: Address Ordering and RO/WO Sharing
+## Appendix D: Address Ordering and RO/WO Sharing
 
 ### Incrementing order
 
@@ -234,7 +265,7 @@ reg { ... } a @0x4;
 reg { ... } b @0x0;
 ```
 
-The justification is the same as for `alignment` (Appendix B): the `@` operator exists precisely to let the user choose an address freely, and a backward jump in source order harms nothing -- no overlap, no broken decode. Enforcing source/address order agreement on explicit operators would reject legitimate layouts (e.g. reserving a region first, then filling space before it) and would add cross-space source-order tracking for no real benefit. What an explicit placement *is* still checked against is overlap, handled by 10.1 (h): two registers may occupy the same address only when one is read-only and the other is write-only. Whether a given overlap is permitted therefore depends on the software-access character of both registers, not on their addresses alone.
+The justification is the same as for `alignment` (Appendix C): the `@` operator exists precisely to let the user choose an address freely, and a backward jump in source order harms nothing -- no overlap, no broken decode. Enforcing source/address order agreement on explicit operators would reject legitimate layouts (e.g. reserving a region first, then filling space before it) and would add cross-space source-order tracking for no real benefit. What an explicit placement *is* still checked against is overlap, handled by 10.1 (h): two registers may occupy the same address only when one is read-only and the other is write-only. Whether a given overlap is permitted therefore depends on the software-access character of both registers, not on their addresses alone.
 
 ### Automatic allocation does not consider access type
 
