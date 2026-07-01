@@ -23,6 +23,108 @@ module SystemRDL
         assert_property(reg, :shared, [:boolean], value: false)
       end
 
+      def test_array_instances
+        regs = evaluate(<<~'RDL').instances[0].instances
+          addrmap some_reg {
+            reg {
+              field { sw = rw; hw = r; } a;
+            } a[1];
+            reg {
+              field { sw = rw; hw = r; } a;
+            } b[1][2];
+            reg {
+              field { sw = rw; hw = r; } a;
+            } c[1][2][3];
+            reg {
+              field { sw = rw; hw = r; } a;
+            } d;
+          };
+        RDL
+
+        assert_equal([0], regs[0].array_indices)
+        assert_equal([1], regs[0].array_sizes)
+        assert(regs[0].array?)
+
+        [[0, 0], [0, 1]].each.with_index(1) do |indices, i|
+          assert_equal(indices, regs[i].array_indices)
+          assert_equal([1, 2], regs[i].array_sizes)
+          assert(regs[i].array?)
+        end
+
+        [
+          [0, 0, 0], [0, 0, 1], [0, 0, 2],
+          [0, 1, 0], [0, 1, 1], [0, 1, 2]
+        ].each.with_index(3) do |indices, i|
+          assert_equal(indices, regs[i].array_indices)
+          assert_equal([1, 2, 3], regs[i].array_sizes)
+          assert(regs[i].array?)
+        end
+
+        assert_nil(regs[9].array_indices)
+        assert_nil(regs[9].array_sizes)
+        refute(regs[9].array?)
+      end
+
+      def test_reference_to_array_instance_element
+        regs = evaluate(<<~'RDL').instances[0].instances
+          addrmap some_reg {
+            reg {
+              regwidth = 32;
+              field { sw = rw; hw = r; } a;
+            } a[2];
+            a[0]->accesswidth = 8;
+            a[1]->accesswidth = 16;
+
+            reg {
+              regwidth = 32;
+              field { sw = rw; hw = r; } a;
+            } b[1][2];
+            b[0][0]->accesswidth = 8;
+            b[0][1]->accesswidth = 16;
+          };
+        RDL
+
+        assert_property_value(regs[0], :accesswidth, 8)
+        assert_property_value(regs[1], :accesswidth, 16)
+        assert_property_value(regs[2], :accesswidth, 8)
+        assert_property_value(regs[3], :accesswidth, 16)
+      end
+
+      def test_array_size_must_be_positive
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap my_map {
+              reg {
+                field { sw = rw; hw = r; } a;
+              } a[0];
+            };
+          RDL
+          "array size must be positive"
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap my_map {
+              reg {
+                field { sw = rw; hw = r; } a;
+              } a[1][0];
+            };
+          RDL
+          "array size must be positive"
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap my_map {
+              reg {
+                field { sw = rw; hw = r; } a;
+              } a[1][2][0];
+            };
+          RDL
+          "array size must be positive"
+        )
+      end
+
       def test_implicit_bit_allocation
         ['rw', 'r', 'w'].zip(['rw', 'r', 'w']).each do |accesses|
           fields = evaluate(<<~RDL).instances[0].instances[0].instances

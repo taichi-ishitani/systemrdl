@@ -3,10 +3,12 @@
 module SystemRDL
   module Evaluator
     class Instance
-      def initialize(definition, parent, name, token_range)
+      def initialize(definition, parent, name, array_indices, array_sizes, token_range)
         @definition = definition
         @parent = parent
         @name = name
+        @array_indices = array_indices
+        @array_sizes = array_sizes
         @token_range = token_range
         @properties = []
         @instances = []
@@ -15,6 +17,8 @@ module SystemRDL
       attr_reader :definition
       attr_reader :parent
       attr_reader :name
+      attr_reader :array_indices
+      attr_reader :array_sizes
       attr_reader :token_range
       attr_reader :properties
       attr_reader :instances
@@ -37,6 +41,10 @@ module SystemRDL
 
       def field?
         layer == :field
+      end
+
+      def array?
+        !array_indices.nil?
       end
 
       def property(name)

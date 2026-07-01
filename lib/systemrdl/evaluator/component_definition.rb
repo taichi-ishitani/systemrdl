@@ -28,17 +28,13 @@ module SystemRDL
         @insts&.evaluate(instance, @parent, @id, **optargs)
       end
 
-      def create_instance(parent_instance, inst_name, inst_values, token_range, **optargs)
-        instance = instance_class.new(self, parent_instance, inst_name, token_range)
-
-        init_properties(instance)
-        eval_body(instance, **optargs)
-        apply_inst_values(instance, inst_values)
-        post_build(instance)
-        instance.validate
-
-        parent_instance.instances << instance if parent_instance
-        instance
+      def create_instances(parent_instance, inst_name, inst_values, token_range, **optargs)
+        eval_array(inst_values) do |array_indices, array_sizes|
+          create_instance(
+            parent_instance, inst_name, inst_values,
+            array_indices, array_sizes, token_range, **optargs
+          )
+        end
       end
 
       def validate(_instance)
@@ -54,6 +50,23 @@ module SystemRDL
 
         message = "#{layer} definition not allowed in #{instance.layer}"
         raise_evaluation_error message, token_range
+      end
+
+      def eval_array(_inst_values)
+        yield(nil, nil)
+      end
+
+      def create_instance(parent_instance, inst_name, inst_values, array_indices, array_sizes, token_range, **optargs)
+        instance = instance_class.new(self, parent_instance, inst_name, array_indices, array_sizes, token_range)
+
+        init_properties(instance)
+        eval_body(instance, **optargs)
+        apply_inst_values(instance, inst_values)
+        post_build(instance)
+        instance.validate
+
+        parent_instance.instances << instance if parent_instance
+        instance
       end
 
       def init_properties(instance)

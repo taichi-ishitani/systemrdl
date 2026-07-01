@@ -4,6 +4,7 @@ module SystemRDL
   module Evaluator
     class RegDefinition < ComponentDefinition
       include AddressAllocation
+      include ArrayComponent
 
       def validate(instance)
         check_regwidth(instance)

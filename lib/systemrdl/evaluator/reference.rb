@@ -15,11 +15,36 @@ module SystemRDL
       attr_reader :array
 
       def find(base)
-        result = base.instances.find { |inst| inst.name == id.value }
+        result = base.instances.find do |inst|
+          inst.name == id.value && match_array_indices?(inst)
+        end
         return result if result
 
         # TODO
         # Report error
+      end
+
+      private
+
+      def match_array_indices?(instance)
+        # non array instance && array select
+        # array instance && no array select
+        return false if instance.array? != array?
+
+        # non array instance
+        return true unless instance.array?
+
+        # check size
+        return false if instance.array_indices.size != array.values.size
+
+        instance
+          .array_indices
+          .zip(array.values)
+          .all? { |index, select| index == select.value }
+      end
+
+      def array?
+        !array.nil?
       end
     end
 

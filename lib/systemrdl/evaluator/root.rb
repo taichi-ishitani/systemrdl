@@ -9,7 +9,7 @@ module SystemRDL
       end
 
       def evaluate(_instance, **optargs)
-        root = create_instance(nil, :root, nil, nil, **optargs)
+        root = create_instance(nil, :root, nil, nil, nil, nil, **optargs)
         @elements.each do |element|
           element.evaluate(root, **optargs)
         end

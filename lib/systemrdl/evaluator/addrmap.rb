@@ -5,7 +5,7 @@ module SystemRDL
     class AddrMapDefinition < ComponentDefinition
       def evaluate(instance, **optargs)
         if instance.root?
-          create_instance(instance, @id, nil, nil, **optargs)
+          create_instance(instance, @id, nil, nil, nil, nil, **optargs)
         else
           super
         end
