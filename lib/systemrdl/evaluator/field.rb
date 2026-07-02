@@ -196,21 +196,8 @@ module SystemRDL
         raise_evaluation_error message, sw.token_range, hw.token_range
       end
 
-      def check_property_exclusivity(instance, names, error_message)
-        properties =
-          names
-            .map { |name| instance.property_value(name) }
-            .select { |v| v&.value }
-        return if properties.size <= 1
-
-        raise_evaluation_error error_message, *properties.map(&:token_range)
-      end
-
       def check_onread_exclusivity(instance)
-        check_property_exclusivity(
-          instance, [:onread, :rclr, :rset],
-          'onread, rclr and rset properties are mutually exclusive'
-        )
+        check_property_exclusivity(instance, [:onread, :rclr, :rset])
       end
 
       def check_sw_read_access_required(instance)
@@ -231,10 +218,7 @@ module SystemRDL
       end
 
       def check_onwrite_exclusivity(instance)
-        check_property_exclusivity(
-          instance, [:onwrite, :woset, :woclr],
-          'onwrite, woset and woclr properties are mutually exclusive'
-        )
+        check_property_exclusivity(instance, [:onwrite, :woset, :woclr])
       end
 
       def check_sw_write_access_required(instance)
@@ -255,17 +239,11 @@ module SystemRDL
       end
 
       def check_swwe_swwel_exclusivity(instance)
-        check_property_exclusivity(
-          instance, [:swwe, :swwel],
-          'swwe and swwel properties are mutually exclusive'
-        )
+        check_property_exclusivity(instance, [:swwe, :swwel])
       end
 
       def check_we_wel_exclusivity(instance)
-        check_property_exclusivity(
-          instance, [:we, :wel],
-          'we and wel properties are mutually exclusive'
-        )
+        check_property_exclusivity(instance, [:we, :wel])
       end
 
       def check_we_required(instance)

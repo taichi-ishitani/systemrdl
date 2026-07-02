@@ -59,24 +59,12 @@ module SystemRDL
         property.assign(regwidth)
       end
 
-      def check_power_of_2(instance, name)
-        value = instance.property_value(name)
-        return if power_of_2?(value.value)
-
-        message = "#{name} must be a power of 2: #{value}"
-        raise_evaluation_error message, value.token_range
-      end
-
-      def power_of_2?(value)
-        value >= 8 && value.nobits?(value - 1)
-      end
-
       def check_regwidth(instance)
-        check_power_of_2(instance, :regwidth)
+        check_power_of_2(instance, :regwidth, 8)
       end
 
       def check_accesswidth(instance)
-        check_power_of_2(instance, :accesswidth)
+        check_power_of_2(instance, :accesswidth, 8)
 
         regwidth = instance.property_value(:regwidth)
         accesswidth = instance.property_value(:accesswidth)

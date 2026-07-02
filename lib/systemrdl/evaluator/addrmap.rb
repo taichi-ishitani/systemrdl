@@ -11,6 +11,13 @@ module SystemRDL
         end
       end
 
+      def validate(instance)
+        check_alignment(instance)
+        check_endianness_exclusivity(instance)
+        check_rsvdset_exclusivity(instance)
+        check_bit_ordering_exclusivity(instance)
+      end
+
       def layer
         :addrmap
       end
@@ -37,6 +44,22 @@ module SystemRDL
         create_property(instance, :rsvdsetX, [:boolean], false)
         create_property(instance, :msb0, [:boolean], false)
         create_property(instance, :lsb0, [:boolean], false)
+      end
+
+      def check_alignment(instance)
+        check_power_of_2(instance, :alignment, 1)
+      end
+
+      def check_endianness_exclusivity(instance)
+        check_property_exclusivity(instance, [:bigendian, :littleendian])
+      end
+
+      def check_rsvdset_exclusivity(instance)
+        check_property_exclusivity(instance, [:rsvdset, :rsvdsetX])
+      end
+
+      def check_bit_ordering_exclusivity(instance)
+        check_property_exclusivity(instance, [:msb0, :lsb0])
       end
     end
 

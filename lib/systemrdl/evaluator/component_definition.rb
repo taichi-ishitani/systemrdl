@@ -45,6 +45,33 @@ module SystemRDL
 
       private
 
+      def check_power_of_2(instance, name, min_value)
+        value = instance.property_value(name)
+        return unless value
+
+        return if power_of_2?(value.value, min_value)
+
+        message = "#{name} must be a power of 2: #{value}"
+        raise_evaluation_error message, value.token_range
+      end
+
+      def power_of_2?(value, min_value)
+        value >= min_value && value.nobits?(value - 1)
+      end
+
+      def check_property_exclusivity(instance, names)
+        properties =
+          names
+            .map { |name| instance.property_value(name) }
+            .select { |v| v&.value }
+        return if properties.size <= 1
+
+        labels = [names[..-2].join(', '), names[-1]].join(' and ')
+        message = "#{labels} properties are mutually exclusive"
+
+        raise_evaluation_error message, *properties.map(&:token_range)
+      end
+
       def check_definable(instance)
         return if instance.definable?(self)
 
