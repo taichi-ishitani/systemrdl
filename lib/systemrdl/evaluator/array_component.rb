@@ -2,6 +2,12 @@
 
 module SystemRDL
   module Evaluator
+    ArrayInfo = Data.define(:indices, :sizes, :first, :last) do
+      def n_elements
+        sizes.inject(:*)
+      end
+    end
+
     module ArrayComponent
       private
 
@@ -16,10 +22,14 @@ module SystemRDL
           raise_evaluation_error message, size.token_range
         end
 
-        index_list = sizes.map { |size| size.times.to_a }
-        index_list[0]
-          .product(*index_list[1..])
-          .each { |indices| yield(indices, sizes) }
+        index_list =
+          sizes
+            .map { |size| size.times.to_a }
+            .then { |list| list[0].product(*list[1..]) }
+        index_list.each.with_index(1) do |indices, i|
+          info = ArrayInfo.new(indices, sizes, i == 1, i == index_list.size)
+          yield(info)
+        end
       end
     end
   end

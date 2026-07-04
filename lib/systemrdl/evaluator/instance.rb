@@ -3,12 +3,11 @@
 module SystemRDL
   module Evaluator
     class Instance
-      def initialize(definition, parent, name, array_indices, array_sizes, token_range)
+      def initialize(definition, parent, name, array_info, token_range)
         @definition = definition
         @parent = parent
         @name = name
-        @array_indices = array_indices
-        @array_sizes = array_sizes
+        @array_info = array_info
         @token_range = token_range
         @properties = []
         @instances = []
@@ -17,8 +16,7 @@ module SystemRDL
       attr_reader :definition
       attr_reader :parent
       attr_reader :name
-      attr_reader :array_indices
-      attr_reader :array_sizes
+      attr_reader :array_info
       attr_reader :token_range
       attr_reader :properties
       attr_reader :instances
@@ -44,7 +42,23 @@ module SystemRDL
       end
 
       def array?
-        !array_indices.nil?
+        !array_info.nil?
+      end
+
+      def array_indices
+        array_info&.indices
+      end
+
+      def array_sizes
+        array_info&.sizes
+      end
+
+      def first_element?
+        !array? || array_info.first
+      end
+
+      def last_element?
+        !array? || array_info.last
       end
 
       def property(name)
@@ -63,6 +77,11 @@ module SystemRDL
       def revalidate
         @definition.revalidate(self)
         @instances.each(&:revalidate)
+      end
+
+      def finalize
+        @definition.finalize(self)
+        @instances.each(&:finalize)
       end
     end
   end

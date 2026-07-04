@@ -29,10 +29,10 @@ module SystemRDL
       end
 
       def create_instances(parent_instance, inst_name, inst_values, token_range, **optargs)
-        eval_array(inst_values) do |array_indices, array_sizes|
+        eval_array(inst_values) do |array_info|
           create_instance(
             parent_instance, inst_name, inst_values,
-            array_indices, array_sizes, token_range, **optargs
+            array_info, token_range, **optargs
           )
         end
       end
@@ -41,6 +41,9 @@ module SystemRDL
       end
 
       def revalidate(_instance)
+      end
+
+      def finalize(_instance)
       end
 
       private
@@ -83,8 +86,8 @@ module SystemRDL
         yield(nil, nil)
       end
 
-      def create_instance(parent_instance, inst_name, inst_values, array_indices, array_sizes, token_range, **optargs)
-        instance = instance_class.new(self, parent_instance, inst_name, array_indices, array_sizes, token_range)
+      def create_instance(parent_instance, inst_name, inst_values, array_info, token_range, **optargs)
+        instance = instance_class.new(self, parent_instance, inst_name, array_info, token_range)
 
         init_properties(instance)
         eval_body(instance, **optargs)

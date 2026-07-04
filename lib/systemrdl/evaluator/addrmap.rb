@@ -3,9 +3,11 @@
 module SystemRDL
   module Evaluator
     class AddrMapDefinition < ComponentDefinition
+      include AddressAllocation
+
       def evaluate(instance, **optargs)
         if instance.root?
-          create_instance(instance, @id, nil, nil, nil, nil, **optargs)
+          create_instance(instance, @id, nil, nil, nil, **optargs)
         else
           super
         end
@@ -16,6 +18,10 @@ module SystemRDL
         check_endianness_exclusivity(instance)
         check_rsvdset_exclusivity(instance)
         check_bit_ordering_exclusivity(instance)
+      end
+
+      def finalize(instance)
+        allocate_addresses(instance)
       end
 
       def layer

@@ -3,7 +3,7 @@
 module SystemRDL
   module Evaluator
     class RegDefinition < ComponentDefinition
-      include AddressAllocation
+      include AddressOperation
       include ArrayComponent
 
       def validate(instance)
