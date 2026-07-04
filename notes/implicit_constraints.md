@@ -335,7 +335,13 @@ Constraints on where instances are placed in the address space -- including stri
 
 ---
 
-## 10. `internal` / `external` Keywords on Addrmap
+## 10. Array Property Assignment
+
+Restrictions on dynamically assigning properties to array instances -- which properties may be assigned per element, when a whole-array assignment is allowed, and how the right-hand side is constrained -- are documented separately in [array_property_assignment_policy.md](array_property_assignment_policy.md).
+
+---
+
+## 11. `internal` / `external` Keywords on Addrmap
 
 ### Background
 
@@ -372,11 +378,11 @@ So while the addrmap rejection rests on the concept *not applying* to that compo
 
 ---
 
-## 11. Edge Cases (Under Consideration)
+## 12. Edge Cases (Under Consideration)
 
 The following cases are not yet definitively classified as errors but are noted for future evaluation:
 
-### 11.1 Consistency of `intr`-Related Properties
+### 12.1 Consistency of `intr`-Related Properties
 
 Semantic consistency between aggregation properties (`intr`, `anded`, `ored`, `xored`) and the field declaration.
 

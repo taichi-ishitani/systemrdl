@@ -125,6 +125,8 @@ The `stride` is determined as follows:
 
 When the default stride equals `size` (a `reg`, or a `regfile` whose `size` is already an `accesswidth` multiple), `occupied_size` reduces to `size * N`, matching the spec's "size of an array element multiplied by the number of elements" in 5.1.2.2.2 (c).
 
+An `alignment` property in effect on the array does **not** widen the stride. Per 5.1.2.4 g), an array's `alignment` fixes the alignment of the *start of the array* only; the spacing between elements is the default stride above (or a `+=` operand). This matches the array model implied by the `fullalign` description in 5.1.2.2.2 (c), where the whole-array size is "the size of an array element multiplied by the number of elements" with "no gaps between the array elements" -- elements are packed, and only the first element carries the larger alignment. So, e.g., a 32-bit `reg a[20]` under `addressing = compact` with `alignment = 8` places `a[0]` on an 8-byte boundary but spaces the elements 4 bytes apart (0x0, 0x4, 0x8, ...), not 8.
+
 ### 3.2 Stride Constraints
 
 A stride -- whether supplied with `+=` or taken as the default of 3.1 -- is subject to two constraints:
