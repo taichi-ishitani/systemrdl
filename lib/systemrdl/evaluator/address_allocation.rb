@@ -55,7 +55,7 @@ module SystemRDL
         return aligned_size(child_inst) unless child_inst.array?
 
         n_elements = child_inst.array_info.n_elements
-        array_size = ((n_elements - 1) * aligned_size(child_inst)) + child_inst.size
+        array_size = ((n_elements - 1) * element_stride(child_inst)) + child_inst.size
 
         if power_of_2?(array_size, 1)
           array_size
@@ -68,10 +68,8 @@ module SystemRDL
         delta =
           if child_inst.last_element?
             child_inst.size
-          elsif child_inst.stride
-            child_inst.stride.value
           else
-            aligned_size(child_inst)
+            element_stride(child_inst)
           end
         child_inst.address.value + delta
       end
@@ -82,6 +80,10 @@ module SystemRDL
 
       def aligned_size(child_inst)
         roundup(child_inst.size, child_inst.accesswidth / 8)
+      end
+
+      def element_stride(child_inst)
+        child_inst.stride&.value || aligned_size(child_inst)
       end
     end
   end
