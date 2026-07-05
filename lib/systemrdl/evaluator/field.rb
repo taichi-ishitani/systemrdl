@@ -275,6 +275,14 @@ module SystemRDL
       def definable?(_definition)
         false
       end
+
+      def sw_readable?
+        property_value(:sw).value in :rw | :rw1 | :r
+      end
+
+      def sw_writable?
+        property_value(:sw).value in :rw | :rw1 | :w | :w1
+      end
     end
   end
 end

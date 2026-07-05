@@ -201,6 +201,186 @@ module SystemRDL
         assert_value(0x10, regs[1].address)
         assert_value(0x14, regs[2].address)
       end
+
+      def test_overlapping_regs_are_rejected
+        [:rw, :rw1, :ro, :wo, :wo1].product([:rw, :rw1, :ro, :wo, :wo1]).each do |accesses|
+          next if accesses in [:ro, :wo] | [:ro, :wo1] | [:wo, :ro] | [:wo1, :ro]
+
+          reg_defines = <<~'RDL'
+              reg reg_rw {
+                field { sw = rw; hw = r; } a;
+              };
+              reg reg_rw1 {
+                field { sw = rw1; hw = r; } a;
+              };
+              reg reg_ro {
+                field { sw = r; hw = r; } a;
+              };
+              reg reg_wo {
+                field { sw = w; hw = r; } a;
+              };
+              reg reg_wo1 {
+                field { sw = w1; hw = r; } a;
+              };
+          RDL
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              #{reg_defines}
+              addrmap my_map {
+                reg_#{accesses[0]} a @0x10;
+                reg_#{accesses[1]} b @0x10;
+              };
+            RDL
+            'overlapping regs not allowed'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              #{reg_defines}
+              addrmap my_map {
+                reg_#{accesses[0]} a[2] @0x10;
+                reg_#{accesses[1]} b[2] @0x10;
+              };
+            RDL
+            'overlapping regs not allowed'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              #{reg_defines}
+              addrmap my_map {
+                reg_#{accesses[0]} a[2] @0x10 += 0x08;
+                reg_#{accesses[1]} b @0x18;
+              };
+            RDL
+            'overlapping regs not allowed'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              #{reg_defines}
+              addrmap my_map {
+                reg_#{accesses[0]} a[3] @0x0C;
+                reg_#{accesses[1]} b @0x10;
+              };
+            RDL
+            'overlapping regs not allowed'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              #{reg_defines}
+              addrmap my_map {
+                reg_#{accesses[0]} a @0x10;
+                reg_#{accesses[1]} b[2] @0x08 += 0x8;
+              };
+            RDL
+            'overlapping regs not allowed'
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              #{reg_defines}
+              addrmap my_map {
+                reg_#{accesses[0]} a @0x10;
+                reg_#{accesses[1]} b[3] @0x0C;
+              };
+            RDL
+            'overlapping regs not allowed'
+          )
+        end
+      end
+
+      def test_overlapping_ro_wo_regs_are_allowed
+        [[:ro, :wo], [:ro, :wo1], [:wo, :ro], [:wo1, :ro]].each do |accesses|
+          reg_defines = <<~'RDL'
+            reg reg_ro {
+              field { sw = r; hw = r; } a;
+            };
+            reg reg_wo {
+              field { sw = w; hw = r; } a;
+            };
+            reg reg_wo1 {
+              field { sw = w1; hw = r; } a;
+            };
+          RDL
+
+          regs = evaluate(<<~RDL).instances[0].instances
+            #{reg_defines}
+            addrmap my_map {
+              reg_#{accesses[0]} a @0x10;
+              reg_#{accesses[1]} b @0x10;
+            };
+          RDL
+
+          assert_value(0x10, regs[0].address)
+          assert_value(0x10, regs[1].address)
+
+          regs = evaluate(<<~RDL).instances[0].instances
+            #{reg_defines}
+            addrmap my_map {
+              reg_#{accesses[0]} a[2] @0x10;
+              reg_#{accesses[1]} b[2] @0x10;
+            };
+          RDL
+
+          assert_value(0x10, regs[0].address)
+          assert_value(0x14, regs[1].address)
+          assert_value(0x10, regs[2].address)
+          assert_value(0x14, regs[3].address)
+
+          regs = evaluate(<<~RDL).instances[0].instances
+            #{reg_defines}
+            addrmap my_map {
+              reg_#{accesses[0]} a[2] @0x10 += 0x08;
+              reg_#{accesses[1]} b @0x18;
+            };
+          RDL
+
+          assert_value(0x10, regs[0].address)
+          assert_value(0x18, regs[1].address)
+          assert_value(0x18, regs[2].address)
+
+          regs = evaluate(<<~RDL).instances[0].instances
+            #{reg_defines}
+            addrmap my_map {
+              reg_#{accesses[0]} a[3] @0x0C;
+              reg_#{accesses[1]} b @0x10;
+            };
+          RDL
+
+          assert_value(0x0C, regs[0].address)
+          assert_value(0x10, regs[1].address)
+          assert_value(0x14, regs[2].address)
+          assert_value(0x10, regs[3].address)
+
+          regs = evaluate(<<~RDL).instances[0].instances
+            #{reg_defines}
+            addrmap my_map {
+              reg_#{accesses[0]} a @0x10;
+              reg_#{accesses[1]} b[2] @0x08 += 0x8;
+            };
+          RDL
+
+          assert_value(0x10, regs[0].address)
+          assert_value(0x08, regs[1].address)
+          assert_value(0x10, regs[2].address)
+
+          regs = evaluate(<<~RDL).instances[0].instances
+            #{reg_defines}
+            addrmap my_map {
+              reg_#{accesses[0]} a @0x10;
+              reg_#{accesses[1]} b[3] @0x0C;
+            };
+          RDL
+
+          assert_value(0x10, regs[0].address)
+          assert_value(0x0C, regs[1].address)
+          assert_value(0x10, regs[2].address)
+          assert_value(0x14, regs[3].address)
+        end
+      end
     end
   end
 end

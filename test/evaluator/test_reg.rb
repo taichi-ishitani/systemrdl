@@ -146,9 +146,9 @@ module SystemRDL
       end
 
       def test_overlapping_fields_are_rejected
-        [
-          ['rw', 'rw'], ['rw', 'r'], ['rw', 'w'], ['r', 'rw'], ['r', 'r'], ['w', 'rw'], ['w', 'w']
-        ].each do |accesses|
+        [:rw, :rw1, :r, :w, :w1].product([:rw, :rw1, :r, :w, :w1]).each do |accesses|
+          next if accesses in [:r, :w] | [:r, :w1] | [:w, :r] | [:w1, :r]
+
           assert_raises_evaluation_error(
             <<~RDL,
               addrmap my_map {
@@ -188,7 +188,7 @@ module SystemRDL
       end
 
       def test_overlapping_ro_wo_fields_are_allowed
-        [['r', 'w'], ['w', 'r']].each do |accesses|
+        [[:r, :w], [:r, :w1], [:w, :r], [:w1, :r]].each do |accesses|
           fields = evaluate(<<~RDL).instances[0].instances[0].instances
             addrmap my_map {
               reg {

@@ -22,6 +22,7 @@ module SystemRDL
 
       def finalize(instance)
         allocate_addresses(instance)
+        check_overlapping_regs(instance)
       end
 
       def layer

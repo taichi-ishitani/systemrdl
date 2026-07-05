@@ -25,6 +25,10 @@ module SystemRDL
       def layer
         :root
       end
+
+      def definable?(_definition)
+        true
+      end
     end
   end
 end

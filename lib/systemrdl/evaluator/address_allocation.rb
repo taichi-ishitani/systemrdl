@@ -54,9 +54,7 @@ module SystemRDL
       def calc_fullalign_alignment(child_inst)
         return aligned_size(child_inst) unless child_inst.array?
 
-        n_elements = child_inst.array_info.n_elements
-        array_size = ((n_elements - 1) * element_stride(child_inst)) + child_inst.size
-
+        array_size = calc_occupied_size(child_inst)
         if power_of_2?(array_size, 1)
           array_size
         else
@@ -74,12 +72,48 @@ module SystemRDL
         child_inst.address.value + delta
       end
 
+      def check_overlapping_regs(instance)
+        instance.instances.select(&:first_element?).combination(2).each do |(reg_a, reg_b)|
+          next unless overlapping_pair?(reg_a, reg_b)
+
+          message = 'overlapping regs not allowed'
+          raise_evaluation_error message, reg_a.token_range, reg_b.token_range
+        end
+      end
+
+      def overlapping_pair?(reg_a, reg_b)
+        range_a = calc_address_range(reg_a)
+        range_b = calc_address_range(reg_b)
+        return false unless range_a.include?(range_b.begin) || range_b.include?(range_a.begin)
+
+        r_a = reg_a.sw_readable?
+        w_a = reg_a.sw_writable?
+        r_b = reg_b.sw_readable?
+        w_b = reg_b.sw_writable?
+        (r_a && r_b) || (w_a && w_b)
+      end
+
+      def calc_address_range(child_inst)
+        base = child_inst.address.value
+        size = calc_occupied_size(child_inst)
+        base...(base + size)
+      end
+
       def roundup(dividend, divisor)
         divisor * dividend.ceildiv(divisor)
       end
 
       def aligned_size(child_inst)
         roundup(child_inst.size, child_inst.accesswidth / 8)
+      end
+
+      def calc_occupied_size(child_inst)
+        if child_inst.array?
+          n_elements = child_inst.array_info.n_elements
+          ((n_elements - 1) * element_stride(child_inst)) + child_inst.size
+        else
+          child_inst.size
+        end
       end
 
       def element_stride(child_inst)

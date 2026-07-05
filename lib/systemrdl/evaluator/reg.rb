@@ -88,16 +88,11 @@ module SystemRDL
         range_b = (field_b.lsb.value..field_b.msb.value)
         return false unless range_a.include?(range_b.begin) || range_b.include?(range_a.begin)
 
-        r_a, w_a = field_access(field_a)
-        r_b, w_b = field_access(field_b)
+        r_a = field_a.sw_readable?
+        w_a = field_a.sw_writable?
+        r_b = field_b.sw_readable?
+        w_b = field_b.sw_writable?
         (r_a && r_b) || (w_a && w_b)
-      end
-
-      def field_access(instance)
-        sw = instance.property_value(:sw).value
-        readable = (sw in :rw | :r)
-        writable = (sw in :rw | :w)
-        [readable, writable]
       end
 
       def check_fields_out_of_register(instance)
@@ -156,6 +151,14 @@ module SystemRDL
 
       def size
         property_value(:regwidth).value / 8
+      end
+
+      def sw_readable?
+        instances.any?(&:sw_readable?)
+      end
+
+      def sw_writable?
+        instances.any?(&:sw_writable?)
       end
     end
   end
