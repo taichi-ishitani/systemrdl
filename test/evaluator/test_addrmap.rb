@@ -17,7 +17,7 @@ module SystemRDL
         assert_property(addrmap, :errextbus, [:boolean], value: false)
         assert_property(addrmap, :bigendian, [:boolean], value: false)
         assert_property(addrmap, :littleendian, [:boolean], value: false)
-        assert_property(addrmap, :addressing, [:addressing_type], value: :regalign)
+        assert_property(addrmap, :addressing, [:addressingtype], value: :regalign)
         assert_property(addrmap, :rsvdset, [:boolean], value: false)
         assert_property(addrmap, :rsvdsetX, [:boolean], value: false)
         assert_property(addrmap, :msb0, [:boolean], value: false)

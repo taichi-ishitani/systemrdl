@@ -18,12 +18,15 @@ module SystemRDL
         assert_equal(value, property.value.value) unless value.nil?
       end
 
-      def assert_property_value(instance, name, value)
+      def assert_property_value(instance, name, value, **opts)
         property = instance.property(name)
         if value.nil?
           assert_nil(property.value)
         else
           assert_equal(value, property.value.value)
+          opts.each do |key, optvalue|
+            assert_equal(optvalue, property.value.__send__(key))
+          end
         end
       end
 

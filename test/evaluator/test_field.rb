@@ -19,8 +19,8 @@ module SystemRDL
         assert_property(fields[0], :desc, [:string], value: '')
 
         # Field access properties
-        assert_property(fields[0], :hw, [:access_type], value: :rw)
-        assert_property(fields[1], :sw, [:access_type], value: :rw)
+        assert_property(fields[0], :hw, [:accesstype], value: :rw)
+        assert_property(fields[1], :sw, [:accesstype], value: :rw)
 
         # Hardware signal properties
         assert_property(fields[0], :next, [:reference])
@@ -30,10 +30,10 @@ module SystemRDL
         # Software access properties
         assert_property(fields[0], :rclr, [:boolean], value: false)
         assert_property(fields[0], :rset, [:boolean], value: false)
-        assert_property(fields[0], :onread, [:on_read_type])
+        assert_property(fields[0], :onread, [:onreadtype])
         assert_property(fields[0], :woset, [:boolean], value: false)
         assert_property(fields[0], :woclr, [:boolean], value: false)
-        assert_property(fields[0], :onwrite, [:on_write_type])
+        assert_property(fields[0], :onwrite, [:onwritetype])
         assert_property(fields[0], :swwe, [:boolean, :reference], value: false)
         assert_property(fields[0], :swwel, [:boolean, :reference], value: false)
         assert_property(fields[0], :swmod, [:boolean], value: false)
@@ -61,8 +61,102 @@ module SystemRDL
         # Miscellaneous field properties
         # TODO
         # assert_property(field, :encode)
-        assert_property(fields[0], :precedence, [:precedence_type], value: :sw)
+        assert_property(fields[0], :precedence, [:precedencetype], value: :sw)
         assert_property(fields[0], :paritycheck, [:boolean], value: false)
+      end
+
+      def test_assigning_integral_value_to_supported_property_is_allowed
+        template = proc do |prop_name, include_zero|
+          if include_zero
+            <<~RDL
+              addrmap my_map {
+                reg {
+                  field { hw = r; #{prop_name} = 0    ; } a;
+                  field { hw = r; #{prop_name} = 1    ; } b;
+                  field { hw = r; #{prop_name} = 1'd0 ; } c;
+                  field { hw = r; #{prop_name} = 1'd1 ; } d;
+                  field { hw = r; #{prop_name} = false; } e;
+                  field { hw = r; #{prop_name} = true ; } f;
+                } my_reg;
+              };
+            RDL
+          else
+            <<~RDL
+              addrmap my_map {
+                reg {
+                  field { hw = r; #{prop_name} = 1    ; } a;
+                  field { hw = r; #{prop_name} = 1'd1 ; } b;
+                  field { hw = r; #{prop_name} = true ; } c;
+                } my_reg;
+              };
+            RDL
+          end
+        end
+
+        [:reset].each do |prop_name|
+          fields = evaluate(template[prop_name, true]).instances[0].instances[0].instances
+          assert_property_value(fields[0], prop_name, 0, width: 64)
+          assert_property_value(fields[1], prop_name, 1, width: 64)
+          assert_property_value(fields[2], prop_name, 0, width: 1)
+          assert_property_value(fields[3], prop_name, 1, width: 1)
+          assert_property_value(fields[4], prop_name, 0, width: 1)
+          assert_property_value(fields[5], prop_name, 1, width: 1)
+        end
+
+        [:fieldwidth].each do |prop_name|
+          fields = evaluate(template[prop_name, false]).instances[0].instances[0].instances
+          assert_property_value(fields[0], prop_name, 1)
+          assert_property_value(fields[1], prop_name, 1)
+          assert_property_value(fields[2], prop_name, 1)
+        end
+
+        [
+          :rclr, :rset, :woset, :woclr, :swwe, :swwel, :swmod, :swacc, :singlepulse,
+          :we, :wel, :anded, :ored, :xored, :hwclr, :hwset, :paritycheck
+        ].each do |prop_name|
+          fields = evaluate(template[prop_name, true]).instances[0].instances[0].instances
+          assert_property_value(fields[0], prop_name, false)
+          assert_property_value(fields[1], prop_name, true)
+          assert_property_value(fields[2], prop_name, false)
+          assert_property_value(fields[3], prop_name, true)
+          assert_property_value(fields[4], prop_name, false)
+          assert_property_value(fields[5], prop_name, true)
+        end
+      end
+
+      def test_assigning_integral_value_to_unsupported_property_is_rejected
+        {
+          name: :string, desc: :string, sw: :accesstype, hw: :accesstype,
+          onread: :onreadtype, onwrite: :onwritetype, hwenable: :reference,
+          hwmask: :reference, precedence: :precedencetype
+        }.each do |prop_name, prop_type|
+          {
+            '0' => :bit, '1' => :bit, "16'd0" => :bit, "16'd1" => :bit,
+            'true' => :boolean, 'false' => :boolean
+          }.each do |value, value_type|
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  reg {
+                    field { #{prop_name} = #{value}; } a;
+                  } my_reg;
+                };
+              RDL
+              "#{value_type} type not supported by #{prop_name} property: expected #{prop_type}"
+            )
+          end
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { #{prop_name}; } a;
+                } my_reg;
+              };
+            RDL
+            "boolean type not supported by #{prop_name} property: expected #{prop_type}"
+          )
+        end
       end
 
       def test_bit_index

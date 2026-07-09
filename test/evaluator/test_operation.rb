@@ -129,7 +129,7 @@ module SystemRDL
       def test_unary_operation_with_non_integral_operand
         {
           string: '"this is a string"',
-          access_type: 'na', addressing_type: 'compact', on_read_type: 'rclr', on_write_type: 'woset'
+          accesstype: 'na', addressingtype: 'compact', onreadtype: 'rclr', onwritetype: 'woset'
         }.each do |type, value|
           ['!', '+', '-', '~', '&', '~&', '|', '~|', '^', '~^', '^~'].each do |operator|
             message = "non integral operand is given: #{type}"
@@ -575,7 +575,7 @@ module SystemRDL
       def test_binary_operation_with_non_integral_operand
         {
           string: '"this is a string"',
-          access_type: 'na', addressing_type: 'compact', on_read_type: 'rclr', on_write_type: 'woset'
+          accesstype: 'na', addressingtype: 'compact', onreadtype: 'rclr', onwritetype: 'woset'
         }.each do |type, value|
           [
             '&&', '||', '<', '>', '<=', '>=', '>>', '<<',
@@ -595,11 +595,11 @@ module SystemRDL
       def test_eq_operation_with_incompatible_operand
         lhs_values = [
           [:string, '"this is a string"'],
-          [:access_type, 'na'], [:addressing_type, 'compact'], [:on_read_type, 'rclr'], [:on_write_type, 'woset']
+          [:accesstype, 'na'], [:addressingtype, 'compact'], [:onreadtype, 'rclr'], [:onwritetype, 'woset']
         ]
         rhs_values = [
           [:string, '"this is a string"'],
-          [:access_type, 'na'], [:addressing_type, 'compact'], [:on_read_type, 'rclr'], [:on_write_type, 'woset'],
+          [:accesstype, 'na'], [:addressingtype, 'compact'], [:onreadtype, 'rclr'], [:onwritetype, 'woset'],
           [:bit, '0'], [:bit, "1'd0"], [:boolean, 'false']
         ]
 

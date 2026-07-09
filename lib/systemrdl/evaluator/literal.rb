@@ -16,7 +16,11 @@ module SystemRDL
       def evaluate(_instance, **_optargs)
       end
 
+      def width
+      end
+
       def expression_width
+        width
       end
 
       def token_range
@@ -24,7 +28,7 @@ module SystemRDL
       end
 
       def to_value
-        Value.new(value, token_range)
+        Value.new(value, type, width, token_range)
       end
 
       private
@@ -43,7 +47,7 @@ module SystemRDL
         :boolean
       end
 
-      def expression_width
+      def width
         1
       end
 
@@ -63,10 +67,6 @@ module SystemRDL
         64
       end
 
-      def expression_width
-        width
-      end
-
       private
 
       def evaluate_literal
@@ -79,10 +79,6 @@ module SystemRDL
 
       def type
         :bit
-      end
-
-      def expression_width
-        width
       end
 
       private
@@ -122,7 +118,7 @@ module SystemRDL
 
     class AccessType < Literal
       def type
-        :access_type
+        :accesstype
       end
 
       private
@@ -139,7 +135,7 @@ module SystemRDL
 
     class OnReadType < Literal
       def type
-        :on_read_type
+        :onreadtype
       end
 
       private
@@ -151,7 +147,7 @@ module SystemRDL
 
     class OnWriteType < Literal
       def type
-        :on_write_type
+        :onwritetype
       end
 
       private
@@ -163,7 +159,7 @@ module SystemRDL
 
     class AddressingType < Literal
       def type
-        :addressing_type
+        :addressingtype
       end
 
       private

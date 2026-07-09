@@ -44,8 +44,8 @@ module SystemRDL
         #
         # Table 11—Field access properties
         #
-        create_property(instance, :hw, [:access_type], :rw)
-        create_property(instance, :sw, [:access_type], :rw)
+        create_property(instance, :hw, [:accesstype], :rw)
+        create_property(instance, :sw, [:accesstype], :rw)
 
         #
         # Table 13—Hardware signal properties
@@ -59,10 +59,10 @@ module SystemRDL
         #
         create_property(instance, :rclr, [:boolean], false)
         create_property(instance, :rset, [:boolean], false)
-        create_property(instance, :onread, [:on_read_type], nil)
+        create_property(instance, :onread, [:onreadtype], nil)
         create_property(instance, :woset, [:boolean], false)
         create_property(instance, :woclr, [:boolean], false)
-        create_property(instance, :onwrite, [:on_write_type], nil)
+        create_property(instance, :onwrite, [:onwritetype], nil)
         create_property(instance, :swwe, [:boolean, :reference], false)
         create_property(instance, :swwel, [:boolean, :reference], false)
         create_property(instance, :swmod, [:boolean], false)
@@ -97,7 +97,7 @@ module SystemRDL
         # Table 22—Miscellaneous properties
         #
         # create_property(:encode) TODO
-        create_property(instance, :precedence, [:precedence_type], :sw)
+        create_property(instance, :precedence, [:precedencetype], :sw)
         create_property(instance, :paritycheck, [:boolean], false)
       end
 
@@ -122,7 +122,7 @@ module SystemRDL
         last_msb = instance.parent.instances.last&.msb
         lsb = (last_msb&.value || -1) + 1
         msb = lsb + (width&.value || 1) - 1
-        [msb, lsb].map { |pos| Value.new(pos, width&.token_range) }
+        [msb, lsb].map { |pos| Value.new(pos, :bit, 64, width&.token_range) }
       end
 
       def calc_bit_width(instance, inst_values)

@@ -46,7 +46,7 @@ module SystemRDL
         create_property(instance, :errextbus, [:boolean], false)
         create_property(instance, :bigendian, [:boolean], false)
         create_property(instance, :littleendian, [:boolean], false)
-        create_property(instance, :addressing, [:addressing_type], :regalign)
+        create_property(instance, :addressing, [:addressingtype], :regalign)
         create_property(instance, :rsvdset, [:boolean], false)
         create_property(instance, :rsvdsetX, [:boolean], false)
         create_property(instance, :msb0, [:boolean], false)

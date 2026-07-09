@@ -21,12 +21,12 @@ module SystemRDL
           child_inst.address ||= begin
             alignment = calc_alignment(inst, child_inst)
             address = roundup(current_address, alignment)
-            Value.new(address, nil)
+            Value.new(address, :bit, 64, nil)
           end
         else
           # Array non-head elements carry a copy of the head's @ address at this point;
           # overwrite with the stride-accumulated address for this element.
-          child_inst.address = Value.new(current_address, nil)
+          child_inst.address = Value.new(current_address, :bit, 64, nil)
         end
       end
 

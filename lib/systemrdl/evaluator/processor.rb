@@ -5,7 +5,7 @@ module SystemRDL
     class Processor < AST::Processor
       def on_id(node)
         id = node.children[0].to_sym
-        Value.new(id, node.token_range)
+        Value.new(id, nil, nil, node.token_range)
       end
 
       def on_boolean(node)

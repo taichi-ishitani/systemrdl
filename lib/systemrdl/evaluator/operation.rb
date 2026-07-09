@@ -11,7 +11,7 @@ module SystemRDL
       attr_reader :token_range
 
       def to_value
-        Value.new(value, @token_range)
+        Value.new(value, type, width, @token_range)
       end
 
       private

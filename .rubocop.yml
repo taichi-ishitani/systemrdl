@@ -39,6 +39,9 @@ Style/AccessorGrouping:
 Style/Alias:
   EnforcedStyle: prefer_alias_method
 
+Style/ArrayIntersect:
+  Enabled: false
+
 Style/EmptyCaseCondition:
   Enabled: false
 

@@ -108,9 +108,17 @@ module SystemRDL
       end
 
       def create_property(instance, name, types, value)
-        value = Value.new(value, nil) unless value.nil?
+        value = create_default_value(types, value) unless value.nil?
         property = Property.new(instance, name, types, value)
         instance.properties << property
+      end
+
+      def create_default_value(types, value)
+        case types[0]
+        when :longint then Value.new(value, :bit, 64, nil)
+        when :boolean then Value.new(value, :boolean, 1, nil)
+        else Value.new(value, types[0], nil, nil)
+        end
       end
 
       def eval_body(instance, **optargs)
