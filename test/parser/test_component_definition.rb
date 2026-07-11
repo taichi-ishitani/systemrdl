@@ -51,8 +51,8 @@ module SystemRDL
           root(
             field_named_definition(
               id(:f),
-              prop_assignment(:sw, access_type(:rw)),
-              prop_assignment(:hw, access_type(:rw))
+              prop_assignment(:sw, accesstype(:rw)),
+              prop_assignment(:hw, accesstype(:rw))
             )
           ),
           code
@@ -522,8 +522,8 @@ module SystemRDL
               id(:status),
               prop_assignment(:shared),
               field_anonymous_definition(
-                prop_assignment(:hw, access_type(:rw)),
-                prop_assignment(:sw, access_type(:r)),
+                prop_assignment(:hw, accesstype(:rw)),
+                prop_assignment(:sw, accesstype(:r)),
                 component_insts(
                   component_inst(
                     :stat1,
@@ -707,8 +707,8 @@ module SystemRDL
         s(:string, s)
       end
 
-      def access_type(type)
-        s(:access_type, type.to_s)
+      def accesstype(type)
+        s(:accesstype, type.to_s)
       end
 
       def prop_assignment(prop_name, value = nil)

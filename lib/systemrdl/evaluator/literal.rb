@@ -116,7 +116,15 @@ module SystemRDL
       end
     end
 
-    class AccessType < Literal
+    class EnumLiteral < Literal
+      private
+
+      def evaluate_literal
+        @value = text.to_sym
+      end
+    end
+
+    class AccessType < EnumLiteral
       def type
         :accesstype
       end
@@ -128,44 +136,32 @@ module SystemRDL
           if ['rw', 'wr'].include?(text)
             :rw
           else
-            text.to_sym
+            super
           end
       end
     end
 
-    class OnReadType < Literal
+    class OnReadType < EnumLiteral
       def type
         :onreadtype
       end
-
-      private
-
-      def evaluate_literal
-        @value = text.to_sym
-      end
     end
 
-    class OnWriteType < Literal
+    class OnWriteType < EnumLiteral
       def type
         :onwritetype
       end
-
-      private
-
-      def evaluate_literal
-        @value = text.to_sym
-      end
     end
 
-    class AddressingType < Literal
+    class AddressingType < EnumLiteral
       def type
         :addressingtype
       end
+    end
 
-      private
-
-      def evaluate_literal
-        @value = text.to_sym
+    class PrecedenceType < EnumLiteral
+      def type
+        :precedencetype
       end
     end
   end

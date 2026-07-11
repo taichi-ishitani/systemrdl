@@ -2186,7 +2186,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 197)
 
 module_eval(<<'.,.,', 'systemrdl.y', 202)
   def _reduce_74(val, _values, result)
-            result = node(:precedence_type, val, val)
+            result = node(:precedencetype, val, val)
 
     result
   end
@@ -2733,7 +2733,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 413)
 
 module_eval(<<'.,.,', 'systemrdl.y', 416)
   def _reduce_169(val, _values, result)
-            result = node(:access_type, val, val)
+            result = node(:accesstype, val, val)
 
     result
   end
@@ -2741,7 +2741,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 416)
 
 module_eval(<<'.,.,', 'systemrdl.y', 419)
   def _reduce_170(val, _values, result)
-            result = node(:on_read_type, val, val)
+            result = node(:onreadtype, val, val)
 
     result
   end
@@ -2749,7 +2749,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 419)
 
 module_eval(<<'.,.,', 'systemrdl.y', 422)
   def _reduce_171(val, _values, result)
-            result = node(:on_write_type, val, val)
+            result = node(:onwritetype, val, val)
 
     result
   end
@@ -2757,7 +2757,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 422)
 
 module_eval(<<'.,.,', 'systemrdl.y', 425)
   def _reduce_172(val, _values, result)
-            result = node(:addressing_type, val, val)
+            result = node(:addressingtype, val, val)
 
     result
   end

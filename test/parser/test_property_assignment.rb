@@ -8,13 +8,13 @@ module SystemRDL
       def test_prop_assignment
         code = 'hw=w;'
         assert_parses_prop_assignment(
-          assignment(id('hw'), access_type(:w)),
+          assignment(id('hw'), accesstype(:w)),
           code
         )
 
         code = 'default sw=rw;'
         assert_parses_prop_assignment(
-          default_assignment(id('sw'), access_type(:rw)),
+          default_assignment(id('sw'), accesstype(:rw)),
           code
         )
 
@@ -68,13 +68,13 @@ module SystemRDL
 
         code = 'precedence = sw;'
         assert_parses_prop_assignment(
-          assignment(id('precedence'), precedence_type(:sw)),
+          assignment(id('precedence'), precedencetype(:sw)),
           code
         )
 
         code = 'default precedence = hw;'
         assert_parses_prop_assignment(
-          default_assignment(id('precedence'), precedence_type(:hw)),
+          default_assignment(id('precedence'), precedencetype(:hw)),
           code
         )
       end
@@ -144,13 +144,13 @@ module SystemRDL
       def test_post_prop_assignment
         code = 'a->hw=w;'
         assert_parses_prop_assignment(
-          post_assignment(reference('a', 'hw'), access_type(:w)),
+          post_assignment(reference('a', 'hw'), accesstype(:w)),
           code
         )
 
         code = 'a->sw=rw;'
         assert_parses_prop_assignment(
-          post_assignment(reference('a', 'sw'), access_type(:rw)),
+          post_assignment(reference('a', 'sw'), accesstype(:rw)),
           code
         )
 
@@ -204,13 +204,13 @@ module SystemRDL
 
         code = 'a->precedence = sw;'
         assert_parses_prop_assignment(
-          post_assignment(reference('a', 'precedence'), precedence_type(:sw)),
+          post_assignment(reference('a', 'precedence'), precedencetype(:sw)),
           code
         )
 
         code = 'a->precedence = hw;'
         assert_parses_prop_assignment(
-          post_assignment(reference('a', 'precedence'), precedence_type(:hw)),
+          post_assignment(reference('a', 'precedence'), precedencetype(:hw)),
           code
         )
       end
@@ -246,12 +246,12 @@ module SystemRDL
         )
       end
 
-      def access_type(type)
-        s(:access_type, type.to_s)
+      def accesstype(type)
+        s(:accesstype, type.to_s)
       end
 
-      def precedence_type(type)
-        s(:precedence_type, type.to_s)
+      def precedencetype(type)
+        s(:precedencetype, type.to_s)
       end
 
       def boolean(value)

@@ -200,7 +200,7 @@ rule
   prop_assignment_rhs
     : constant_expression
     | precedencetype_literal {
-        result = node(:precedence_type, val, val)
+        result = node(:precedencetype, val, val)
       }
   encode
     : ENCODE {
@@ -414,16 +414,16 @@ rule
         result = node(:verilog_number, val, val)
       }
     | accesstype_literal {
-        result = node(:access_type, val, val)
+        result = node(:accesstype, val, val)
       }
     | onreadtype_literal {
-        result = node(:on_read_type, val, val)
+        result = node(:onreadtype, val, val)
       }
     | onwritetype_literal {
-        result = node(:on_write_type, val, val)
+        result = node(:onwritetype, val, val)
       }
     | addressingtype_literal {
-        result = node(:addressing_type, val, val)
+        result = node(:addressingtype, val, val)
       }
     | THIS {
         result = node(:this, val, val)

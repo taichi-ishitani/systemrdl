@@ -24,20 +24,24 @@ module SystemRDL
         String.new(node)
       end
 
-      def on_access_type(node)
+      def on_accesstype(node)
         AccessType.new(node)
       end
 
-      def on_on_read_type(node)
+      def on_onreadtype(node)
         OnReadType.new(node)
       end
 
-      def on_on_write_type(node)
+      def on_onwritetype(node)
         OnWriteType.new(node)
       end
 
-      def on_addressing_type(node)
+      def on_addressingtype(node)
         AddressingType.new(node)
+      end
+
+      def on_precedencetype(node)
+        PrecedenceType.new(node)
       end
 
       def on_unary_operation(node)

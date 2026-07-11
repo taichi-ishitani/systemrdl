@@ -74,38 +74,38 @@ module SystemRDL::Parser
       assert_raises_parse_error("1_6'hbeaf", test: :constant_expression)
     end
 
-    def test_access_type
-      assert_parses_expression(s(:access_type, 'na'), 'na')
-      assert_parses_expression(s(:access_type, 'rw'), 'rw')
-      assert_parses_expression(s(:access_type, 'wr'), 'wr')
-      assert_parses_expression(s(:access_type, 'rw1'), 'rw1')
-      assert_parses_expression(s(:access_type, 'r'), 'r')
-      assert_parses_expression(s(:access_type, 'w'), 'w')
-      assert_parses_expression(s(:access_type, 'w1'), 'w1')
+    def test_accesstype
+      assert_parses_expression(s(:accesstype, 'na'), 'na')
+      assert_parses_expression(s(:accesstype, 'rw'), 'rw')
+      assert_parses_expression(s(:accesstype, 'wr'), 'wr')
+      assert_parses_expression(s(:accesstype, 'rw1'), 'rw1')
+      assert_parses_expression(s(:accesstype, 'r'), 'r')
+      assert_parses_expression(s(:accesstype, 'w'), 'w')
+      assert_parses_expression(s(:accesstype, 'w1'), 'w1')
     end
 
-    def test_on_read_type
-      assert_parses_expression(s(:on_read_type, 'rclr'), 'rclr')
-      assert_parses_expression(s(:on_read_type, 'rset'), 'rset')
-      assert_parses_expression(s(:on_read_type, 'ruser'), 'ruser')
+    def test_onreadtype
+      assert_parses_expression(s(:onreadtype, 'rclr'), 'rclr')
+      assert_parses_expression(s(:onreadtype, 'rset'), 'rset')
+      assert_parses_expression(s(:onreadtype, 'ruser'), 'ruser')
     end
 
-    def test_on_write_type
-      assert_parses_expression(s(:on_write_type, 'woset'), 'woset')
-      assert_parses_expression(s(:on_write_type, 'woclr'), 'woclr')
-      assert_parses_expression(s(:on_write_type, 'wot'), 'wot')
-      assert_parses_expression(s(:on_write_type, 'wzs'), 'wzs')
-      assert_parses_expression(s(:on_write_type, 'wzc'), 'wzc')
-      assert_parses_expression(s(:on_write_type, 'wzt'), 'wzt')
-      assert_parses_expression(s(:on_write_type, 'wset'), 'wset')
-      assert_parses_expression(s(:on_write_type, 'wclr'), 'wclr')
-      assert_parses_expression(s(:on_write_type, 'wuser'), 'wuser')
+    def test_onwritetype
+      assert_parses_expression(s(:onwritetype, 'woset'), 'woset')
+      assert_parses_expression(s(:onwritetype, 'woclr'), 'woclr')
+      assert_parses_expression(s(:onwritetype, 'wot'), 'wot')
+      assert_parses_expression(s(:onwritetype, 'wzs'), 'wzs')
+      assert_parses_expression(s(:onwritetype, 'wzc'), 'wzc')
+      assert_parses_expression(s(:onwritetype, 'wzt'), 'wzt')
+      assert_parses_expression(s(:onwritetype, 'wset'), 'wset')
+      assert_parses_expression(s(:onwritetype, 'wclr'), 'wclr')
+      assert_parses_expression(s(:onwritetype, 'wuser'), 'wuser')
     end
 
-    def test_addressing_type
-      assert_parses_expression(s(:addressing_type, 'compact'), 'compact')
-      assert_parses_expression(s(:addressing_type, 'regalign'), 'regalign')
-      assert_parses_expression(s(:addressing_type, 'fullalign'), 'fullalign')
+    def test_addressingtype
+      assert_parses_expression(s(:addressingtype, 'compact'), 'compact')
+      assert_parses_expression(s(:addressingtype, 'regalign'), 'regalign')
+      assert_parses_expression(s(:addressingtype, 'fullalign'), 'fullalign')
     end
   end
 end
