@@ -737,15 +737,13 @@ module SystemRDL
             addrmap my_map {
               reg {
                 field { sw = r; hw = r; } a;
-                field { sw = r; hw = r; #{prop_name} = ored; } b;
-                field { sw = r; hw = r; } c;
-                c->#{prop_name} = a->ored;
+                field { sw = r; hw = r; } b;
+                b->#{prop_name} = a->ored;
               } my_reg;
             };
           RDL
 
-          assert_property_reference_value(fields[1], prop_name, 'my_map.my_reg.b.ored')
-          assert_property_reference_value(fields[2], prop_name, 'my_map.my_reg.a.ored')
+          assert_property_reference_value(fields[1], prop_name, 'my_map.my_reg.a.ored')
         end
       end
 
@@ -820,7 +818,9 @@ module SystemRDL
           <<~RDL
             addrmap my_map {
               reg {
-                field { sw = r; hw = r; #{prop_name} = ored; } a;
+                field { sw = r; hw = r; } a;
+                field { sw = r; hw = r; } b;
+                b->#{prop_name} = a->ored;
               } my_reg;
             };
           RDL

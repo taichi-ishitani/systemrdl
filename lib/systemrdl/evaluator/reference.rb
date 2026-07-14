@@ -14,11 +14,8 @@ module SystemRDL
       attr_reader :id
       attr_reader :array
 
-      def find(base, instance_only:)
+      def find(base)
         result = find_instance(base)
-        return result if result
-
-        result = find_property(base) unless instance_only
         return result if result
 
         # TODO
@@ -31,10 +28,6 @@ module SystemRDL
         base.instances.find do |inst|
           inst.name == id.value && match_array_indices?(inst)
         end
-      end
-
-      def find_property(base)
-        base.property(id.value)
       end
 
       def match_array_indices?(instance)
@@ -74,9 +67,8 @@ module SystemRDL
       end
 
       def find(instance)
-        instance_only = @elements.size > 1
         @elements
-          .inject(instance) { |result, element| element.find(result, instance_only:) }
+          .inject(instance) { |result, element| element.find(result) }
       end
     end
 
