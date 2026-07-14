@@ -61,7 +61,14 @@ module SystemRDL
       attr_reader :inst_id
 
       def evaluate(instance, component_definition, **optargs)
-        component_definition.create_instances(instance, @inst_id.value, @inst_values, @token_range, **optargs)
+        inst_values = eval_inst_values(instance, **optargs)
+        component_definition.create_instances(instance, @inst_id.value, inst_values, @token_range, **optargs)
+      end
+
+      private
+
+      def eval_inst_values(instance, **optargs)
+        @inst_values&.transform_values { |value| value&.evaluate(instance, **optargs) }
       end
     end
 

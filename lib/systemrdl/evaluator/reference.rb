@@ -46,11 +46,11 @@ module SystemRDL
         return true unless instance.array?
 
         # check size
-        return false if instance.array_indices.size != array.values.size
+        return false if instance.array_indices.size != array.size
 
         instance
           .array_indices
-          .zip(array.values)
+          .zip(array.elements)
           .all? { |index, select| index == select.value }
       end
 
@@ -70,14 +70,8 @@ module SystemRDL
       attr_reader :elements
 
       def evaluate(instance, **_optargs)
-        @found ||= find(instance)
+        find(instance).to_value(token_range)
       end
-
-      def to_value
-        @found.to_value(token_range)
-      end
-
-      private
 
       def find(instance)
         instance_only = @elements.size > 1
@@ -99,17 +93,11 @@ module SystemRDL
       attr_reader :prop
 
       def evaluate(instance, **optargs)
-        @found ||= find(instance, **optargs)
+        find(instance, **optargs).to_value(token_range)
       end
-
-      def to_value
-        @found.to_value(token_range)
-      end
-
-      private
 
       def find(instance, **optargs)
-        inst = @instance_ref&.evaluate(instance, **optargs) || instance
+        inst = @instance_ref&.find(instance, **optargs) || instance
         result = inst.property(@prop.value)
         return result if result
 

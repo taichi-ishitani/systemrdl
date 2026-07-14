@@ -6,21 +6,21 @@ module SystemRDL
       private
 
       def apply_explicit_address(instance, inst_values)
-        address = inst_values[:address_assignment]&.to_value
+        address = inst_values[:address_assignment]
         return unless address
 
         instance.address = address
       end
 
       def apply_stride(instance, inst_values)
-        stride = inst_values[:address_stride]&.to_value
+        stride = inst_values[:address_stride]
         return unless stride
 
         instance.stride = stride
       end
 
       def apply_alignment(instance, inst_values)
-        alignment = inst_values[:address_alignment]&.to_value
+        alignment = inst_values[:address_alignment]
         return unless alignment
 
         instance.alignment = alignment

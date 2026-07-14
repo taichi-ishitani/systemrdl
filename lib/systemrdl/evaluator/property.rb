@@ -35,11 +35,10 @@ module SystemRDL
       end
 
       def evaluate(instance, **optargs)
-        property = @prop_ref.evaluate(instance, **optargs)
+        property = @prop_ref.find(instance, **optargs)
         value =
           if @value
             @value.evaluate(instance, **optargs)
-            @value.to_value
           else
             # true value is implicitly applied
             # when the assignment value is omitted.

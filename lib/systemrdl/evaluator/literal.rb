@@ -14,9 +14,7 @@ module SystemRDL
       attr_reader :value
 
       def evaluate(_instance, **_optargs)
-      end
-
-      def width
+        @evaluated ||= Value.new(value, type, width, token_range)
       end
 
       def expression_width
@@ -27,11 +25,10 @@ module SystemRDL
         @node.token_range
       end
 
-      def to_value
-        Value.new(value, type, width, token_range)
-      end
-
       private
+
+      def width
+      end
 
       def token
         @node.children[0]
@@ -43,6 +40,8 @@ module SystemRDL
     end
 
     class Boolean < Literal
+      private
+
       def type
         :boolean
       end
@@ -51,14 +50,14 @@ module SystemRDL
         1
       end
 
-      private
-
       def evaluate_literal
         @value = text == 'true'
       end
     end
 
     class Number < Literal
+      private
+
       def type
         :bit
       end
@@ -67,21 +66,19 @@ module SystemRDL
         64
       end
 
-      private
-
       def evaluate_literal
         @value = Integer(text)
       end
     end
 
     class VerilogNumber < Literal
+      private
+
       attr_reader :width
 
       def type
         :bit
       end
-
-      private
 
       def evaluate_literal
         match_data, base =
@@ -105,11 +102,11 @@ module SystemRDL
     end
 
     class String < Literal
+      private
+
       def type
         :string
       end
-
-      private
 
       def evaluate_literal
         @value = text[1..-2]
@@ -125,11 +122,11 @@ module SystemRDL
     end
 
     class AccessType < EnumLiteral
+      private
+
       def type
         :accesstype
       end
-
-      private
 
       def evaluate_literal
         @value =
@@ -142,24 +139,32 @@ module SystemRDL
     end
 
     class OnReadType < EnumLiteral
+      private
+
       def type
         :onreadtype
       end
     end
 
     class OnWriteType < EnumLiteral
+      private
+
       def type
         :onwritetype
       end
     end
 
     class AddressingType < EnumLiteral
+      private
+
       def type
         :addressingtype
       end
     end
 
     class PrecedenceType < EnumLiteral
+      private
+
       def type
         :precedencetype
       end

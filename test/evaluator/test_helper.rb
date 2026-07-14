@@ -43,7 +43,6 @@ module SystemRDL
         ast = SystemRDL::Parser.parse(code, **optargs)
         evaluator = SystemRDL::Evaluator.build_evaluator(ast)
         evaluator.evaluate(nil)
-        evaluator
       end
 
       def assert_evaluates_value(type, expected, code, **optargs)

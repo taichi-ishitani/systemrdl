@@ -5,13 +5,11 @@ module SystemRDL
     class Operation
       include Common
 
-      attr_reader :type
-      attr_reader :width
-      attr_reader :value
       attr_reader :token_range
 
-      def to_value
-        Value.new(value, type, width, @token_range)
+      def evaluate(instance, width: nil)
+        value, type, width = eval_operation(instance, width)
+        Value.new(value, type, width, token_range)
       end
 
       private
@@ -28,8 +26,7 @@ module SystemRDL
       end
 
       def to_boolean(instance, operand)
-        operand.evaluate(instance)
-        check_integral_operand(operand)
+        operand = eval_operand(instance, operand, nil, check: true)
 
         if operand.type == :boolean
           operand.value
@@ -39,16 +36,19 @@ module SystemRDL
       end
 
       def to_int(instance, operand, width = nil, evaluation: true)
-        if evaluation
-          operand.evaluate(instance, width:)
-          check_integral_operand(operand)
-        end
+        operand = eval_operand(instance, operand, width, check: true) if evaluation
 
         if operand.type == :boolean
           [(operand.value && 1) || 0, 1]
         else
           [operand.value, width || operand.width]
         end
+      end
+
+      def eval_operand(instance, operand, width, check:)
+        result = operand.evaluate(instance, width:)
+        check_integral_operand(result) if check
+        result
       end
 
       def mask(value, width)
@@ -68,18 +68,6 @@ module SystemRDL
         @operand.connect(self, component)
       end
 
-      def evaluate(instance, width: nil)
-        @value, @type, @width =
-          case @operator
-          when :! then logical_negation(instance)
-          when :+, :-, :~ then general_op(instance, width)
-          when :&, :|, :^ then reduction(instance, @operator, false)
-          when :'~&' then reduction(instance, :&, true)
-          when :'~|' then reduction(instance, :|, true)
-          when :'~^', :'^~' then reduction(instance, :^, true)
-          end
-      end
-
       def expression_width
         if [:~, :+, :-].include?(@operator)
           @operand.expression_width
@@ -89,6 +77,17 @@ module SystemRDL
       end
 
       private
+
+      def eval_operation(instance, width)
+        case @operator
+        when :! then logical_negation(instance)
+        when :+, :-, :~ then general_op(instance, width)
+        when :&, :|, :^ then reduction(instance, @operator, false)
+        when :'~&' then reduction(instance, :&, true)
+        when :'~|' then reduction(instance, :|, true)
+        when :'~^', :'^~' then reduction(instance, :^, true)
+        end
+      end
 
       def logical_negation(instance)
         value = to_boolean(instance, @operand)
@@ -134,18 +133,6 @@ module SystemRDL
         @r_operand.connect(self, component)
       end
 
-      def evaluate(instance, width: nil)
-        @value, @type, @width =
-          case @operator
-          when :'&&', :'||' then logical_op(instance)
-          when :==, :!= then equality_op(instance)
-          when :<, :>, :<=, :>= then relational_op(instance)
-          when :<<, :>>, :** then shift_power_op(instance, width)
-          when :'~^', :'^~' then general_op(instance, :^, width, true)
-          else general_op(instance, @operator, width, false)
-          end
-      end
-
       def expression_width
         if [:'&&', :'||', :==, :!=, :<, :>, :<=, :>=].include?(@operator)
           1
@@ -169,6 +156,17 @@ module SystemRDL
         end
       end
 
+      def eval_operation(instance, width)
+        case @operator
+        when :'&&', :'||' then logical_op(instance)
+        when :==, :!= then equality_op(instance)
+        when :<, :>, :<=, :>= then relational_op(instance)
+        when :<<, :>>, :** then shift_power_op(instance, width)
+        when :'~^', :'^~' then general_op(instance, :^, width, true)
+        else general_op(instance, @operator, width, false)
+        end
+      end
+
       def logical_op(instance)
         lhs = to_boolean(instance, @l_operand)
         rhs = to_boolean(instance, @r_operand)
@@ -186,17 +184,17 @@ module SystemRDL
 
       def eval_eq_operands(instance)
         width = eval_expression_width
-        @l_operand.evaluate(instance, width:)
-        @r_operand.evaluate(instance, width:)
+        l_operand = eval_operand(instance, @l_operand, width, check: false)
+        r_operand = eval_operand(instance, @r_operand, width, check: false)
 
-        if [@l_operand, @r_operand].all? { integral_operand?(_1) }
-          lhs, _ = to_int(instance, @l_operand, evaluation: false)
-          rhs, _ = to_int(instance, @r_operand, evaluation: false)
+        if [l_operand, r_operand].all? { integral_operand?(_1) }
+          lhs, _ = to_int(instance, l_operand, evaluation: false)
+          rhs, _ = to_int(instance, r_operand, evaluation: false)
           [lhs, rhs]
-        elsif @l_operand.type == @r_operand.type
-          [@l_operand.value, @r_operand.value]
+        elsif l_operand.type == r_operand.type
+          [l_operand.value, r_operand.value]
         else
-          message = "#{@r_operand.type} type is not compatible with #{@l_operand.type} type"
+          message = "#{r_operand.type} type is not compatible with #{l_operand.type} type"
           raise_evaluation_error message, @r_operand.token_range
         end
       end

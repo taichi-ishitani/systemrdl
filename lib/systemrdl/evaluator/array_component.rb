@@ -15,7 +15,7 @@ module SystemRDL
         array = inst_values[:array]
         return super unless array
 
-        sizes = array.values.map do |size|
+        sizes = array.elements.map do |size|
           next size.value if size.value > 0
 
           message = 'array size must be positive'

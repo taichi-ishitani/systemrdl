@@ -109,7 +109,7 @@ module SystemRDL
       def assign_bit_pos(instance, inst_values)
         msb, lsb =
           if (range = inst_values[:range])
-            range.map(&:to_value)
+            range.elements
           else
             calc_bit_pos(instance, inst_values)
           end
@@ -129,12 +129,12 @@ module SystemRDL
         size = inst_values[:array]
         return instance.property_value(:fieldwidth) unless size
 
-        if size.values.size >= 2
+        if size.size >= 2
           message = 'multidimensional size specification not allowed for field'
           raise_evaluation_error message, size.token_range
         end
 
-        size = size.values[0]
+        size = size.elements[0]
         if size.value == 0
           message = 'bit width must be positive'
           raise_evaluation_error message, size.token_range
@@ -166,7 +166,7 @@ module SystemRDL
         return unless value
 
         property = instance.property(:reset)
-        property.assign(value.to_value)
+        property.assign(value)
       end
 
       def check_reset(instance)

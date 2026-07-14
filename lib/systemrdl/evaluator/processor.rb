@@ -58,12 +58,13 @@ module SystemRDL
       end
 
       def on_array(node)
-        values = process_all(node.children)
-        Values.new(values, node.token_range)
+        elements = process_all(node.children)
+        List.new(elements, node.token_range)
       end
 
       def on_range(node)
-        process_all(node.children)
+        elements = process_all(node.children)
+        List.new(elements, node.token_range)
       end
 
       def on_instance_ref_element(node)
