@@ -14,6 +14,14 @@ module SystemRDL
       attr_reader :types
       attr_reader :value
 
+      def to_value(token_range)
+        Value.new(self, :property_reference, nil, token_range)
+      end
+
+      def full_name
+        [@instance.full_name, name].join('.')
+      end
+
       def assign(value)
         @value = value
       end
@@ -26,10 +34,11 @@ module SystemRDL
         @value = value
       end
 
-      def evaluate(instance, **_optargs)
-        property = @prop_ref.find(instance)
+      def evaluate(instance, **optargs)
+        property = @prop_ref.evaluate(instance, **optargs)
         value =
           if @value
+            @value.evaluate(instance, **optargs)
             @value.to_value
           else
             # true value is implicitly applied

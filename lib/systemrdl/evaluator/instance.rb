@@ -21,6 +21,18 @@ module SystemRDL
       attr_reader :properties
       attr_reader :instances
 
+      def to_value(token_range)
+        Value.new(self, :"#{layer}_reference", nil, token_range)
+      end
+
+      def full_name
+        [*parents, self].reject(&:root?).map { |inst| inst_name(inst) }.join('.')
+      end
+
+      def parents
+        [*parent&.parents, parent].compact
+      end
+
       def root?
         layer == :root
       end
@@ -82,6 +94,18 @@ module SystemRDL
       def finalize
         @definition.finalize(self)
         @instances.each(&:finalize)
+      end
+
+      private
+
+      def inst_name(inst)
+        return inst.name unless inst.array?
+
+        inst
+          .array_info
+          .indices
+          .inject([inst.name]) { |result, size| result << "[#{size}]" }
+          .join
       end
     end
   end

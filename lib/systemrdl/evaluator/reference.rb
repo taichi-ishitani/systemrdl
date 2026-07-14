@@ -14,10 +14,11 @@ module SystemRDL
       attr_reader :id
       attr_reader :array
 
-      def find(base)
-        result = base.instances.find do |inst|
-          inst.name == id.value && match_array_indices?(inst)
-        end
+      def find(base, instance_only:)
+        result = find_instance(base)
+        return result if result
+
+        result = find_property(base) unless instance_only
         return result if result
 
         # TODO
@@ -25,6 +26,16 @@ module SystemRDL
       end
 
       private
+
+      def find_instance(base)
+        base.instances.find do |inst|
+          inst.name == id.value && match_array_indices?(inst)
+        end
+      end
+
+      def find_property(base)
+        base.property(id.value)
+      end
 
       def match_array_indices?(instance)
         # non array instance && array select
@@ -58,8 +69,20 @@ module SystemRDL
 
       attr_reader :elements
 
-      def find(base)
-        @elements.inject(base) { |result, element| element.find(result) }
+      def evaluate(instance, **_optargs)
+        @found ||= find(instance)
+      end
+
+      def to_value
+        @found.to_value(token_range)
+      end
+
+      private
+
+      def find(instance)
+        instance_only = @elements.size > 1
+        @elements
+          .inject(instance) { |result, element| element.find(result, instance_only:) }
       end
     end
 
@@ -75,8 +98,18 @@ module SystemRDL
       attr_reader :instance_ref
       attr_reader :prop
 
-      def find(base)
-        inst = @instance_ref&.find(base) || base
+      def evaluate(instance, **optargs)
+        @found ||= find(instance, **optargs)
+      end
+
+      def to_value
+        @found.to_value(token_range)
+      end
+
+      private
+
+      def find(instance, **optargs)
+        inst = @instance_ref&.evaluate(instance, **optargs) || instance
         result = inst.property(@prop.value)
         return result if result
 

@@ -23,9 +23,9 @@ module SystemRDL
         assert_property(fields[1], :sw, [:accesstype], value: :rw)
 
         # Hardware signal properties
-        assert_property(fields[0], :next, [:reference])
-        assert_property(fields[0], :reset, [:bit, :reference])
-        assert_property(fields[0], :resetsignal, [:reference])
+        assert_property(fields[0], :next, [:field_reference, :property_reference])
+        assert_property(fields[0], :reset, [:bit, :field_reference, :property_reference])
+        assert_property(fields[0], :resetsignal, [:field_reference, :property_reference])
 
         # Software access properties
         assert_property(fields[0], :rclr, [:boolean], value: false)
@@ -34,23 +34,23 @@ module SystemRDL
         assert_property(fields[0], :woset, [:boolean], value: false)
         assert_property(fields[0], :woclr, [:boolean], value: false)
         assert_property(fields[0], :onwrite, [:onwritetype])
-        assert_property(fields[0], :swwe, [:boolean, :reference], value: false)
-        assert_property(fields[0], :swwel, [:boolean, :reference], value: false)
+        assert_property(fields[0], :swwe, [:boolean, :field_reference, :property_reference], value: false)
+        assert_property(fields[0], :swwel, [:boolean, :field_reference, :property_reference], value: false)
         assert_property(fields[0], :swmod, [:boolean], value: false)
         assert_property(fields[0], :swacc, [:boolean], value: false)
         assert_property(fields[0], :singlepulse, [:boolean], value: false)
 
         # Hardware access properties
-        assert_property(fields[0], :we, [:boolean, :reference], value: false)
-        assert_property(fields[0], :wel, [:boolean, :reference], value: false)
+        assert_property(fields[0], :we, [:boolean, :field_reference, :property_reference], value: false)
+        assert_property(fields[0], :wel, [:boolean, :field_reference, :property_reference], value: false)
         assert_property(fields[0], :anded, [:boolean], value: false)
         assert_property(fields[0], :ored, [:boolean], value: false)
         assert_property(fields[0], :xored, [:boolean], value: false)
         assert_property(fields[0], :fieldwidth, [:longint])
-        assert_property(fields[0], :hwclr, [:boolean, :reference], value: false)
-        assert_property(fields[0], :hwset, [:boolean, :reference], value: false)
-        assert_property(fields[0], :hwenable, [:reference])
-        assert_property(fields[0], :hwmask, [:reference])
+        assert_property(fields[0], :hwclr, [:boolean, :field_reference, :property_reference], value: false)
+        assert_property(fields[0], :hwset, [:boolean, :field_reference, :property_reference], value: false)
+        assert_property(fields[0], :hwenable, [:field_reference, :property_reference])
+        assert_property(fields[0], :hwmask, [:field_reference, :property_reference])
 
         # Counter properties
         # TODO
@@ -126,10 +126,10 @@ module SystemRDL
 
       def test_assigning_integral_value_to_unsupported_property_is_rejected
         {
-          name: :string, desc: :string, sw: :accesstype, hw: :accesstype,
-          onread: :onreadtype, onwrite: :onwritetype, hwenable: :reference,
-          hwmask: :reference, precedence: :precedencetype
-        }.each do |prop_name, prop_type|
+          name: 'string', desc: 'string', sw: 'accesstype', hw: 'accesstype',
+          onread: 'onreadtype', onwrite: 'onwritetype', hwenable: 'field_reference or property_reference',
+          hwmask: 'field_reference or property_reference', precedence: 'precedencetype'
+        }.each do |prop_name, expected_type|
           {
             '0' => :bit, '1' => :bit, "16'd0" => :bit, "16'd1" => :bit,
             'true' => :boolean, 'false' => :boolean
@@ -142,7 +142,7 @@ module SystemRDL
                   } my_reg;
                 };
               RDL
-              "#{value_type} type not supported by #{prop_name} property: expected #{prop_type}"
+              "#{value_type} type not supported by #{prop_name} property: expected #{expected_type}"
             )
           end
 
@@ -154,7 +154,7 @@ module SystemRDL
                 } my_reg;
               };
             RDL
-            "boolean type not supported by #{prop_name} property: expected #{prop_type}"
+            "boolean type not supported by #{prop_name} property: expected #{expected_type}"
           )
         end
       end
@@ -197,21 +197,21 @@ module SystemRDL
         [:swwe, :swwel, :we, :wel, :hwclr, :hwset].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "string type not supported by #{prop_name} property: expected boolean or reference"
+            "string type not supported by #{prop_name} property: expected boolean, field_reference or property_reference"
           )
         end
 
         [:reset].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "string type not supported by #{prop_name} property: expected bit or reference"
+            "string type not supported by #{prop_name} property: expected bit, field_reference or property_reference"
           )
         end
 
         [:hwenable, :hwmask].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "string type not supported by #{prop_name} property: expected reference"
+            "string type not supported by #{prop_name} property: expected field_reference or property_reference"
           )
         end
 
@@ -306,21 +306,21 @@ module SystemRDL
         [:swwe, :swwel, :we, :wel, :hwclr, :hwset].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "accesstype type not supported by #{prop_name} property: expected boolean or reference"
+            "accesstype type not supported by #{prop_name} property: expected boolean, field_reference or property_reference"
           )
         end
 
         [:reset].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "accesstype type not supported by #{prop_name} property: expected bit or reference"
+            "accesstype type not supported by #{prop_name} property: expected bit, field_reference or property_reference"
           )
         end
 
         [:hwenable, :hwmask].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "accesstype type not supported by #{prop_name} property: expected reference"
+            "accesstype type not supported by #{prop_name} property: expected field_reference or property_reference"
           )
         end
 
@@ -398,21 +398,21 @@ module SystemRDL
         [:swwe, :swwel, :we, :wel, :hwclr, :hwset].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "onreadtype type not supported by #{prop_name} property: expected boolean or reference"
+            "onreadtype type not supported by #{prop_name} property: expected boolean, field_reference or property_reference"
           )
         end
 
         [:reset].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "onreadtype type not supported by #{prop_name} property: expected bit or reference"
+            "onreadtype type not supported by #{prop_name} property: expected bit, field_reference or property_reference"
           )
         end
 
         [:hwenable, :hwmask].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "onreadtype type not supported by #{prop_name} property: expected reference"
+            "onreadtype type not supported by #{prop_name} property: expected field_reference or property_reference"
           )
         end
 
@@ -490,21 +490,21 @@ module SystemRDL
         [:swwe, :swwel, :we, :wel, :hwclr, :hwset].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "onwritetype type not supported by #{prop_name} property: expected boolean or reference"
+            "onwritetype type not supported by #{prop_name} property: expected boolean, field_reference or property_reference"
           )
         end
 
         [:reset].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "onwritetype type not supported by #{prop_name} property: expected bit or reference"
+            "onwritetype type not supported by #{prop_name} property: expected bit, field_reference or property_reference"
           )
         end
 
         [:hwenable, :hwmask].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "onwritetype type not supported by #{prop_name} property: expected reference"
+            "onwritetype type not supported by #{prop_name} property: expected field_reference or property_reference"
           )
         end
 
@@ -582,21 +582,21 @@ module SystemRDL
         [:swwe, :swwel, :we, :wel, :hwclr, :hwset].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "precedencetype type not supported by #{prop_name} property: expected boolean or reference"
+            "precedencetype type not supported by #{prop_name} property: expected boolean, field_reference or property_reference"
           )
         end
 
         [:reset].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "precedencetype type not supported by #{prop_name} property: expected bit or reference"
+            "precedencetype type not supported by #{prop_name} property: expected bit, field_reference or property_reference"
           )
         end
 
         [:hwenable, :hwmask].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "precedencetype type not supported by #{prop_name} property: expected reference"
+            "precedencetype type not supported by #{prop_name} property: expected field_reference or property_reference"
           )
         end
 
@@ -661,21 +661,21 @@ module SystemRDL
         [:swwe, :swwel, :we, :wel, :hwclr, :hwset].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "addressingtype type not supported by #{prop_name} property: expected boolean or reference"
+            "addressingtype type not supported by #{prop_name} property: expected boolean, field_reference or property_reference"
           )
         end
 
         [:reset].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "addressingtype type not supported by #{prop_name} property: expected bit or reference"
+            "addressingtype type not supported by #{prop_name} property: expected bit, field_reference or property_reference"
           )
         end
 
         [:hwenable, :hwmask].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "addressingtype type not supported by #{prop_name} property: expected reference"
+            "addressingtype type not supported by #{prop_name} property: expected field_reference or property_reference"
           )
         end
 
@@ -712,6 +712,283 @@ module SystemRDL
             template[prop_name],
             "addressingtype type not supported by #{prop_name} property: expected precedencetype"
           )
+        end
+      end
+
+      def test_assigning_field_reference_value_to_supported_property_is_allowed
+        [:swwe, :swwel, :we, :wel, :hwclr, :hwset, :reset, :hwenable, :hwmask, :next].each do |prop_name|
+          fields = evaluate(<<~RDL).instances[0].instances[0].instances
+            addrmap my_map {
+              reg {
+                field { sw = r; hw = r; } a;
+                field { sw = r; hw = r; } b;
+                b->#{prop_name} = a;
+              } my_reg;
+            };
+          RDL
+
+          assert_property_reference_value(fields[1], prop_name, 'my_map.my_reg.a')
+        end
+      end
+
+      def test_assigning_property_reference_value_to_supported_property_is_allowed
+        [:swwe, :swwel, :we, :wel, :hwclr, :hwset, :reset, :hwenable, :hwmask, :next].each do |prop_name|
+          fields = evaluate(<<~RDL).instances[0].instances[0].instances
+            addrmap my_map {
+              reg {
+                field { sw = r; hw = r; } a;
+                field { sw = r; hw = r; #{prop_name} = ored; } b;
+                field { sw = r; hw = r; } c;
+                c->#{prop_name} = a->ored;
+              } my_reg;
+            };
+          RDL
+
+          assert_property_reference_value(fields[1], prop_name, 'my_map.my_reg.b.ored')
+          assert_property_reference_value(fields[2], prop_name, 'my_map.my_reg.a.ored')
+        end
+      end
+
+      def test_assigning_field_reference_value_to_not_supported_property_is_rejected
+        template = proc do |prop_name|
+          <<~RDL
+            addrmap my_map {
+              reg {
+                field { sw = r; hw = r; } a;
+                field { sw = r; hw = r; } b;
+                b->#{prop_name} = a;
+              } my_reg;
+            };
+          RDL
+        end
+
+        [:name, :desc].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "field_reference type not supported by #{prop_name} property: expected string"
+          )
+        end
+
+        [
+          :rclr, :rset, :woset, :woclr, :swmod, :swacc, :singlepulse,
+          :anded, :ored, :xored, :paritycheck
+        ].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "field_reference type not supported by #{prop_name} property: expected boolean"
+          )
+        end
+
+        [:fieldwidth].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "field_reference type not supported by #{prop_name} property: expected longint"
+          )
+        end
+
+        [:sw, :hw].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "field_reference type not supported by #{prop_name} property: expected accesstype"
+          )
+        end
+
+        [:onread].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "field_reference type not supported by #{prop_name} property: expected onreadtype"
+          )
+        end
+
+        [:onwrite].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "field_reference type not supported by #{prop_name} property: expected onwritetype"
+          )
+        end
+
+        [:precedence].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "field_reference type not supported by #{prop_name} property: expected precedencetype"
+          )
+        end
+      end
+
+      def test_assigning_property_reference_value_to_not_supported_property_is_rejected
+        template = proc do |prop_name|
+          <<~RDL
+            addrmap my_map {
+              reg {
+                field { sw = r; hw = r; #{prop_name} = ored; } a;
+              } my_reg;
+            };
+          RDL
+        end
+
+        [:name, :desc].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "property_reference type not supported by #{prop_name} property: expected string"
+          )
+        end
+
+        [
+          :rclr, :rset, :woset, :woclr, :swmod, :swacc, :singlepulse,
+          :anded, :ored, :xored, :paritycheck
+        ].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "property_reference type not supported by #{prop_name} property: expected boolean"
+          )
+        end
+
+        [:fieldwidth].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "property_reference type not supported by #{prop_name} property: expected longint"
+          )
+        end
+
+        [:sw, :hw].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "property_reference type not supported by #{prop_name} property: expected accesstype"
+          )
+        end
+
+        [:onread].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "property_reference type not supported by #{prop_name} property: expected onreadtype"
+          )
+        end
+
+        [:onwrite].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "property_reference type not supported by #{prop_name} property: expected onwritetype"
+          )
+        end
+
+        [:precedence].each do |prop_name|
+          assert_raises_evaluation_error(
+            template[prop_name],
+            "property_reference type not supported by #{prop_name} property: expected precedencetype"
+          )
+        end
+      end
+
+      def test_assigning_container_reference_value_to_not_supported_property_is_rejected
+        template = proc do |layer, prop_name|
+          case layer
+          when :addrmap
+            <<~RDL
+              addrmap my_map {
+                addrmap {
+                  reg {
+                    field { sw = r; hw = r; } a;
+                  } a;
+                } a;
+                a.a.a->#{prop_name} = a;
+              };
+            RDL
+          when :regfile
+            <<~RDL
+              addrmap my_map {
+                regfile {
+                  reg {
+                    field { sw = r; hw = r; } a;
+                  } a;
+                } a;
+                a.a.a->#{prop_name} = a;
+              };
+            RDL
+          when :reg
+            <<~RDL
+              addrmap my_map {
+                reg {
+                  field { sw = r; hw = r; } a;
+                } a;
+                a.a->#{prop_name} = a;
+              };
+            RDL
+          end
+        end
+
+        [:addrmap, :regfile, :reg].each do |layer|
+          [:name, :desc].each do |prop_name|
+            assert_raises_evaluation_error(
+              template[layer, prop_name],
+              "#{layer}_reference type not supported by #{prop_name} property: expected string"
+            )
+          end
+
+          [
+            :rclr, :rset, :woset, :woclr, :swmod, :swacc, :singlepulse,
+            :anded, :ored, :xored, :paritycheck
+          ].each do |prop_name|
+            assert_raises_evaluation_error(
+              template[layer, prop_name],
+              "#{layer}_reference type not supported by #{prop_name} property: expected boolean"
+            )
+          end
+
+          [:swwe, :swwel, :we, :wel, :hwclr, :hwset].each do |prop_name|
+            assert_raises_evaluation_error(
+              template[layer, prop_name],
+              "#{layer}_reference type not supported by #{prop_name} property: expected boolean, field_reference or property_reference"
+            )
+          end
+
+          [:reset].each do |prop_name|
+            assert_raises_evaluation_error(
+              template[layer, prop_name],
+              "#{layer}_reference type not supported by #{prop_name} property: expected bit, field_reference or property_reference"
+            )
+          end
+
+          [:hwenable, :hwmask].each do |prop_name|
+            assert_raises_evaluation_error(
+              template[layer, prop_name],
+              "#{layer}_reference type not supported by #{prop_name} property: expected field_reference or property_reference"
+            )
+          end
+
+          [:fieldwidth].each do |prop_name|
+            assert_raises_evaluation_error(
+              template[layer, prop_name],
+              "#{layer}_reference type not supported by #{prop_name} property: expected longint"
+            )
+          end
+
+          [:sw, :hw].each do |prop_name|
+            assert_raises_evaluation_error(
+              template[layer, prop_name],
+              "#{layer}_reference type not supported by #{prop_name} property: expected accesstype"
+            )
+          end
+
+          [:onread].each do |prop_name|
+            assert_raises_evaluation_error(
+              template[layer, prop_name],
+              "#{layer}_reference type not supported by #{prop_name} property: expected onreadtype"
+            )
+          end
+
+          [:onwrite].each do |prop_name|
+            assert_raises_evaluation_error(
+              template[layer, prop_name],
+              "#{layer}_reference type not supported by #{prop_name} property: expected onwritetype"
+            )
+          end
+
+          [:precedence].each do |prop_name|
+            assert_raises_evaluation_error(
+              template[layer, prop_name],
+              "#{layer}_reference type not supported by #{prop_name} property: expected precedencetype"
+            )
+          end
         end
       end
     end

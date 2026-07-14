@@ -5,7 +5,7 @@ module SystemRDL
     class FieldDefinition < ComponentDefinition
       def validate(instance)
         check_fieldwidth(instance)
-        check_reset_value(instance)
+        check_reset(instance)
         check_sw_hw_access_combination(instance)
         check_onread_exclusivity(instance)
         check_sw_read_access_required(instance)
@@ -17,7 +17,7 @@ module SystemRDL
       end
 
       def revalidate(instance)
-        check_reset_value(instance)
+        check_reset(instance)
         check_sw_hw_access_combination(instance)
         check_onread_exclusivity(instance)
         check_sw_read_access_required(instance)
@@ -50,9 +50,9 @@ module SystemRDL
         #
         # Table 13—Hardware signal properties
         #
-        create_property(instance, :next, [:reference], nil)
-        create_property(instance, :reset, [:bit, :reference], nil)
-        create_property(instance, :resetsignal, [:reference], nil)
+        create_property(instance, :next, [:field_reference, :property_reference], nil)
+        create_property(instance, :reset, [:bit, :field_reference, :property_reference], nil)
+        create_property(instance, :resetsignal, [:field_reference, :property_reference], nil)
 
         #
         # Table 14—Software access properties
@@ -63,8 +63,8 @@ module SystemRDL
         create_property(instance, :woset, [:boolean], false)
         create_property(instance, :woclr, [:boolean], false)
         create_property(instance, :onwrite, [:onwritetype], nil)
-        create_property(instance, :swwe, [:boolean, :reference], false)
-        create_property(instance, :swwel, [:boolean, :reference], false)
+        create_property(instance, :swwe, [:boolean, :field_reference, :property_reference], false)
+        create_property(instance, :swwel, [:boolean, :field_reference, :property_reference], false)
         create_property(instance, :swmod, [:boolean], false)
         create_property(instance, :swacc, [:boolean], false)
         create_property(instance, :singlepulse, [:boolean], false)
@@ -72,16 +72,16 @@ module SystemRDL
         #
         # Table 18—Hardware access properties
         #
-        create_property(instance, :we, [:boolean, :reference], false)
-        create_property(instance, :wel, [:boolean, :reference], false)
+        create_property(instance, :we, [:boolean, :field_reference, :property_reference], false)
+        create_property(instance, :wel, [:boolean, :field_reference, :property_reference], false)
         create_property(instance, :anded, [:boolean], false)
         create_property(instance, :ored, [:boolean], false)
         create_property(instance, :xored, [:boolean], false)
         create_property(instance, :fieldwidth, [:longint], nil)
-        create_property(instance, :hwclr, [:boolean, :reference], false)
-        create_property(instance, :hwset, [:boolean, :reference], false)
-        create_property(instance, :hwenable, [:reference], nil)
-        create_property(instance, :hwmask, [:reference], nil)
+        create_property(instance, :hwclr, [:boolean, :field_reference, :property_reference], false)
+        create_property(instance, :hwset, [:boolean, :field_reference, :property_reference], false)
+        create_property(instance, :hwenable, [:field_reference, :property_reference], nil)
+        create_property(instance, :hwmask, [:field_reference, :property_reference], nil)
 
         #
         # Table 19—Counter field properties
@@ -169,10 +169,19 @@ module SystemRDL
         property.assign(value.to_value)
       end
 
-      def check_reset_value(instance)
+      def check_reset(instance)
         reset_value = instance.property_value(:reset)
         return unless reset_value
 
+        if reset_value.type in :field_reference | :property_reference
+          # TODO
+          # check width of the specified instance or property
+        else
+          check_reset_value(instance, reset_value)
+        end
+      end
+
+      def check_reset_value(instance, reset_value)
         width = instance.msb.value - instance.lsb.value + 1
         range = 0..((2**width) - 1)
         return if range.include?(reset_value.value)
