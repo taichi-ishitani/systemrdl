@@ -73,7 +73,9 @@ module SystemRDL
       end
 
       def check_overlapping_regs(instance)
-        instance.instances.select(&:first_element?).combination(2).each do |(reg_a, reg_b)|
+        # For now, support reg only but not regfile
+        regs = instance.instances.select { |reg| reg.reg? && reg.first_element? }
+        regs.combination(2).each do |(reg_a, reg_b)|
           next unless overlapping_pair?(reg_a, reg_b)
 
           message = 'overlapping regs not allowed'
