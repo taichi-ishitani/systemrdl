@@ -31,6 +31,9 @@ require_relative 'systemrdl/evaluator/addrmap'
 require_relative 'systemrdl/evaluator/root'
 require_relative 'systemrdl/evaluator/processor'
 require_relative 'systemrdl/evaluator'
+require_relative 'systemrdl/model/value'
+require_relative 'systemrdl/model/instance'
+require_relative 'systemrdl/model'
 
 module SystemRDL
 end

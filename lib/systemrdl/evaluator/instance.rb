@@ -25,12 +25,24 @@ module SystemRDL
         Value.new(self, :"#{layer}_reference", nil, token_range)
       end
 
-      def full_name
-        [*parents, self].reject(&:root?).map { |inst| inst_name(inst) }.join('.')
+      def element_name
+        return name.to_s unless array?
+
+        array_info
+          .indices
+          .inject([name]) { |name_elements, index| name_elements << "[#{index}]" }
+          .join
       end
 
-      def parents
-        [*parent&.parents, parent].compact
+      def full_name
+        elements = [self]
+        current = parent
+        until current.root?
+          elements.unshift(current)
+          current = current.parent
+        end
+
+        elements.map(&:element_name).join('.')
       end
 
       def root?
@@ -78,7 +90,7 @@ module SystemRDL
       end
 
       def property_value(name)
-        property(name).value
+        property(name)&.value
       end
 
       def validate
@@ -94,18 +106,6 @@ module SystemRDL
       def finalize
         @definition.finalize(self)
         @instances.each(&:finalize)
-      end
-
-      private
-
-      def inst_name(inst)
-        return inst.name unless inst.array?
-
-        inst
-          .array_info
-          .indices
-          .inject([inst.name]) { |result, size| result << "[#{size}]" }
-          .join
       end
     end
   end
