@@ -18,8 +18,16 @@ module SystemRDL
         result = find_instance(base)
         return result if result
 
-        # TODO
-        # Report error
+        inst_name =
+          if array?
+            array
+              .elements
+              .inject([id.value]) { |elements, select| elements << "[#{select.value}]" }
+              .join
+          else
+            id.value.to_s
+          end
+        raise_evaluation_error "unresolvable instance: #{inst_name}", token_range
       end
 
       private
@@ -93,8 +101,7 @@ module SystemRDL
         result = inst.property(@prop.value)
         return result if result
 
-        # TODO
-        # Report error
+        raise_evaluation_error "undefined property: #{@prop.value}", token_range
       end
     end
   end

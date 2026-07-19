@@ -5,7 +5,7 @@ module SystemRDL
     class Root < ComponentDefinition
       def initialize(elements, token_range)
         super(Value.new(:root, nil, nil, nil), elements, nil, token_range)
-        connect(self, self)
+        connect(nil, nil)
       end
 
       def evaluate(_instance, **optargs)

@@ -18,7 +18,7 @@ module SystemRDL
 
       def connect(parent, component)
         super
-        @component.add_definition(self)
+        @component&.add_definition(self)
         @elements.each { |element| element.connect(self, self) }
         @insts&.connect(self, self)
       end

@@ -37,8 +37,7 @@ module SystemRDL
           component = component.component
         end
 
-        # TODO
-        # report error
+        raise_evaluation_error "undefined component: #{id.value}", token_range
       end
 
       def check_instantiable(instance, component_definition)
