@@ -27,10 +27,13 @@ module SystemRDL
         assert_parses(ast, code, test: :property_assignment)
       end
 
-      def assert_raises_parse_error(code, **optargs)
-        assert_raises(SystemRDL::ParseError) do
+      def assert_raises_parse_error(code, message = nil, **optargs)
+        error = assert_raises(SystemRDL::ParseError) do
           SystemRDL::Parser.parse(code, **optargs)
         end
+        return unless message
+
+        assert_equal(message, error.error_message)
       end
     end
   end

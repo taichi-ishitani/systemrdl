@@ -43,6 +43,10 @@ module SystemRDL
 
       WHITE_SPACES = /[ \t\n\r]+/
 
+      LINE_COMMENT = %r{//.*$}
+      BLOCK_COMMENT = %r{/\*(?:(?!\*/).)*\*/}m
+      UNTERMINATED_BLOCK_COMMENT = %r{/\*(?:(?!\*/).)*}m
+
       KEYWORDS = keyword_patterns
 
       SYMBOLS = symbol_patterns
@@ -93,7 +97,23 @@ module SystemRDL
       end
 
       def skip_blank
-        eos? || scan(WHITE_SPACES)
+        loop do
+          next if scan(WHITE_SPACES)
+          next if scan(LINE_COMMENT)
+          next if scan_block_comment
+
+          break
+        end
+      end
+
+      def scan_block_comment
+        comment = scan(BLOCK_COMMENT)
+        return comment if comment
+
+        if (_, line, column = scan(UNTERMINATED_BLOCK_COMMENT))
+          pos = Position.new(@filename, line, column)
+          raise_parse_error 'unterminated block comment', pos
+        end
       end
 
       def push_eos_tokens
