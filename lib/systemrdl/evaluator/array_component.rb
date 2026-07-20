@@ -2,7 +2,7 @@
 
 module SystemRDL
   module Evaluator
-    ArrayInfo = Data.define(:indices, :sizes, :first, :last) do
+    ArrayInfo = Data.define(:id, :indices, :sizes, :first, :last) do
       def n_elements
         sizes.inject(:*)
       end
@@ -26,10 +26,16 @@ module SystemRDL
           sizes
             .map { |size| size.times.to_a }
             .then { |list| list[0].product(*list[1..]) }
+        id = array_id
         index_list.each.with_index(1) do |indices, i|
-          info = ArrayInfo.new(indices, sizes, i == 1, i == index_list.size)
+          info = ArrayInfo.new(id, indices, sizes, i == 1, i == index_list.size)
           yield(info)
         end
+      end
+
+      def array_id
+        @array_id ||= - 1
+        @array_id += 1
       end
     end
   end

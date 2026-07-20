@@ -87,6 +87,11 @@ module SystemRDL
       end
 
       def create_instance(parent_instance, inst_name, inst_values, array_info, token_range, **optargs)
+        unless unique_instance?(parent_instance, inst_name, array_info)
+          message = "duplicated instance: #{inst_name}"
+          raise_evaluation_error message, token_range
+        end
+
         instance = instance_class.new(self, parent_instance, inst_name, array_info, token_range)
 
         init_properties(instance)
@@ -97,6 +102,20 @@ module SystemRDL
 
         parent_instance.instances << instance if parent_instance
         instance
+      end
+
+      def unique_instance?(parent_instance, inst_name, array_info)
+        return true unless parent_instance
+
+        parent_instance.instances.none? do |inst|
+          if inst.name != inst_name
+            false
+          elsif inst.array? && array_info
+            inst.array_info.id != array_info.id
+          else
+            true
+          end
+        end
       end
 
       def init_properties(instance)
@@ -135,6 +154,11 @@ module SystemRDL
 
       def add_definition(definition)
         id = definition.id.value
+        if @definitions.key?(id)
+          message = "duplicated component: #{id}"
+          raise_evaluation_error message, definition.token_range
+        end
+
         @definitions[id] = definition
       end
     end
