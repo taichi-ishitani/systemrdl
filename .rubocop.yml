@@ -17,8 +17,6 @@ Metrics/MethodLength:
 
 Metrics/AbcSize:
   Max: 40
-  AllowedMethods:
-    - init_propertie
 
 Metrics/CyclomaticComplexity:
   Max: 12

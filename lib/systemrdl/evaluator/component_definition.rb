@@ -119,24 +119,12 @@ module SystemRDL
       end
 
       def init_properties(instance)
-        #
-        # Table 5—Universal component properties
-        #
-        create_property(instance, :name, [:string], instance.name.to_s)
-        create_property(instance, :desc, [:string], '')
-      end
+        prop_defs = BuiltinProperties.properties
+        prop_defs.each do |prop_def|
+          next unless prop_def.target?(instance)
 
-      def create_property(instance, name, types, value)
-        value = create_default_value(types, value) unless value.nil?
-        property = Property.new(instance, name, types, value)
-        instance.properties << property
-      end
-
-      def create_default_value(types, value)
-        case types[0]
-        when :longint then Value.new(value, :bit, 64, nil)
-        when :boolean then Value.new(value, :boolean, 1, nil)
-        else Value.new(value, types[0], nil, nil)
+          prop = prop_def.create(instance)
+          instance.properties << prop
         end
       end
 

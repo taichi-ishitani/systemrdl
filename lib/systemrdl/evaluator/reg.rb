@@ -31,18 +31,6 @@ module SystemRDL
         RegInstance
       end
 
-      def init_properties(instance)
-        super
-
-        #
-        # Table 23—Register properties
-        #
-        create_property(instance, :regwidth, [:longint], 32)
-        create_property(instance, :accesswidth, [:longint], nil)
-        create_property(instance, :errextbus, [:boolean], false)
-        create_property(instance, :shared, [:boolean], false)
-      end
-
       def apply_inst_values(instance, inst_values)
         apply_address_operations(instance, inst_values)
       end

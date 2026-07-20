@@ -35,24 +35,6 @@ module SystemRDL
         AddrMapInstance
       end
 
-      def init_properties(instance)
-        super
-
-        #
-        # Table 26—Address map properties
-        #
-        create_property(instance, :alignment, [:longint], nil)
-        create_property(instance, :sharedextbus, [:boolean], false)
-        create_property(instance, :errextbus, [:boolean], false)
-        create_property(instance, :bigendian, [:boolean], false)
-        create_property(instance, :littleendian, [:boolean], false)
-        create_property(instance, :addressing, [:addressingtype], :regalign)
-        create_property(instance, :rsvdset, [:boolean], false)
-        create_property(instance, :rsvdsetX, [:boolean], false)
-        create_property(instance, :msb0, [:boolean], false)
-        create_property(instance, :lsb0, [:boolean], false)
-      end
-
       def check_alignment(instance)
         check_power_of_2(instance, :alignment, 1)
       end

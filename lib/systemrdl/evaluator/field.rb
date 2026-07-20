@@ -38,69 +38,6 @@ module SystemRDL
         FieldInstance
       end
 
-      def init_properties(instance)
-        super
-
-        #
-        # Table 11—Field access properties
-        #
-        create_property(instance, :hw, [:accesstype], :rw)
-        create_property(instance, :sw, [:accesstype], :rw)
-
-        #
-        # Table 13—Hardware signal properties
-        #
-        create_property(instance, :next, [:field_reference, :property_reference], nil)
-        create_property(instance, :reset, [:bit, :field_reference, :property_reference], nil)
-        create_property(instance, :resetsignal, [:field_reference, :property_reference], nil)
-
-        #
-        # Table 14—Software access properties
-        #
-        create_property(instance, :rclr, [:boolean], false)
-        create_property(instance, :rset, [:boolean], false)
-        create_property(instance, :onread, [:onreadtype], nil)
-        create_property(instance, :woset, [:boolean], false)
-        create_property(instance, :woclr, [:boolean], false)
-        create_property(instance, :onwrite, [:onwritetype], nil)
-        create_property(instance, :swwe, [:boolean, :field_reference, :property_reference], false)
-        create_property(instance, :swwel, [:boolean, :field_reference, :property_reference], false)
-        create_property(instance, :swmod, [:boolean], false)
-        create_property(instance, :swacc, [:boolean], false)
-        create_property(instance, :singlepulse, [:boolean], false)
-
-        #
-        # Table 18—Hardware access properties
-        #
-        create_property(instance, :we, [:boolean, :field_reference, :property_reference], false)
-        create_property(instance, :wel, [:boolean, :field_reference, :property_reference], false)
-        create_property(instance, :anded, [:boolean], false)
-        create_property(instance, :ored, [:boolean], false)
-        create_property(instance, :xored, [:boolean], false)
-        create_property(instance, :fieldwidth, [:longint], nil)
-        create_property(instance, :hwclr, [:boolean, :field_reference, :property_reference], false)
-        create_property(instance, :hwset, [:boolean, :field_reference, :property_reference], false)
-        create_property(instance, :hwenable, [:field_reference, :property_reference], nil)
-        create_property(instance, :hwmask, [:field_reference, :property_reference], nil)
-
-        #
-        # Table 19—Counter field properties
-        #
-        # TODO
-
-        #
-        # Table 21—Field access interrupt properties
-        #
-        # TODO
-
-        #
-        # Table 22—Miscellaneous properties
-        #
-        # create_property(:encode) TODO
-        create_property(instance, :precedence, [:precedencetype], :sw)
-        create_property(instance, :paritycheck, [:boolean], false)
-      end
-
       def apply_inst_values(instance, inst_values)
         assign_bit_pos(instance, inst_values)
         apply_reset_value(instance, inst_values)

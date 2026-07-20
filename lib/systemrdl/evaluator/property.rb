@@ -3,10 +3,12 @@
 module SystemRDL
   module Evaluator
     class Property
-      def initialize(instance, name, types, value)
+      def initialize(instance, name, types, ref_target, dynamic_assign, value)
         @instance = instance
         @name = name
         @types = types
+        @ref_target = ref_target
+        @dynamic_assign = dynamic_assign
         @value = value
       end
 
@@ -27,115 +29,52 @@ module SystemRDL
       end
     end
 
-    module PropertyAssignmentCommon
-      def initialize(prop_ref, value, token_range)
-        super(token_range)
-        @prop_ref = prop_ref
-        @value = value
+    class PropertyDefinition
+      def initialize(name)
+        @name = name
+        yield(self)
       end
 
-      def evaluate(instance, **optargs)
-        property = @prop_ref.find(instance, **optargs)
-        value =
-          if @value
-            @value.evaluate(instance, **optargs)
-          else
-            # true value is implicitly applied
-            # when the assignment value is omitted.
-            Value.new(true, :boolean, 1, @token_range)
-          end
-        check_value(property, value)
+      attr_reader :name
+      attr_accessor :targets
+      attr_accessor :types
+      attr_accessor :ref_target
+      attr_accessor :dynamic_assign
+      attr_accessor :default_value
 
-        if match_integral_type?(property, value)
-          assign_integral_value(property, value)
-        else
-          property.assign(value)
-        end
+      def target?(instance)
+        return false if instance.root?
+
+        targets.nil? || targets.include?(instance.layer)
+      end
+
+      def create(instance)
+        value = eval_value(instance)
+        Property.new(instance, name, types, ref_target, dynamic_assign, value)
       end
 
       private
 
-      def check_value(property, value)
-        check_type_compatibility(property, value)
-      end
-
-      def check_type_compatibility(property, value)
-        return if property.types.include?(value.type) || match_integral_type?(property, value)
-
-        message =
-          "#{value.type} type not supported by #{property.name} property: " \
-          "expected #{type_label(property)}"
-        raise_evaluation_error message, @token_range
-      end
-
-      def match_integral_type?(property, value)
-        integral_types = [:bit, :longint, :boolean]
-        return false unless integral_types.include?(value.type)
-
-        (integral_types & property.types).any?
-      end
-
-      def type_label(property)
-        types = property.types
-        if types.size == 1
-          types[0]
-        else
-          [types[..-2].join(', '), types[-1]].join(' or ')
-        end
-      end
-
-      def assign_integral_value(property, value)
+      def eval_value(instance)
         value =
-          if property.types.include?(:bit)
-            to_bit(value)
-          elsif property.types.include?(:longint)
-            to_longint(value)
+          if default_value.is_a?(Proc)
+            default_value.call(instance)
           else
-            to_boolean(value)
+            default_value
           end
-        property.assign(value)
+
+        return if value.nil?
+
+        create_value(value)
       end
 
-      def to_bit(value)
-        return value if value.type == :bit
-
-        if value.type == :longint
-          Value.new(value.value, :bit, 64, value.token_range)
-        elsif value.value
-          Value.new(1, :bit, 1, value.token_range)
-        else
-          Value.new(0, :bit, 1, value.token_range)
+      def create_value(value)
+        case types[0]
+        when :longint then Value.new(value, :bit, 64, nil)
+        when :boolean then Value.new(value, :boolean, 1, nil)
+        else Value.new(value, types[0], nil, nil)
         end
       end
-
-      def to_longint(value)
-        return value if value.type == :longint
-
-        if value.type == :bit
-          v = value.value & 0xFFFF_FFFF_FFFF_FFFF
-          Value.new(v, :longint, 64, value.token_range)
-        elsif value.value
-          Value.new(1, :longint, 64, value.token_range)
-        else
-          Value.new(0, :longint, 64, value.token_range)
-        end
-      end
-
-      def to_boolean(value)
-        return value if value.type == :boolean
-
-        Value.new(value.value != 0, :boolean, 1, value.token_range)
-      end
-    end
-
-    class PropertyAssignment
-      include Common
-      include PropertyAssignmentCommon
-    end
-
-    class PostPropertyAssignment
-      include Common
-      include PropertyAssignmentCommon
     end
   end
 end
