@@ -56,6 +56,9 @@ module SystemRDL
       private
 
       def eval_value(instance)
+        value = instance.definition.find_default_property(name)
+        return value if value
+
         value =
           if default_value.is_a?(Proc)
             default_value.call(instance)

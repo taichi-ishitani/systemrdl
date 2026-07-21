@@ -6,6 +6,10 @@ module SystemRDL
       class << self
         attr_reader :properties
 
+        def find(name)
+          properties.find { |prop| prop.name == name }
+        end
+
         private
 
         def def_property(name, &)

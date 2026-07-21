@@ -84,6 +84,11 @@ module SystemRDL
         PropRef.new(instance_ref, prop, node.token_range)
       end
 
+      def on_default_prop_assignment(node)
+        prop_name, value = process_all(node.children)
+        DefaultPropertyAssignment.new(prop_name, value, node.token_range)
+      end
+
       def on_prop_assignment(node)
         id, value = process_all(node.children)
         prop_ref = PropRef.new(nil, id, node.children[0].token_range)

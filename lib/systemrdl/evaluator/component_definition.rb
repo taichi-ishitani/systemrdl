@@ -11,6 +11,7 @@ module SystemRDL
         @definitions = {}
         @elements = elements
         @insts = insts
+        @default_properties = {}
       end
 
       attr_reader :id
@@ -44,6 +45,26 @@ module SystemRDL
       end
 
       def finalize(_instance)
+      end
+
+      def assign_default_property(name, value, token_range)
+        if @default_properties.key?(name)
+          message = "#{name} already assigned in this scope"
+          raise_evaluation_error message, token_range
+        end
+
+        @default_properties[name] = value
+      end
+
+      def find_default_property(name)
+        current = component
+        while current
+          if (prop = current.default_properties[name])
+            return prop
+          end
+
+          current = current.component
+        end
       end
 
       private
@@ -129,6 +150,7 @@ module SystemRDL
       end
 
       def eval_body(instance, **optargs)
+        @default_properties.clear
         @elements.each { |element| element.evaluate(instance, **optargs) }
       end
 
@@ -149,6 +171,8 @@ module SystemRDL
 
         @definitions[id] = definition
       end
+
+      attr_reader :default_properties
     end
   end
 end

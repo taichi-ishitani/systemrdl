@@ -3,14 +3,9 @@
 module SystemRDL
   module Evaluator
     module PropertyAssignmentCommon
-      def initialize(prop_ref, value, token_range)
-        super(token_range)
-        @prop_ref = prop_ref
-        @value = value
-      end
+      private
 
-      def evaluate(instance, **optargs)
-        property = @prop_ref.find(instance, **optargs)
+      def eval_value(instance, property, **optargs)
         value =
           if @value
             @value.evaluate(instance, **optargs)
@@ -22,13 +17,11 @@ module SystemRDL
         check_value(property, value)
 
         if match_integral_type?(property, value)
-          assign_integral_value(property, value)
+          cast_integral_value(property, value)
         else
-          property.assign(value)
+          value
         end
       end
-
-      private
 
       def check_value(property, value)
         check_type_compatibility(property, value)
@@ -43,13 +36,6 @@ module SystemRDL
         raise_evaluation_error message, @token_range
       end
 
-      def match_integral_type?(property, value)
-        integral_types = [:bit, :longint, :boolean]
-        return false unless integral_types.include?(value.type)
-
-        (integral_types & property.types).any?
-      end
-
       def type_label(property)
         types = property.types
         if types.size == 1
@@ -59,16 +45,21 @@ module SystemRDL
         end
       end
 
-      def assign_integral_value(property, value)
-        value =
-          if property.types.include?(:bit)
-            to_bit(value)
-          elsif property.types.include?(:longint)
-            to_longint(value)
-          else
-            to_boolean(value)
-          end
-        property.assign(value)
+      def match_integral_type?(property, value)
+        integral_types = [:bit, :longint, :boolean]
+        return false unless integral_types.include?(value.type)
+
+        (integral_types & property.types).any?
+      end
+
+      def cast_integral_value(property, value)
+        if property.types.include?(:bit)
+          to_bit(value)
+        elsif property.types.include?(:longint)
+          to_longint(value)
+        else
+          to_boolean(value)
+        end
       end
 
       def to_bit(value)
@@ -106,11 +97,53 @@ module SystemRDL
     class PropertyAssignment
       include Common
       include PropertyAssignmentCommon
+
+      def initialize(prop_ref, value, token_range)
+        super(token_range)
+        @prop_ref = prop_ref
+        @value = value
+      end
+
+      def evaluate(instance, **optargs)
+        property = @prop_ref.find(instance, **optargs)
+        value = eval_value(instance, property, **optargs)
+        property.assign(value)
+      end
     end
 
-    class PostPropertyAssignment
+    class PostPropertyAssignment < PropertyAssignment
+    end
+
+    class DefaultPropertyAssignment
       include Common
       include PropertyAssignmentCommon
+
+      def initialize(prop_name, value, token_range)
+        super(token_range)
+        @prop_name = prop_name
+        @value = value
+      end
+
+      def evaluate(instance, **optargs)
+        prop_def = find_prop_def
+        value = eval_value(instance, prop_def, **optargs)
+        assign_default_property(instance, value)
+      end
+
+      private
+
+      def find_prop_def
+        prop_def = BuiltinProperties.find(@prop_name.value)
+        return prop_def if prop_def
+
+        message = "undefined property: #{@prop_name.value}"
+        raise_evaluation_error message, token_range
+      end
+
+      def assign_default_property(instance, value)
+        definition = instance.definition
+        definition.assign_default_property(@prop_name.value, value, token_range)
+      end
     end
   end
 end
