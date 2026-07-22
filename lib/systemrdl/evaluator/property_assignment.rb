@@ -3,6 +3,17 @@
 module SystemRDL
   module Evaluator
     module PropertyAssignmentCommon
+      def initialize(value, token_range)
+        super(token_range)
+        @value = value
+      end
+
+      def evaluate(instance, **optargs)
+        property = find_property(instance, **optargs)
+        value = eval_value(instance, property, **optargs)
+        assign_property(instance, property, value)
+      end
+
       private
 
       def eval_value(instance, property, **optargs)
@@ -99,19 +110,45 @@ module SystemRDL
       include PropertyAssignmentCommon
 
       def initialize(prop_ref, value, token_range)
-        super(token_range)
+        super(value, token_range)
         @prop_ref = prop_ref
-        @value = value
       end
 
-      def evaluate(instance, **optargs)
+      private
+
+      def find_property(instance, **optargs)
         property = @prop_ref.find(instance, **optargs)
-        value = eval_value(instance, property, **optargs)
+        if property&.assigned?
+          message = "#{property.name} already assigned in this scope"
+          raise_evaluation_error message, token_range
+        end
+
+        property
+      end
+
+      def assign_property(_instance, property, value)
         property.assign(value)
       end
     end
 
-    class PostPropertyAssignment < PropertyAssignment
+    class PostPropertyAssignment
+      include Common
+      include PropertyAssignmentCommon
+
+      def initialize(prop_ref, value, token_range)
+        super(value, token_range)
+        @prop_ref = prop_ref
+      end
+
+      private
+
+      def find_property(instance, **optargs)
+        @prop_ref.find(instance, **optargs)
+      end
+
+      def assign_property(_instance, property, value)
+        property.assign(value)
+      end
     end
 
     class DefaultPropertyAssignment
@@ -119,20 +156,13 @@ module SystemRDL
       include PropertyAssignmentCommon
 
       def initialize(prop_name, value, token_range)
-        super(token_range)
+        super(value, token_range)
         @prop_name = prop_name
-        @value = value
-      end
-
-      def evaluate(instance, **optargs)
-        prop_def = find_prop_def
-        value = eval_value(instance, prop_def, **optargs)
-        assign_default_property(instance, value)
       end
 
       private
 
-      def find_prop_def
+      def find_property(_instance, **_optargs)
         prop_def = BuiltinProperties.find(@prop_name.value)
         return prop_def if prop_def
 
@@ -140,7 +170,7 @@ module SystemRDL
         raise_evaluation_error message, token_range
       end
 
-      def assign_default_property(instance, value)
+      def assign_property(instance, _property, value)
         definition = instance.definition
         definition.assign_default_property(@prop_name.value, value, token_range)
       end

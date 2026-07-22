@@ -5,6 +5,23 @@ require_relative 'test_helper'
 module SystemRDL
   module Evaluator
     class TestProperty < TestCase
+      def test_duplicated_property_assignment_error
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field {
+                  sw = r;
+                  sw = rw;
+                  hw = r;
+                } a;
+              } a;
+            };
+          RDL
+          'sw already assigned in this scope'
+        )
+      end
+
       def test_default_property_applied
         regs = evaluate(<<~'RDL').instances[0].instances
           addrmap my_map {
@@ -156,6 +173,34 @@ module SystemRDL
           RDL
           'sw already assigned in this scope'
         )
+      end
+
+      def test_dynamic_assignment_override_in_same_scope
+        field = evaluate(<<~'RDL').instances[0].instances[0].instances[0]
+          addrmap my_map {
+            reg {
+              field { sw = rw; hw = r; } a;
+              a->name = "first";
+              a->name = "second";
+            } a;
+          };
+        RDL
+
+        assert_property_value(field, :name, 'second')
+      end
+
+      def test_dynamic_assignment_override_between_scopes
+        field = evaluate(<<~'RDL').instances[0].instances[0].instances[0]
+          addrmap my_map {
+            reg {
+              field { sw = rw; hw = r; } a;
+              a->name = "inner";
+            } a;
+            a.a->name = "outer";
+          };
+        RDL
+
+        assert_property_value(field, :name, 'outer')
       end
     end
   end

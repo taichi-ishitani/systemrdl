@@ -175,13 +175,31 @@ module SystemRDL
 
       def test_assigning_string_value_to_unsupported_property_is_rejected
         template = proc do |prop_name|
-          <<~RDL
-            addrmap some_reg {
-              reg {
-                field { sw = r; hw = r; #{prop_name} = "foo"; } a;
-              } my_reg;
-            };
-          RDL
+          if prop_name == :sw
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { hw = r; #{prop_name} = "foo"; } a;
+                } my_reg;
+              };
+            RDL
+          elsif prop_name == :hw
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { sw = r; #{prop_name} = "foo"; } a;
+                } my_reg;
+              };
+            RDL
+          else
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { sw = r; hw = r; #{prop_name} = "foo"; } a;
+                } my_reg;
+              };
+            RDL
+          end
         end
 
         [
@@ -369,13 +387,31 @@ module SystemRDL
       def test_assigning_onreadtype_value_to_unsupported_property_is_rejected
         template = proc do |prop_name|
           value = [:rclr, :rset, :ruser].sample
-          <<~RDL
-            addrmap some_reg {
-              reg {
-                field { sw = r; hw = r; #{prop_name} = #{value}; } a;
-              } my_reg;
-            };
-          RDL
+          if prop_name == :sw
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { hw = r; #{prop_name} = #{value}; } a;
+                } my_reg;
+              };
+            RDL
+          elsif prop_name == :hw
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { sw = r; #{prop_name} = #{value}; } a;
+                } my_reg;
+              };
+            RDL
+          else
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { sw = r; hw = r; #{prop_name} = #{value}; } a;
+                } my_reg;
+              };
+            RDL
+          end
         end
 
         [:name, :desc].each do |prop_name|
@@ -461,13 +497,31 @@ module SystemRDL
       def test_assigning_onwritetype_value_to_unsupported_property_is_rejected
         template = proc do |prop_name|
           value = [:woset, :woclr, :wot, :wzs, :wzc, :wzt, :wclr, :wset, :wuser].sample
-          <<~RDL
-            addrmap some_reg {
-              reg {
-                field { sw = w; hw = r; #{prop_name} = #{value}; } a;
-              } my_reg;
-            };
-          RDL
+          if prop_name == :sw
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { hw = r; #{prop_name} = #{value}; } a;
+                } my_reg;
+              };
+            RDL
+          elsif prop_name == :hw
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { sw = w; #{prop_name} = #{value}; } a;
+                } my_reg;
+              };
+            RDL
+          else
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { sw = w; hw = r; #{prop_name} = #{value}; } a;
+                } my_reg;
+              };
+            RDL
+          end
         end
 
         [:name, :desc].each do |prop_name|
@@ -553,13 +607,31 @@ module SystemRDL
       def test_assigning_precedencetype_value_to_unsupported_property_is_rejected
         template = proc do |prop_name|
           value = [:hw, :sw].sample
-          <<~RDL
-            addrmap some_reg {
-              reg {
-                field { sw = r; hw = r; #{prop_name} = #{value}; } a;
-              } my_reg;
-            };
-          RDL
+          if prop_name == :sw
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { hw = r; #{prop_name} = #{value}; } a;
+                } my_reg;
+              };
+            RDL
+          elsif prop_name == :hw
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { sw = r; #{prop_name} = #{value}; } a;
+                } my_reg;
+              };
+            RDL
+          else
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { sw = r; hw = r; #{prop_name} = #{value}; } a;
+                } my_reg;
+              };
+            RDL
+          end
         end
 
         [:name, :desc].each do |prop_name|
@@ -632,13 +704,31 @@ module SystemRDL
       def test_assigning_addressingtype_value_to_unsupported_property_is_rejected
         template = proc do |prop_name|
           value = [:compact, :regalign, :fullalign].sample
-          <<~RDL
-            addrmap some_reg {
-              reg {
-                field { sw = r; hw = r; #{prop_name} = #{value}; } a;
-              } my_reg;
-            };
-          RDL
+          if prop_name == :sw
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { hw = r; #{prop_name} = #{value}; } a;
+                } my_reg;
+              };
+            RDL
+          elsif prop_name == :hw
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { sw = r; #{prop_name} = #{value}; } a;
+                } my_reg;
+              };
+            RDL
+          else
+            <<~RDL
+              addrmap some_reg {
+                reg {
+                  field { sw = r; hw = r; #{prop_name} = #{value}; } a;
+                } my_reg;
+              };
+            RDL
+          end
         end
 
         [:name, :desc].each do |prop_name|

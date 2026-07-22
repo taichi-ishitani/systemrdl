@@ -26,6 +26,11 @@ module SystemRDL
 
       def assign(value)
         @value = value
+        @assigned = true
+      end
+
+      def assigned?
+        @assigned || false
       end
     end
 
