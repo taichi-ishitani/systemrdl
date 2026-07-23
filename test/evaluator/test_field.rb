@@ -240,20 +240,6 @@ module SystemRDL
             RDL
             "invalid sw/hw access combination: sw = #{sw} hw = #{hw}"
           )
-
-          next if sw == :na
-
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  field { sw = #{sw}; hw = rw; we; } a;
-                  a->hw = #{hw};
-                } my_reg;
-              };
-            RDL
-            "invalid sw/hw access combination: sw = #{sw} hw = #{hw}"
-          )
         end
       end
 
@@ -1000,18 +986,6 @@ module SystemRDL
                 reg {
                   field { sw = r; hw = #{hw}; } a;
                   a->sw = #{sw};
-                } my_reg;
-              };
-            RDL
-            "hw write enable required: sw = #{sw} hw = #{hw}"
-          )
-
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  field { sw = #{sw}; hw = r; } a;
-                  a->hw = #{hw};
                 } my_reg;
               };
             RDL

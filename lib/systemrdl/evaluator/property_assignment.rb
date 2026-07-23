@@ -143,7 +143,13 @@ module SystemRDL
       private
 
       def find_property(instance, **optargs)
-        @prop_ref.find(instance, **optargs)
+        property = @prop_ref.find(instance, **optargs)
+        if property && !property.dynamic_assign?
+          message = "dynamic assignment to #{property.name} property not allowed"
+          raise_evaluation_error message, token_range
+        end
+
+        property
       end
 
       def assign_property(_instance, property, value)

@@ -342,19 +342,8 @@ module SystemRDL
           )
         end
 
-        [:alignment].each do |prop_name|
-          assert_raises_evaluation_error(
-            template[prop_name],
-            "property_reference type not supported by #{prop_name} property: expected longint"
-          )
-        end
-
-        [:sharedextbus, :errextbus].each do |prop_name|
-          assert_raises_evaluation_error(
-            template[prop_name],
-            "property_reference type not supported by #{prop_name} property: expected boolean"
-          )
-        end
+        # Assigning property reference to alignment, sharedextbus and errextbus does not occur
+        # because dynamic assignment to these properties is not allowed.
       end
 
       def test_assigning_container_reference_value_to_not_supported_property_is_rejected
@@ -431,19 +420,49 @@ module SystemRDL
             )
           end
 
-          [:alignment].each do |prop_name|
-            assert_raises_evaluation_error(
-              template[layer, prop_name],
-              "#{layer}_reference type not supported by #{prop_name} property: expected longint"
-            )
-          end
+          # Assigning container reference to alignment, sharedextbus and errextbus does not occur
+          # because dynamic assignment to these properties is not allowed.
+        end
+      end
 
-          [:sharedextbus, :errextbus].each do |prop_name|
-            assert_raises_evaluation_error(
-              template[layer, prop_name],
-              "#{layer}_reference type not supported by #{prop_name} property: expected boolean"
-            )
-          end
+      def test_dynamic_assignment_to_supported_property_is_allowed
+        { name: 'foo', desc: 'bar' }.each do |prop_name, prop_value|
+          value =
+            if prop_value.is_a?(::String)
+              "\"#{prop_value}\""
+            else
+              prop_value
+            end
+          regfile = evaluate(<<~RDL).instances[0].instances[0]
+            addrmap my_map {
+              regfile {
+                reg {
+                  field { sw = rw; hw = r; } a;
+                } a;
+              } a;
+              a->#{prop_name} = #{value};
+            };
+          RDL
+
+          assert_property_value(regfile, prop_name, prop_value)
+        end
+      end
+
+      def test_dynamic_assignment_to_unsupported_property_is_rejected
+        { alignment: 4, sharedextbus: true, errextbus: true }.each do |prop_name, prop_value|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                regfile {
+                  reg {
+                    field { sw = rw; hw = r; } a;
+                  } a;
+                } a;
+                a->#{prop_name} = #{prop_value};
+              };
+            RDL
+            "dynamic assignment to #{prop_name} property not allowed"
+          )
         end
       end
     end

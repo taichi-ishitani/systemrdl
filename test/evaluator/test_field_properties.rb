@@ -859,7 +859,7 @@ module SystemRDL
 
         [
           :rclr, :rset, :woset, :woclr, :swmod, :swacc, :singlepulse,
-          :anded, :ored, :xored, :paritycheck
+          :anded, :ored, :xored
         ].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
@@ -867,14 +867,7 @@ module SystemRDL
           )
         end
 
-        [:fieldwidth].each do |prop_name|
-          assert_raises_evaluation_error(
-            template[prop_name],
-            "field_reference type not supported by #{prop_name} property: expected longint"
-          )
-        end
-
-        [:sw, :hw].each do |prop_name|
+        [:sw].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
             "field_reference type not supported by #{prop_name} property: expected accesstype"
@@ -901,6 +894,9 @@ module SystemRDL
             "field_reference type not supported by #{prop_name} property: expected precedencetype"
           )
         end
+
+        # Assigning container reference to paritycheck, fieldwidth and hw does not occur
+        # because dynamic assignment to these properties is not allowed.
       end
 
       def test_assigning_property_reference_value_to_not_supported_property_is_rejected
@@ -925,7 +921,7 @@ module SystemRDL
 
         [
           :rclr, :rset, :woset, :woclr, :swmod, :swacc, :singlepulse,
-          :anded, :ored, :xored, :paritycheck
+          :anded, :ored, :xored
         ].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
@@ -933,14 +929,7 @@ module SystemRDL
           )
         end
 
-        [:fieldwidth].each do |prop_name|
-          assert_raises_evaluation_error(
-            template[prop_name],
-            "property_reference type not supported by #{prop_name} property: expected longint"
-          )
-        end
-
-        [:sw, :hw].each do |prop_name|
+        [:sw].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
             "property_reference type not supported by #{prop_name} property: expected accesstype"
@@ -967,6 +956,9 @@ module SystemRDL
             "property_reference type not supported by #{prop_name} property: expected precedencetype"
           )
         end
+
+        # Assigning container reference to paritycheck, fieldwidth and hw does not occur
+        # because dynamic assignment to these properties is not allowed.
       end
 
       def test_assigning_container_reference_value_to_not_supported_property_is_rejected
@@ -1016,7 +1008,7 @@ module SystemRDL
 
           [
             :rclr, :rset, :woset, :woclr, :swmod, :swacc, :singlepulse,
-            :anded, :ored, :xored, :paritycheck
+            :anded, :ored, :xored
           ].each do |prop_name|
             assert_raises_evaluation_error(
               template[layer, prop_name],
@@ -1045,14 +1037,7 @@ module SystemRDL
             )
           end
 
-          [:fieldwidth].each do |prop_name|
-            assert_raises_evaluation_error(
-              template[layer, prop_name],
-              "#{layer}_reference type not supported by #{prop_name} property: expected longint"
-            )
-          end
-
-          [:sw, :hw].each do |prop_name|
+          [:sw].each do |prop_name|
             assert_raises_evaluation_error(
               template[layer, prop_name],
               "#{layer}_reference type not supported by #{prop_name} property: expected accesstype"
@@ -1079,6 +1064,65 @@ module SystemRDL
               "#{layer}_reference type not supported by #{prop_name} property: expected precedencetype"
             )
           end
+
+          # Assigning container reference to paritycheck, fieldwidth and hw does not occur
+          # because dynamic assignment to these properties is not allowed.
+        end
+      end
+
+      def test_dynamic_assignment_to_supported_property_is_allowed
+        {
+          name: 'foo', desc: 'bar', sw: :r, next: :a, reset: 0x1,
+          resetsignal: :a, rclr: true, rset: true, onread: :rclr,
+          woset: true, woclr: true, onwrite: :woset, swwe: true,
+          swwel: true, swmod: true, swacc: true, singlepulse: true,
+          we: true, wel: true, anded: true, ored: true, xored: true,
+          hwclr: true, hwset: true, hwenable: :a, hwmask: :a,
+          precedence: :hw
+        }.each do |prop_name, prop_value|
+          value =
+            if prop_value.is_a?(::String)
+              "\"#{prop_value}\""
+            else
+              prop_value
+            end
+          sw, hw =
+            if prop_name in :we | :wel
+              [:r, :rw]
+            else
+              [:rw, :r]
+            end
+          field = evaluate(<<~RDL).instances[0].instances[0].instances[1]
+            addrmap my_map {
+              reg {
+              field { sw = rw; hw = r; } a;
+              field { sw = #{sw}; hw = #{hw}; } b;
+                b->#{prop_name} = #{value};
+              } a;
+            };
+          RDL
+
+          if prop_name in :next | :resetsignal | :hwenable | :hwmask
+            assert_property_reference_value(field, prop_name, 'my_map.a.a')
+          else
+            assert_property_value(field, prop_name, prop_value)
+          end
+        end
+      end
+
+      def test_dynamic_assignment_to_unsupported_property_is_rejected
+        { hw: :na, fieldwidth: 8, paritycheck: true }.each do |prop_name, prop_value|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = rw; hw = r; } a;
+                  a->#{prop_name} = #{prop_value};
+                } a;
+              };
+            RDL
+            "dynamic assignment to #{prop_name} property not allowed"
+          )
         end
       end
     end

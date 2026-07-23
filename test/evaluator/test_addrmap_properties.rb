@@ -497,6 +497,52 @@ module SystemRDL
           end
         end
       end
+
+      def test_dynamic_assignment_to_supported_property_is_allowed
+        {
+          name: 'foo', desc: 'bar', bigendian: true, littleendian: true
+        }.each do |prop_name, prop_value|
+          value =
+            if prop_value.is_a?(::String)
+              "\"#{prop_value}\""
+            else
+              prop_value
+            end
+          addrmap = evaluate(<<~RDL).instances[0].instances[0]
+            addrmap my_map {
+              addrmap {
+                reg {
+                  field { sw = rw; hw = r; } a;
+                } a;
+              } a;
+              a->#{prop_name} = #{value};
+            };
+          RDL
+
+          assert_property_value(addrmap, prop_name, prop_value)
+        end
+      end
+
+      def test_dynamic_assignment_to_unsupported_property_is_rejected
+        {
+          alignment: 4, sharedextbus: true, errextbus: true, addressing: :compact,
+          rsvdset: true, rsvdsetX: true, msb0: true, lsb0: true
+        }.each do |prop_name, prop_value|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                addrmap {
+                  reg {
+                    field { sw = rw; hw = r; } a;
+                  } a;
+                } a;
+                a->#{prop_name} = #{prop_value};
+              };
+            RDL
+            "dynamic assignment to #{prop_name} property not allowed"
+          )
+        end
+      end
     end
   end
 end
