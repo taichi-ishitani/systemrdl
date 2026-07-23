@@ -24,6 +24,11 @@ module SystemRDL
         [@instance.full_name, name].join('.')
       end
 
+      def dynamic_assign?
+        # todo
+        @dynamic_assign.nil? || @dynamic_assign
+      end
+
       def assign(value)
         @value = value
         @assigned = true

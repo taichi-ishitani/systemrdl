@@ -29,12 +29,14 @@ module SystemRDL
       def_property :addressing do |prop|
         prop.targets = [:addrmap]
         prop.types = [:addressingtype]
+        prop.dynamic_assign = false
         prop.default_value = :regalign
       end
 
       def_property :alignment do |prop|
         prop.targets = [:addrmap, :regfile]
         prop.types = [:longint]
+        prop.dynamic_assign = false
       end
 
       def_property :anded do |prop|
@@ -46,17 +48,20 @@ module SystemRDL
       def_property :bigendian do |prop|
         prop.targets = [:addrmap]
         prop.types = [:boolean]
+        prop.dynamic_assign = true
         prop.default_value = false
       end
 
       def_property :desc do |prop|
         prop.types = [:string]
+        prop.dynamic_assign = true
         prop.default_value = proc { '' }
       end
 
       def_property :errextbus do |prop|
         prop.targets = [:addrmap, :regfile, :reg]
         prop.types = [:boolean]
+        prop.dynamic_assign = false
         prop.default_value = false
       end
 
@@ -96,23 +101,27 @@ module SystemRDL
       def_property :littleendian do |prop|
         prop.targets = [:addrmap]
         prop.types = [:boolean]
+        prop.dynamic_assign = true
         prop.default_value = false
       end
 
       def_property :lsb0 do |prop|
         prop.targets = [:addrmap]
         prop.types = [:boolean]
+        prop.dynamic_assign = false
         prop.default_value = false
       end
 
       def_property :msb0 do |prop|
         prop.targets = [:addrmap]
         prop.types = [:boolean]
+        prop.dynamic_assign = false
         prop.default_value = false
       end
 
       def_property :name do |prop|
         prop.types = [:string]
+        prop.dynamic_assign = true
         prop.default_value = proc { |inst| inst.name.to_s }
       end
 
@@ -180,12 +189,14 @@ module SystemRDL
       def_property :rsvdset do |prop|
         prop.targets = [:addrmap]
         prop.types = [:boolean]
+        prop.dynamic_assign = false
         prop.default_value = false
       end
 
       def_property :rsvdsetX do |prop|
         prop.targets = [:addrmap]
         prop.types = [:boolean]
+        prop.dynamic_assign = false
         prop.default_value = false
       end
 
@@ -198,6 +209,7 @@ module SystemRDL
       def_property :sharedextbus do |prop|
         prop.targets = [:addrmap, :regfile]
         prop.types = [:boolean]
+        prop.dynamic_assign = false
         prop.default_value = false
       end
 

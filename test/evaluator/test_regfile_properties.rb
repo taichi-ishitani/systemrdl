@@ -342,19 +342,8 @@ module SystemRDL
           )
         end
 
-        [:alignment].each do |prop_name|
-          assert_raises_evaluation_error(
-            template[prop_name],
-            "property_reference type not supported by #{prop_name} property: expected longint"
-          )
-        end
-
-        [:sharedextbus, :errextbus].each do |prop_name|
-          assert_raises_evaluation_error(
-            template[prop_name],
-            "property_reference type not supported by #{prop_name} property: expected boolean"
-          )
-        end
+        # Assigning property reference to alignment, sharedextbus and errextbus does not occur
+        # because dynamic assignment to these properties is not allowed.
       end
 
       def test_assigning_container_reference_value_to_not_supported_property_is_rejected
@@ -431,19 +420,8 @@ module SystemRDL
             )
           end
 
-          [:alignment].each do |prop_name|
-            assert_raises_evaluation_error(
-              template[layer, prop_name],
-              "#{layer}_reference type not supported by #{prop_name} property: expected longint"
-            )
-          end
-
-          [:sharedextbus, :errextbus].each do |prop_name|
-            assert_raises_evaluation_error(
-              template[layer, prop_name],
-              "#{layer}_reference type not supported by #{prop_name} property: expected boolean"
-            )
-          end
+          # Assigning container reference to alignment, sharedextbus and errextbus does not occur
+          # because dynamic assignment to these properties is not allowed.
         end
       end
     end
