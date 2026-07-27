@@ -28,6 +28,14 @@ module SystemRDL
         @dynamic_assign
       end
 
+      def ref_target?
+        if @ref_target.is_a?(Proc)
+          instance_exec(&@ref_target)
+        else
+          @ref_target
+        end
+      end
+
       def assign(value)
         @value = value
         @assigned = true
@@ -35,6 +43,14 @@ module SystemRDL
 
       def assigned?
         @assigned || false
+      end
+
+      private
+
+      def set?
+        return false if value.nil?
+
+        value.value != false
       end
     end
 

@@ -1125,6 +1125,134 @@ module SystemRDL
           )
         end
       end
+
+      def test_reference_to_supported_property_is_allowed
+        [:anded, :ored, :xored, :swmod, :swacc].each do |prop_name|
+          field = evaluate(<<~RDL).instances[0].instances[0].instances[1]
+            addrmap my_map {
+              reg {
+                field { sw = rw; hw = r; } a;
+                field { sw = rw; hw = r; } b;
+                b->swwe = a->#{prop_name};
+              } a;
+            };
+          RDL
+
+          assert_property_reference_value(field, :swwe, "my_map.a.a.#{prop_name}")
+        end
+      end
+
+      def test_reference_to_unsupported_property_is_rejected
+        [
+          :name, :desc, :hw, :sw, :rclr, :rset, :onread, :woset, :woclr,
+          :onwrite, :singlepulse, :fieldwidth, :precedence, :paritycheck
+        ].each do |prop_name|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = rw; hw = r; } a;
+                  field { sw = rw; hw = r; } b;
+                  b->swwe = a->#{prop_name};
+                } a;
+              };
+            RDL
+            "reference to #{prop_name} property not allowed"
+          )
+        end
+      end
+
+      def test_reference_to_property_without_available_net_is_rejected
+        [
+          :next, :reset, :resetsignal, :swwe, :swwel, :we, :wel,
+          :hwclr, :hwset, :hwenable, :hwmask
+        ].each do |prop_name|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = rw; hw = r; } a;
+                  field { sw = rw; hw = r; } b;
+                  b->swwe = a->#{prop_name};
+                } a;
+              };
+            RDL
+            "reference to #{prop_name} property not allowed"
+          )
+        end
+      end
+
+      def test_reference_to_property_with_available_net_is_allowed
+        template = proc do |prop_name, prop_value = nil|
+          case prop_name
+          when :next, :resetsignal, :hwenable, :hwmask
+            <<~RDL
+              addrmap my_map {
+                reg {
+                  field { sw = rw; hw = r; } a;
+                  field { sw = rw; hw = r; } b;
+                  b->#{prop_name} = a;
+                  field { sw = rw; hw = r; } c;
+                  c->#{prop_name} = b->#{prop_name};
+                } a;
+              };
+            RDL
+          when :reset, :swwe, :swwel, :hwclr, :hwset
+            <<~RDL
+              addrmap my_map {
+                reg {
+                  field { sw = rw; hw = r; #{prop_name} = #{prop_value}; } a;
+                  field { sw = rw; hw = r; } b;
+                  b->#{prop_name} = a->#{prop_name};
+                } a;
+              };
+            RDL
+          when :we, :wel
+            <<~RDL
+              addrmap my_map {
+                reg {
+                  field { sw = rw; hw = rw; #{prop_name} = true; } a;
+                  field { sw = rw; hw = r; } b;
+                  b->swwe = a->#{prop_name};
+                } a;
+              };
+            RDL
+          end
+        end
+
+        field = evaluate(template[:next]).instances[0].instances[0].instances[2]
+        assert_property_reference_value(field, :next, 'my_map.a.b.next')
+
+        field = evaluate(template[:reset, 0]).instances[0].instances[0].instances[1]
+        assert_property_reference_value(field, :reset, 'my_map.a.a.reset')
+
+        field = evaluate(template[:resetsignal]).instances[0].instances[0].instances[2]
+        assert_property_reference_value(field, :resetsignal, 'my_map.a.b.resetsignal')
+
+        field = evaluate(template[:swwe, true]).instances[0].instances[0].instances[1]
+        assert_property_reference_value(field, :swwe, 'my_map.a.a.swwe')
+
+        field = evaluate(template[:swwel, true]).instances[0].instances[0].instances[1]
+        assert_property_reference_value(field, :swwel, 'my_map.a.a.swwel')
+
+        field = evaluate(template[:we]).instances[0].instances[0].instances[1]
+        assert_property_reference_value(field, :swwe, 'my_map.a.a.we')
+
+        field = evaluate(template[:wel]).instances[0].instances[0].instances[1]
+        assert_property_reference_value(field, :swwe, 'my_map.a.a.wel')
+
+        field = evaluate(template[:hwclr, true]).instances[0].instances[0].instances[1]
+        assert_property_reference_value(field, :hwclr, 'my_map.a.a.hwclr')
+
+        field = evaluate(template[:hwset, true]).instances[0].instances[0].instances[1]
+        assert_property_reference_value(field, :hwset, 'my_map.a.a.hwset')
+
+        field = evaluate(template[:hwenable]).instances[0].instances[0].instances[2]
+        assert_property_reference_value(field, :hwenable, 'my_map.a.b.hwenable')
+
+        field = evaluate(template[:hwmask]).instances[0].instances[0].instances[2]
+        assert_property_reference_value(field, :hwmask, 'my_map.a.b.hwmask')
+      end
     end
   end
 end

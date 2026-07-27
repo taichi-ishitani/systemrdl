@@ -438,7 +438,7 @@ module SystemRDL
       end
 
       def test_dynamic_assignment_to_unsupported_property_is_rejected
-        { regwidth: 64, errextbus: true }.each do |prop_name, prop_value|
+        { regwidth: 64, errextbus: true, shared: true }.each do |prop_name, prop_value|
           assert_raises_evaluation_error(
             <<~RDL,
               addrmap my_map {
@@ -449,6 +449,25 @@ module SystemRDL
               };
             RDL
             "dynamic assignment to #{prop_name} property not allowed"
+          )
+        end
+      end
+
+      def test_reference_to_unsupported_property_is_rejected
+        [:name, :desc, :regwidth, :accesswidth, :errextbus, :shared].each do |prop_name|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg {
+                  field { sw = rw; hw = r; } a;
+                } a;
+                reg {
+                  field { sw = rw; hw = r; } b;
+                } b;
+                b.b->swwe = a->#{prop_name};
+              };
+            RDL
+            "reference to #{prop_name} property not allowed"
           )
         end
       end

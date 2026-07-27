@@ -142,6 +142,22 @@ module SystemRDL
 
       private
 
+      def check_value(property, value)
+        super
+
+        check_ref_target(value)
+      end
+
+      def check_ref_target(value)
+        return if value.type != :property_reference
+
+        property = value.value
+        return if property.ref_target?
+
+        message = "reference to #{property.name} property not allowed"
+        raise_evaluation_error message, @token_range
+      end
+
       def find_property(instance, **optargs)
         property = @prop_ref.find(instance, **optargs)
         if property && !property.dynamic_assign?

@@ -543,6 +543,30 @@ module SystemRDL
           )
         end
       end
+
+      def test_reference_to_unsupported_property_is_rejected
+        [
+          :name, :desc, :alignment, :sharedextbus, :errextbus, :bigendian,
+          :littleendian, :addressing, :rsvdset, :rsvdsetX, :msb0, :lsb0
+        ].each do |prop_name|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                addrmap {
+                  reg {
+                    field { sw = rw; hw = r; } a;
+                  } a;
+                } a;
+                reg {
+                  field { sw = rw; hw = r; } b;
+                } b;
+                b.b->swwe = a->#{prop_name};
+              };
+            RDL
+            "reference to #{prop_name} property not allowed"
+          )
+        end
+      end
     end
   end
 end
