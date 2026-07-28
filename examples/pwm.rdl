@@ -1,0 +1,36 @@
+addrmap pwm {
+  name = "PWM";
+  desc = "Pulse width modulation controller with four channels";
+
+  reg {
+    name = "Control";
+    field {
+      desc = "Enable the PWM output";
+      sw = rw; hw = r; reset = 0;
+    } enable[0:0];
+    field {
+      desc = "Invert the output polarity";
+      sw = rw; hw = r; reset = 0;
+    } polarity[1:1];
+    field {
+      desc = "Clock prescaler";
+      sw = rw; hw = r; reset = 0;
+    } prescaler[7:4];
+  } ctrl @0x00;
+
+  reg {
+    name = "Period";
+    field {
+      desc = "PWM period in clock cycles";
+      sw = rw; hw = r; reset = 0xffff;
+    } value[16];
+  } period @0x04;
+
+  reg {
+    name = "Duty Cycle";
+    field {
+      desc = "Active cycles within the period";
+      sw = rw; hw = r; reset = 0;
+    } value[16];
+  } duty[4] @0x10;
+};

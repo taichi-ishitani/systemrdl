@@ -39,4 +39,25 @@ require_relative 'systemrdl/model/instance'
 require_relative 'systemrdl/model'
 
 module SystemRDL
+  module_function
+
+  def compile_files(*files)
+    files.flat_map { |file| compile_file(file) }
+  end
+
+  def compile_file(file)
+    File.open(file) { |fp| compile(fp, filename: file) }
+  end
+
+  def compile(string_or_io, filename: 'unknown')
+    rdl =
+      if string_or_io.is_a?(::String)
+        string_or_io
+      else
+        string_or_io.read
+      end
+    ast = Parser.parse(rdl, filename:)
+    root = Evaluator.evaluate(ast)
+    Model.build(root)
+  end
 end
