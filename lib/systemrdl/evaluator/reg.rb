@@ -5,8 +5,10 @@ module SystemRDL
     class RegDefinition < ComponentDefinition
       include AddressOperation
       include ArrayComponent
+      include ContainerComponent
 
       def validate(instance)
+        check_structural_component_instances(instance)
         check_regwidth(instance)
         check_accesswidth(instance)
         check_overlapping_fields(instance)

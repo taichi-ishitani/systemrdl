@@ -3,6 +3,12 @@
 module SystemRDL
   module Evaluator
     class RegFileDefinition < ComponentDefinition
+      include ContainerComponent
+
+      def validate(instance)
+        check_structural_component_instances(instance)
+      end
+
       def layer
         :regfile
       end

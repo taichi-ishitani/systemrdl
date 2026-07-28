@@ -5,14 +5,44 @@ require_relative 'test_helper'
 module SystemRDL
   module Evaluator
     class TestAddrMap < TestCase
+      def test_addrmap_without_structural_component_instance_is_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+            };
+          RDL
+          'no structural component instances within addrmap'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              name = "my map";
+            };
+          RDL
+          'no structural component instances within addrmap'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg my_reg {
+                field { sw = rw; hw = r; } a;
+              };
+            };
+          RDL
+          'no structural component instances within addrmap'
+        )
+      end
+
       def test_power_of_2_alignment_is_accepted
         [1, 2, 4, 8, 16, 32].each do |alignment|
           addrmap = evaluate(<<~RDL).instances[0]
             addrmap my_map {
               alignment = #{alignment};
-              reg my_reg {
-                field { sw = rw; hw = r; } my_field;
-              };
+              reg {
+                field { sw = rw; hw = r; } a;
+              } a;
             };
           RDL
 
@@ -26,9 +56,9 @@ module SystemRDL
             <<~RDL,
               addrmap my_map {
                 alignment = #{alignment};
-                reg my_reg {
-                  field { sw = rw; hw = r; } my_field;
-                };
+                reg {
+                  field { sw = rw; hw = r; } a;
+                }a ;
               };
             RDL
             "alignment must be a power of 2: #{alignment}"
@@ -41,28 +71,28 @@ module SystemRDL
           addrmap a {
             bigendian = true;
             littleendian = false;
-            reg a {
+            reg {
               field { sw = rw; hw = r; } a;
-            };
+            } a;
           };
           addrmap b {
             bigendian;
-            reg b {
+            reg {
               field { sw = rw; hw = r; } b;
-            };
+            } b;
           };
           addrmap c {
             bigendian = false;
             littleendian = true;
-            reg c {
+            reg {
               field { sw = rw; hw = r; } c;
-            };
+            } c;
           };
           addrmap d {
             littleendian;
-            reg d {
+            reg {
               field { sw = rw; hw = r; } d;
-            };
+            } d;
           };
         RDL
 
@@ -85,9 +115,9 @@ module SystemRDL
             addrmap my_map {
               bigendian;
               littleendian;
-              reg my_reg {
-                field { sw = rw; hw = r; } my_field;
-              };
+              reg {
+                field { sw = rw; hw = r; } a;
+              } a;
             };
           RDL
           'bigendian and littleendian properties are mutually exclusive'
@@ -99,28 +129,28 @@ module SystemRDL
           addrmap a {
             rsvdset = true;
             rsvdsetX = false;
-            reg a {
+            reg {
               field { sw = rw; hw = r; } a;
-            };
+            } a;
           };
           addrmap b {
             rsvdset;
-            reg b {
+            reg {
               field { sw = rw; hw = r; } b;
-            };
+            } b;
           };
           addrmap c {
             rsvdset = false;
             rsvdsetX = true;
-            reg c {
+            reg {
               field { sw = rw; hw = r; } c;
-            };
+            } c;
           };
           addrmap d {
             rsvdsetX;
-            reg d {
+            reg {
               field { sw = rw; hw = r; } d;
-            };
+            } d;
           };
         RDL
 
@@ -143,9 +173,9 @@ module SystemRDL
             addrmap my_map {
               rsvdset;
               rsvdsetX;
-              reg my_reg {
-                field { sw = rw; hw = r; } my_field;
-              };
+              reg {
+                field { sw = rw; hw = r; } a;
+              } a;
             };
           RDL
           'rsvdset and rsvdsetX properties are mutually exclusive'
@@ -157,28 +187,28 @@ module SystemRDL
           addrmap a {
             msb0 = true;
             lsb0 = false;
-            reg a {
+            reg {
               field { sw = rw; hw = r; } a;
-            };
+            } a;
           };
           addrmap b {
             msb0;
-            reg b {
+            reg {
               field { sw = rw; hw = r; } b;
-            };
+            } b;
           };
           addrmap c {
             msb0 = false;
             lsb0 = true;
-            reg c {
+            reg {
               field { sw = rw; hw = r; } c;
-            };
+            } c;
           };
           addrmap d {
             lsb0;
-            reg d {
+            reg {
               field { sw = rw; hw = r; } d;
-            };
+            } d;
           };
         RDL
 
@@ -201,9 +231,9 @@ module SystemRDL
             addrmap my_map {
               msb0;
               lsb0;
-              reg my_reg {
-                field { sw = rw; hw = r; } my_field;
-              };
+              reg {
+                field { sw = rw; hw = r; } a;
+              }a ;
             };
           RDL
           'msb0 and lsb0 properties are mutually exclusive'

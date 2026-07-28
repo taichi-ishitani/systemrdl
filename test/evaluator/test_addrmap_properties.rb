@@ -7,7 +7,11 @@ module SystemRDL
     class TestAddrMapProperties < TestCase
       def test_property_initialization
         addrmap = evaluate(<<~'RDL').instances[0]
-          addrmap some_reg {};
+          addrmap some_reg {
+            reg {
+              field { sw = rw; hw = r; } a;
+            } a;
+          };
         RDL
 
         assert_property(addrmap, :name, [:string], value: 'some_reg')

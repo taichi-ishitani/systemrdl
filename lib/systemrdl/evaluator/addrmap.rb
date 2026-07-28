@@ -4,6 +4,7 @@ module SystemRDL
   module Evaluator
     class AddrMapDefinition < ComponentDefinition
       include AddressAllocation
+      include ContainerComponent
 
       def evaluate(instance, **optargs)
         if instance.root?
@@ -14,6 +15,7 @@ module SystemRDL
       end
 
       def validate(instance)
+        check_structural_component_instances(instance)
         check_alignment(instance)
         check_endianness_exclusivity(instance)
         check_rsvdset_exclusivity(instance)

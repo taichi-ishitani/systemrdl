@@ -5,6 +5,40 @@ require_relative 'test_helper'
 module SystemRDL
   module Evaluator
     class TestReg < TestCase
+      def test_reg_without_structural_component_instance_is_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+              } a;
+            };
+          RDL
+          'no structural component instances within reg'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                name = "my reg";
+              } a;
+            };
+          RDL
+          'no structural component instances within reg'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field my_field { sw = rw; hw = r; };
+              } a;
+            };
+          RDL
+          'no structural component instances within reg'
+        )
+      end
+
       def test_array_instances
         regs = evaluate(<<~'RDL').instances[0].instances
           addrmap some_reg {

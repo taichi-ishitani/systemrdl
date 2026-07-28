@@ -8,7 +8,11 @@ module SystemRDL
       def test_property_initialization
         regfile = evaluate(<<~'RDL').instances[0].instances[0]
           addrmap some_reg {
-            regfile {} my_regfile;
+            regfile {
+              reg {
+                field { sw = rw; hw = r; } a;
+              } a;
+            } my_regfile;
           };
         RDL
 

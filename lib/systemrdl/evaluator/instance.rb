@@ -65,6 +65,10 @@ module SystemRDL
         layer == :field
       end
 
+      def structural_component?
+        addrmap? || regfile? || reg? || field?
+      end
+
       def array?
         !array_info.nil?
       end
