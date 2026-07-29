@@ -16,10 +16,10 @@ module SystemRDL
 
       def find(base)
         result = find_instance(base)
-        return result if result
+        return result unless result.empty?
 
         inst_name =
-          if array?
+          if array_select?
             array
               .elements
               .inject([id.value]) { |elements, select| elements << "[#{select.value}]" }
@@ -30,21 +30,24 @@ module SystemRDL
         raise_evaluation_error "unresolvable instance: #{inst_name}", token_range
       end
 
+      def array_select?
+        !array.nil?
+      end
+
       private
 
       def find_instance(base)
-        base.instances.find do |inst|
+        base.instances.select do |inst|
           inst.name == id.value && match_array_indices?(inst)
         end
       end
 
       def match_array_indices?(instance)
         # non array instance && array select
-        # array instance && no array select
-        return false if instance.array? != array?
+        return false if !instance.array? && array_select?
 
-        # non array instance
-        return true unless instance.array?
+        # non array instance or whole array
+        return true unless array_select?
 
         # check size
         return false if instance.array_indices.size != array.size
@@ -53,10 +56,6 @@ module SystemRDL
           .array_indices
           .zip(array.elements)
           .all? { |index, select| index == select.value }
-      end
-
-      def array?
-        !array.nil?
       end
     end
 
@@ -71,12 +70,28 @@ module SystemRDL
       attr_reader :elements
 
       def evaluate(instance, **_optargs)
-        find(instance).to_value(token_range)
+        find(instance, allow_array_ref: false)[0].to_value(token_range)
       end
 
-      def find(instance)
-        @elements
-          .inject(instance) { |result, element| element.find(result) }
+      def find(instance, allow_array_ref: false)
+        result = @elements.inject([instance]) do |instances, element|
+          process_instance_ref_element(instances, element)
+        end
+
+        return result if allow_array_ref || result.size <= 1
+
+        message = 'reference to array instance not allowed'
+        raise_evaluation_error message, token_range
+      end
+
+      def array_select?
+        elements.any?(&:array_select?)
+      end
+
+      private
+
+      def process_instance_ref_element(instances, element)
+        instances.flat_map { |inst| element.find(inst) }
       end
     end
 
@@ -92,16 +107,28 @@ module SystemRDL
       attr_reader :instance_ref
       attr_reader :prop
 
-      def evaluate(instance, **optargs)
-        find(instance, **optargs).to_value(token_range)
+      def evaluate(instance, **_optargs)
+        find(instance, allow_array_ref: false)[0].to_value(token_range)
       end
 
-      def find(instance, **optargs)
-        inst = @instance_ref&.find(instance, **optargs) || instance
-        result = inst.property(@prop.value)
-        return result if result
+      def find(instance, allow_array_ref: false)
+        insts =
+          if @instance_ref
+            @instance_ref.find(instance, allow_array_ref:)
+          else
+            [instance]
+          end
 
-        raise_evaluation_error "undefined property: #{@prop.value}", token_range
+        insts.map do |inst|
+          prop = inst.property(@prop.value)
+          next prop if prop
+
+          raise_evaluation_error "undefined property: #{@prop.value}", token_range
+        end
+      end
+
+      def array_select?
+        @instance_ref&.array_select? || false
       end
     end
   end

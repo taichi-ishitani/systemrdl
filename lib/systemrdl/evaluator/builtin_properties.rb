@@ -26,6 +26,7 @@ module SystemRDL
         prop.types = [:longint]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = false
       end
 
       def_property :addressing do |prop|
@@ -33,6 +34,7 @@ module SystemRDL
         prop.types = [:addressingtype]
         prop.dynamic_assign = false
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = :regalign
       end
 
@@ -41,6 +43,7 @@ module SystemRDL
         prop.types = [:longint]
         prop.dynamic_assign = false
         prop.ref_target = false
+        prop.per_element_assign = false
       end
 
       def_property :anded do |prop|
@@ -48,6 +51,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = true
         prop.ref_target = true
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -56,6 +60,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -63,6 +68,7 @@ module SystemRDL
         prop.types = [:string]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = true
         prop.default_value = proc { '' }
       end
 
@@ -71,6 +77,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -78,6 +85,7 @@ module SystemRDL
         prop.targets = [:field]
         prop.types = [:longint]
         prop.dynamic_assign = false
+        prop.per_element_assign = false
         prop.ref_target = false
       end
 
@@ -86,6 +94,7 @@ module SystemRDL
         prop.types = [:accesstype]
         prop.dynamic_assign = false
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = :rw
       end
 
@@ -94,6 +103,7 @@ module SystemRDL
         prop.types = [:boolean, :field_reference, :property_reference]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -102,6 +112,7 @@ module SystemRDL
         prop.types = [:field_reference, :property_reference]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
+        prop.per_element_assign = false
       end
 
       def_property :hwmask do |prop|
@@ -109,6 +120,7 @@ module SystemRDL
         prop.types = [:field_reference, :property_reference]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
+        prop.per_element_assign = false
       end
 
       def_property :hwset do |prop|
@@ -116,6 +128,7 @@ module SystemRDL
         prop.types = [:boolean, :field_reference, :property_reference]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -124,6 +137,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -132,6 +146,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -140,6 +155,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -147,6 +163,7 @@ module SystemRDL
         prop.types = [:string]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = true
         prop.default_value = proc { |inst| inst.name.to_s }
       end
 
@@ -154,6 +171,7 @@ module SystemRDL
         prop.targets = [:field]
         prop.types = [:field_reference, :property_reference]
         prop.dynamic_assign = true
+        prop.per_element_assign = false
         prop.ref_target = proc { set? }
       end
 
@@ -162,6 +180,7 @@ module SystemRDL
         prop.types = [:onreadtype]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = false
       end
 
       def_property :onwrite do |prop|
@@ -169,6 +188,7 @@ module SystemRDL
         prop.types = [:onwritetype]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = false
       end
 
       def_property :ored do |prop|
@@ -176,6 +196,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = true
         prop.ref_target = true
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -184,6 +205,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -192,6 +214,7 @@ module SystemRDL
         prop.types = [:precedencetype]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = :sw
       end
 
@@ -200,6 +223,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -208,6 +232,7 @@ module SystemRDL
         prop.types = [:longint]
         prop.dynamic_assign = false
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = 32
       end
 
@@ -216,6 +241,7 @@ module SystemRDL
         prop.types = [:bit, :field_reference, :property_reference]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
+        prop.per_element_assign = false
       end
 
       def_property :resetsignal do |prop|
@@ -223,6 +249,7 @@ module SystemRDL
         prop.types = [:field_reference, :property_reference]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
+        prop.per_element_assign = false
       end
 
       def_property :rset do |prop|
@@ -230,6 +257,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -238,6 +266,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -246,6 +275,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -254,6 +284,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -262,6 +293,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -270,6 +302,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -278,6 +311,7 @@ module SystemRDL
         prop.types = [:accesstype]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = :rw
       end
 
@@ -286,6 +320,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = true
         prop.ref_target = true
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -294,6 +329,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = true
         prop.ref_target = true
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -302,6 +338,7 @@ module SystemRDL
         prop.types = [:boolean, :field_reference, :property_reference]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -310,6 +347,7 @@ module SystemRDL
         prop.types = [:boolean, :field_reference, :property_reference]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -318,6 +356,7 @@ module SystemRDL
         prop.types = [:boolean, :field_reference, :property_reference]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -326,6 +365,7 @@ module SystemRDL
         prop.types = [:boolean, :field_reference, :property_reference]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -334,6 +374,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -342,6 +383,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
+        prop.per_element_assign = false
         prop.default_value = false
       end
 
@@ -350,6 +392,7 @@ module SystemRDL
         prop.types = [:boolean]
         prop.dynamic_assign = true
         prop.ref_target = true
+        prop.per_element_assign = false
         prop.default_value = false
       end
     end

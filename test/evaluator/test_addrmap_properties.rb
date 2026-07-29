@@ -571,6 +571,41 @@ module SystemRDL
           )
         end
       end
+
+      def test_element_assignment_to_allow_listed_property_is_allowed
+        skip 'not implemented yet'
+        submaps = evaluate(<<~'RDL').instances[0].instances
+          addrmap my_map {
+            addrmap {
+              reg { field { sw = rw; hw = r; } a; } a;
+            } a[2];
+            a[0]->name = "element name";
+            a[0]->desc = "element desc";
+          };
+        RDL
+
+        assert_property_value(submaps[0], :name, 'element name')
+        assert_property_value(submaps[1], :name, 'a')
+        assert_property_value(submaps[0], :desc, 'element desc')
+        assert_property_value(submaps[1], :desc, '')
+      end
+
+      def test_element_assignment_to_other_property_is_rejected
+        skip 'not implemented yet'
+        { bigendian: true, littleendian: true }.each do |prop_name, prop_value|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                addrmap {
+                  reg { field { sw = rw; hw = r; } a; } a;
+                } a[2];
+                a[0]->#{prop_name} = #{prop_value};
+              };
+            RDL
+            "element assignment to #{prop_name} property not allowed"
+          )
+        end
+      end
     end
   end
 end

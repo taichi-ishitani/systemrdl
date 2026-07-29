@@ -9,12 +9,19 @@ module SystemRDL
       end
 
       def evaluate(instance, **optargs)
-        property = find_property(instance, **optargs)
-        value = eval_value(instance, property, **optargs)
-        assign_property(instance, property, value)
+        properties = find_properties(instance)
+        check_properties(instance, properties)
+
+        properties.each do |property|
+          value = eval_value(instance, property, **optargs)
+          assign_property(instance, property, value)
+        end
       end
 
       private
+
+      def check_properties(_instance, _properties)
+      end
 
       def eval_value(instance, property, **optargs)
         value =
@@ -116,14 +123,16 @@ module SystemRDL
 
       private
 
-      def find_property(instance, **optargs)
-        property = @prop_ref.find(instance, **optargs)
-        if property&.assigned?
-          message = "#{property.name} already assigned in this scope"
-          raise_evaluation_error message, token_range
-        end
+      def find_properties(instance)
+        @prop_ref.find(instance, allow_array_ref: false)
+      end
 
-        property
+      def check_properties(_instance, properties)
+        property = properties[0]
+        return unless property&.assigned?
+
+        message = "#{property.name} already assigned in this scope"
+        raise_evaluation_error message, token_range
       end
 
       def assign_property(_instance, property, value)
@@ -158,14 +167,24 @@ module SystemRDL
         raise_evaluation_error message, @token_range
       end
 
-      def find_property(instance, **optargs)
-        property = @prop_ref.find(instance, **optargs)
-        if property && !property.dynamic_assign?
-          message = "dynamic assignment to #{property.name} property not allowed"
-          raise_evaluation_error message, token_range
-        end
+      def find_properties(instance)
+        @prop_ref.find(instance, allow_array_ref: true)
+      end
 
-        property
+      def check_properties(_instance, properties)
+        properties.each do |property|
+          next unless property
+
+          unless property.dynamic_assign?
+            message = "dynamic assignment to #{property.name} property not allowed"
+            raise_evaluation_error message, token_range
+          end
+
+          if !property.per_element_assign? && @prop_ref.array_select?
+            message = "element assignment to #{property.name} property not allowed"
+            raise_evaluation_error message, token_range
+          end
+        end
       end
 
       def assign_property(_instance, property, value)
@@ -184,9 +203,9 @@ module SystemRDL
 
       private
 
-      def find_property(_instance, **_optargs)
+      def find_properties(_instance)
         prop_def = BuiltinProperties.find(@prop_name.value)
-        return prop_def if prop_def
+        return [prop_def] if prop_def
 
         message = "undefined property: #{@prop_name.value}"
         raise_evaluation_error message, token_range

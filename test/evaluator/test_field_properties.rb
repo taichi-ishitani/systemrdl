@@ -1253,6 +1253,44 @@ module SystemRDL
         field = evaluate(template[:hwmask]).instances[0].instances[0].instances[2]
         assert_property_reference_value(field, :hwmask, 'my_map.a.b.hwmask')
       end
+
+      def test_element_assignment_to_allow_listed_property_is_allowed
+        regs = evaluate(<<~'RDL').instances[0].instances
+          addrmap my_map {
+            reg { field { sw = rw; hw = r; } a; } a[2];
+            a[0].a->name = "field name";
+            a[0].a->desc = "field desc";
+          };
+        RDL
+
+        fields = regs.flat_map(&:instances)
+        assert_property_value(fields[0], :name, 'field name')
+        assert_property_value(fields[1], :name, 'a')
+        assert_property_value(fields[0], :desc, 'field desc')
+        assert_property_value(fields[1], :desc, '')
+      end
+
+      def test_element_assignment_to_other_property_is_rejected
+        {
+          sw: :r, next: 'b.a', reset: 0x1, resetsignal: 'b.a',
+          rclr: true, rset: true, onread: :rclr, woset: true, woclr: true,
+          onwrite: :woset, swwe: true, swwel: true, swmod: true,
+          swacc: true, singlepulse: true, we: true, wel: true,
+          anded: true, ored: true, xored: true, hwclr: true, hwset: true,
+          hwenable: 'b.a', hwmask: 'b.a', precedence: :hw
+        }.each do |prop_name, prop_value|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg { field { sw = rw; hw = r; } a; } a[2];
+                reg { field { sw = rw; hw = r; } a; } b;
+                a[0].a->#{prop_name} = #{prop_value};
+              };
+            RDL
+            "element assignment to #{prop_name} property not allowed"
+          )
+        end
+      end
     end
   end
 end

@@ -473,6 +473,40 @@ module SystemRDL
           )
         end
       end
+
+      def test_element_assignment_to_allow_listed_property_is_allowed
+        regs = evaluate(<<~'RDL').instances[0].instances
+          addrmap my_map {
+            reg { field { sw = rw; hw = r; } a; } a[2];
+            reg { field { sw = rw; hw = r; } a; } b[1][2];
+            a[0]->name = "element name";
+            b[0][1]->desc = "element desc";
+          };
+        RDL
+
+        assert_property_value(regs[0], :name, 'element name')
+        assert_property_value(regs[1], :name, 'a')
+        assert_property_value(regs[2], :name, 'b')
+        assert_property_value(regs[3], :name, 'b')
+        assert_property_value(regs[0], :desc, '')
+        assert_property_value(regs[1], :desc, '')
+        assert_property_value(regs[2], :desc, '')
+        assert_property_value(regs[3], :desc, 'element desc')
+      end
+
+      def test_element_assignment_to_other_property_is_rejected
+        { accesswidth: 32 }.each do |prop_name, prop_value|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                reg { field { sw = rw; hw = r; } a; } a[2];
+                a[0]->#{prop_name} = #{prop_value};
+              };
+            RDL
+            "element assignment to #{prop_name} property not allowed"
+          )
+        end
+      end
     end
   end
 end

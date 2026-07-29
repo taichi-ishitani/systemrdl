@@ -490,6 +490,27 @@ module SystemRDL
           )
         end
       end
+
+      def test_element_assignment_to_allow_listed_property_is_allowed
+        skip 'not implemented yet'
+        regfiles = evaluate(<<~'RDL').instances[0].instances
+          addrmap my_map {
+            regfile {
+              reg { field { sw = rw; hw = r; } a; } a;
+            } a[2];
+            a[0]->name = "element name";
+            a[0]->desc = "element desc";
+          };
+        RDL
+
+        assert_property_value(regfiles[0], :name, 'element name')
+        assert_property_value(regfiles[1], :name, 'a')
+        assert_property_value(regfiles[0], :desc, 'element desc')
+        assert_property_value(regfiles[1], :desc, '')
+      end
+
+      # No rejection test: name and desc are the only dynamically
+      # assignable regfile properties, and both are allow-listed.
     end
   end
 end

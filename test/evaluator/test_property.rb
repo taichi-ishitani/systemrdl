@@ -202,6 +202,68 @@ module SystemRDL
 
         assert_property_value(field, :name, 'outer')
       end
+
+      def test_whole_array_assignment_is_allowed
+        regs = evaluate(<<~'RDL').instances[0].instances[0..1]
+          addrmap my_map {
+            reg { field { sw = rw; hw = r; } a; } a[2];
+            reg { field { sw = rw; hw = r; } a; } b;
+            reg { field { sw = rw; hw = r; } a; } c[2];
+            a->name = "whole array";
+            a.a->hwenable = b.a;
+            a.a->swwe = b.a->anded;
+            a.a->hwclr = c[0].a;
+            a.a->hwset = c[0].a->ored;
+          };
+        RDL
+
+        regs.each do |reg|
+          assert_property_value(reg, :name, 'whole array')
+        end
+
+        fields = regs.flat_map(&:instances)
+        fields.each do |field|
+          assert_property_reference_value(field, :hwenable, 'my_map.b.a')
+          assert_property_reference_value(field, :swwe, 'my_map.b.a.anded')
+          assert_property_reference_value(field, :hwclr, 'my_map.c[0].a')
+          assert_property_reference_value(field, :hwset, 'my_map.c[0].a.ored')
+        end
+      end
+
+      def test_whole_array_reference_value_is_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg { field { sw = rw; hw = r; } a; } a[2];
+              reg { field { sw = rw; hw = r; } a; } b[2];
+              a.a->hwenable = b.a;
+            };
+          RDL
+          'reference to array instance not allowed'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg { field { sw = rw; hw = r; } a; } a[2];
+              reg { field { sw = rw; hw = r; } a; } b[2];
+              a.a->swwe = b.a->anded;
+            };
+          RDL
+          'reference to array instance not allowed'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg { field { sw = rw; hw = r; } a; } a;
+              reg { field { sw = rw; hw = r; } a; } b[2];
+              a.a->hwenable = b.a;
+            };
+          RDL
+          'reference to array instance not allowed'
+        )
+      end
     end
   end
 end

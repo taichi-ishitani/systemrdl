@@ -107,31 +107,6 @@ module SystemRDL
         )
       end
 
-      def test_reference_to_array_instance_element
-        regs = evaluate(<<~'RDL').instances[0].instances
-          addrmap some_reg {
-            reg {
-              regwidth = 32;
-              field { sw = rw; hw = r; } a;
-            } a[2];
-            a[0]->accesswidth = 8;
-            a[1]->accesswidth = 16;
-
-            reg {
-              regwidth = 32;
-              field { sw = rw; hw = r; } a;
-            } b[1][2];
-            b[0][0]->accesswidth = 8;
-            b[0][1]->accesswidth = 16;
-          };
-        RDL
-
-        assert_property_value(regs[0], :accesswidth, 8)
-        assert_property_value(regs[1], :accesswidth, 16)
-        assert_property_value(regs[2], :accesswidth, 8)
-        assert_property_value(regs[3], :accesswidth, 16)
-      end
-
       def test_array_size_must_be_positive
         assert_raises_evaluation_error(
           <<~RDL,
@@ -573,19 +548,19 @@ module SystemRDL
                 accesswidth = 8;
                 field { sw = rw; hw = r; } a;
               } a[1] += #{strides[0]};
-              a[0]->accesswidth = #{width};
+              a->accesswidth = #{width};
               reg {
                 regwidth = #{width};
                 accesswidth = 8;
                 field { sw = rw; hw = r; } a;
               } b[1] += #{strides[1]};
-              b[0]->accesswidth = #{width};
+              b->accesswidth = #{width};
               reg {
                 regwidth = #{width};
                 accesswidth = 8;
                 field { sw = rw; hw = r; } a;
               } c[1] += #{strides[2]};
-              c[0]->accesswidth = #{width};
+              c->accesswidth = #{width};
             };
           RDL
 
@@ -619,7 +594,7 @@ module SystemRDL
                     accesswidth = 8;
                     field { sw = r; hw = r; } a;
                   } a[1] += #{stride};
-                  a[0]->accesswidth = #{width};
+                  a->accesswidth = #{width};
                 };
               RDL
               "stride not aligned to accesswidth: stride 0x#{stride.to_s(16)} accesswidth #{width}"

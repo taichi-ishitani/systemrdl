@@ -3,18 +3,21 @@
 module SystemRDL
   module Evaluator
     class Property
-      def initialize(instance, name, types, ref_target, dynamic_assign, value)
+      def initialize(instance, definition, value)
         @instance = instance
-        @name = name
-        @types = types
-        @ref_target = ref_target
-        @dynamic_assign = dynamic_assign
+        @definition = definition
         @value = value
       end
 
-      attr_reader :name
-      attr_reader :types
       attr_reader :value
+
+      def name
+        @definition.name
+      end
+
+      def types
+        @definition.types
+      end
 
       def to_value(token_range)
         Value.new(self, :property_reference, nil, token_range)
@@ -24,16 +27,20 @@ module SystemRDL
         [@instance.full_name, name].join('.')
       end
 
-      def dynamic_assign?
-        @dynamic_assign
+      def ref_target?
+        if @definition.ref_target.is_a?(Proc)
+          instance_exec(&@definition.ref_target)
+        else
+          @definition.ref_target
+        end
       end
 
-      def ref_target?
-        if @ref_target.is_a?(Proc)
-          instance_exec(&@ref_target)
-        else
-          @ref_target
-        end
+      def dynamic_assign?
+        @definition.dynamic_assign
+      end
+
+      def per_element_assign?
+        @definition.per_element_assign
       end
 
       def assign(value)
@@ -65,6 +72,7 @@ module SystemRDL
       attr_accessor :types
       attr_accessor :ref_target
       attr_accessor :dynamic_assign
+      attr_accessor :per_element_assign
       attr_accessor :default_value
 
       def target?(instance)
@@ -75,7 +83,7 @@ module SystemRDL
 
       def create(instance)
         value = eval_value(instance)
-        Property.new(instance, name, types, ref_target, dynamic_assign, value)
+        Property.new(instance, self, value)
       end
 
       private
