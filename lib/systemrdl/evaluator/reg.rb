@@ -35,6 +35,7 @@ module SystemRDL
 
       def apply_inst_values(instance, inst_values)
         apply_address_operations(instance, inst_values)
+        check_range(inst_values)
       end
 
       def post_build(instance)

@@ -41,6 +41,7 @@ module SystemRDL
       def apply_inst_values(instance, inst_values)
         assign_bit_pos(instance, inst_values)
         apply_reset_value(instance, inst_values)
+        check_address_allocation_operator(inst_values)
       end
 
       def assign_bit_pos(instance, inst_values)
@@ -129,6 +130,16 @@ module SystemRDL
             reset_value: reset_value.value, begin: range.begin, end: range.end
           )
         raise_evaluation_error message, reset_value.token_range
+      end
+
+      def check_address_allocation_operator(inst_values)
+        [:address_assignment, :address_stride, :address_alignment].each do |op|
+          value = inst_values[op]
+          next unless value
+
+          message = 'address allocation operator not allowed for field instance'
+          raise_evaluation_error message, value.token_range
+        end
       end
 
       def check_sw_hw_access_combination(instance)

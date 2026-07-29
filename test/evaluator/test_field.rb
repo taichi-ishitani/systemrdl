@@ -5,6 +5,41 @@ require_relative 'test_helper'
 module SystemRDL
   module Evaluator
     class TestField < TestCase
+      def test_address_allocation_operator_for_field_instance_is_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_addrmap {
+              reg {
+                field { sw = rw; hw = r; } a @ 0x0;
+              } a;
+            };
+          RDL
+          'address allocation operator not allowed for field instance'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_addrmap {
+              reg {
+                field { sw = rw; hw = r; } a += 4;
+              } a;
+            };
+          RDL
+          'address allocation operator not allowed for field instance'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_addrmap {
+              reg {
+                field { sw = rw; hw = r; } a %= 8;
+              } a;
+            };
+          RDL
+          'address allocation operator not allowed for field instance'
+        )
+      end
+
       def test_bit_index
         fields = evaluate(<<~'RDL').instances[0].instances[0].instances
           addrmap my_map {

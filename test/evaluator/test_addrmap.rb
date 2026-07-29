@@ -35,6 +35,38 @@ module SystemRDL
         )
       end
 
+      def test_range_for_addrmap_instance_is_rejected
+        skip 'not implemented yet'
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_addrmap {
+              addrmap {
+                reg {
+                  field { sw = rw; hw = r; } a;
+                } a;
+              } a[0:0];
+            };
+          RDL
+          'range not allowed for addrmap instance'
+        )
+      end
+
+      def test_address_stride_for_scalar_addrmap_instance_is_rejected
+        skip 'not implemented yet'
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_addrmap {
+              addrmap {
+                reg {
+                  field { sw = rw; hw = r; } a;
+                } a;
+              } a += 0x4;
+            };
+          RDL
+          'address stride not allowed for scalar addrmap instance'
+        )
+      end
+
       def test_power_of_2_alignment_is_accepted
         [1, 2, 4, 8, 16, 32].each do |alignment|
           addrmap = evaluate(<<~RDL).instances[0]

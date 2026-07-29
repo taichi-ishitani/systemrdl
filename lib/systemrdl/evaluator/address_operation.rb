@@ -16,6 +16,11 @@ module SystemRDL
         stride = inst_values[:address_stride]
         return unless stride
 
+        unless instance.array?
+          message = "address stride not allowed for scalar #{layer} instance"
+          raise_evaluation_error message, stride.token_range
+        end
+
         instance.stride = stride
       end
 
@@ -35,6 +40,14 @@ module SystemRDL
 
         message = '@ and %= address operations are mutually exclusive'
         raise_evaluation_error message, instance.address.token_range, instance.alignment.token_range
+      end
+
+      def check_range(inst_values)
+        range = inst_values[:range]
+        return unless range
+
+        message = "range not allowed for #{layer} instance"
+        raise_evaluation_error message, range.token_range
       end
 
       def check_accesswidth_boundary(instance, label, value)

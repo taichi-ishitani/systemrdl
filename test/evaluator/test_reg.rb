@@ -39,6 +39,19 @@ module SystemRDL
         )
       end
 
+      def test_range_for_reg_instance_is_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_addrmap {
+              reg {
+                field { sw = rw; hw = r; } a;
+              } a[0:0];
+            };
+          RDL
+          'range not allowed for reg instance'
+        )
+      end
+
       def test_array_instances
         regs = evaluate(<<~'RDL').instances[0].instances
           addrmap some_reg {
@@ -79,6 +92,19 @@ module SystemRDL
         assert_nil(regs[9].array_indices)
         assert_nil(regs[9].array_sizes)
         refute(regs[9].array?)
+      end
+
+      def test_address_stride_for_scalar_reg_instance_is_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_addrmap {
+              reg {
+                field { sw = rw; hw = r; } a;
+              } a += 0x4;
+            };
+          RDL
+          'address stride not allowed for scalar reg instance'
+        )
       end
 
       def test_reference_to_array_instance_element
@@ -522,17 +548,17 @@ module SystemRDL
                 regwidth = #{width};
                 accesswidth = #{width};
                 field { sw = rw; hw = r; } a;
-              } a += #{strides[0]};
+              } a[1] += #{strides[0]};
               reg {
                 regwidth = #{width};
                 accesswidth = #{width};
                 field { sw = rw; hw = r; } a;
-              } b += #{strides[1]};
+              } b[1] += #{strides[1]};
               reg {
                 regwidth = #{width};
                 accesswidth = #{width};
                 field { sw = rw; hw = r; } a;
-              } c += #{strides[2]};
+              } c[1] += #{strides[2]};
             };
           RDL
 
@@ -546,20 +572,20 @@ module SystemRDL
                 regwidth = #{width};
                 accesswidth = 8;
                 field { sw = rw; hw = r; } a;
-              } a += #{strides[0]};
-              a->accesswidth = #{width};
+              } a[1] += #{strides[0]};
+              a[0]->accesswidth = #{width};
               reg {
                 regwidth = #{width};
                 accesswidth = 8;
                 field { sw = rw; hw = r; } a;
-              } b += #{strides[1]};
-              b->accesswidth = #{width};
+              } b[1] += #{strides[1]};
+              b[0]->accesswidth = #{width};
               reg {
                 regwidth = #{width};
                 accesswidth = 8;
                 field { sw = rw; hw = r; } a;
-              } c += #{strides[2]};
-              c->accesswidth = #{width};
+              } c[1] += #{strides[2]};
+              c[0]->accesswidth = #{width};
             };
           RDL
 
@@ -579,7 +605,7 @@ module SystemRDL
                     regwidth = #{width};
                     accesswidth = #{width};
                     field { sw = r; hw = r; } a;
-                  } a += #{stride};
+                  } a[1] += #{stride};
                 };
               RDL
               "stride not aligned to accesswidth: stride 0x#{stride.to_s(16)} accesswidth #{width}"
@@ -592,8 +618,8 @@ module SystemRDL
                     regwidth = #{width};
                     accesswidth = 8;
                     field { sw = r; hw = r; } a;
-                  } a += #{stride};
-                  a->accesswidth = #{width};
+                  } a[1] += #{stride};
+                  a[0]->accesswidth = #{width};
                 };
               RDL
               "stride not aligned to accesswidth: stride 0x#{stride.to_s(16)} accesswidth #{width}"
@@ -611,7 +637,7 @@ module SystemRDL
                   regwidth = #{regwidth};
                   accesswidth = #{accesswidth};
                   field { sw = r; hw = r; } a;
-                } a += #{stride};
+                } a[2] += #{stride};
               };
             RDL
             "stride less than reg size: stride 0x#{stride.to_s(16)} reg size #{regwidth / 8}"
