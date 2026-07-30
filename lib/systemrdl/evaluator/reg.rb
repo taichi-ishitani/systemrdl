@@ -136,6 +136,10 @@ module SystemRDL
         definition.layer in :field
       end
 
+      def instantiable?(definition)
+        definable?(definition)
+      end
+
       def accesswidth
         property_value(:accesswidth).value
       end

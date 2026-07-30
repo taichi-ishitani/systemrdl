@@ -26,6 +26,10 @@ module SystemRDL
       end
 
       def definable?(definition)
+        definition.layer in :regfile | :reg | :field
+      end
+
+      def instantiable?(definition)
         definition.layer in :regfile | :reg
       end
     end

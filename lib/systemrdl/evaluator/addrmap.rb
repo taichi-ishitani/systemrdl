@@ -60,6 +60,10 @@ module SystemRDL
       end
 
       def definable?(definition)
+        definition.layer in :addrmap | :regfile | :reg | :field
+      end
+
+      def instantiable?(definition)
         definition.layer in :addrmap | :regfile | :reg
       end
     end

@@ -233,6 +233,10 @@ module SystemRDL
         false
       end
 
+      def instantiable?(_definition)
+        false
+      end
+
       def sw_readable?
         property_value(:sw).value in :rw | :rw1 | :r
       end

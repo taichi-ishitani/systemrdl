@@ -271,6 +271,41 @@ module SystemRDL
           'msb0 and lsb0 properties are mutually exclusive'
         )
       end
+
+      def test_any_component_definitions_are_allowed
+        addrmap = evaluate(<<~RDL).instances[0]
+          addrmap some_map {
+            field my_field { sw = rw; hw = r; };
+            reg my_reg { my_field a; };
+            regfile my_regfile { my_reg b; };
+            addrmap my_map { my_regfile c; };
+            my_map d;
+          };
+        RDL
+
+        addrmap = addrmap.instances[0]
+        assert_property_value(addrmap, :name, 'd')
+
+        regfile = addrmap.instances[0]
+        assert_property_value(regfile, :name, 'c')
+
+        reg = regfile.instances[0]
+        assert_property_value(reg, :name, 'b')
+
+        field = reg.instances[0]
+        assert_property_value(field, :name, 'a')
+      end
+
+      def test_field_instance_is_rejected
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap a_addrmap {
+              field { sw = rw; hw = r; } a;
+            };
+          RDL
+          "field instance not allowed in addrmap"
+        )
+      end
     end
   end
 end

@@ -130,6 +130,22 @@ module SystemRDL
 
         assert_property_value(fields[0], :sw, :rw)
         assert_property_value(fields[1], :sw, :r)
+
+        fields = evaluate(<<~'RDL').instances[0].instances[0].instances
+          addrmap my_map {
+            field my_field { sw = rw; hw = r; };
+            reg {
+              default name = "default name";
+              field { sw = rw; hw = r; } a;
+              field { sw = rw; hw = r; name = "new name"; } b;
+              my_field c;
+            } a;
+          };
+        RDL
+
+        assert_property_value(fields[0], :name, 'default name')
+        assert_property_value(fields[1], :name, 'new name')
+        assert_property_value(fields[2], :name, 'c')
       end
 
       def test_default_property_type_error
