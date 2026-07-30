@@ -3,6 +3,10 @@
 module SystemRDL
   module Evaluator
     class Root < ComponentDefinition
+      def layer
+        :root
+      end
+
       def initialize(elements, token_range)
         super(Value.new(:root, nil, nil, nil), elements, nil, token_range)
         connect(nil, nil)
@@ -22,10 +26,6 @@ module SystemRDL
     end
 
     class RootInstance < Instance
-      def layer
-        :root
-      end
-
       def definable?(_definition)
         true
       end

@@ -55,10 +55,6 @@ module SystemRDL
     end
 
     class AddrMapInstance < Instance
-      def layer
-        :addrmap
-      end
-
       def definable?(definition)
         definition.layer in :addrmap | :regfile | :reg | :field
       end

@@ -24,6 +24,14 @@ module SystemRDL
         @insts&.connect(self, self)
       end
 
+      def upper_layers(include_self: false)
+        return [] if layer == :root
+
+        layers = [*component.upper_layers, component]
+        layers << self if include_self
+        layers
+      end
+
       def evaluate(instance, **optargs)
         check_definable(instance)
         @insts&.evaluate(instance, @parent, @id, **optargs)
@@ -57,14 +65,13 @@ module SystemRDL
       end
 
       def find_default_property(name)
-        current = component
-        while current
-          if (prop = current.default_properties[name])
+        upper_layers.reverse_each do |component|
+          if (prop = component.default_properties[name])
             return prop
           end
-
-          current = current.component
         end
+
+        nil
       end
 
       private

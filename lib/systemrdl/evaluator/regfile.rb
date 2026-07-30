@@ -21,10 +21,6 @@ module SystemRDL
     end
 
     class RegFileInstance < Instance
-      def layer
-        :regfile
-      end
-
       def definable?(definition)
         definition.layer in :regfile | :reg | :field
       end

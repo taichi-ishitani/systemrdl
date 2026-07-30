@@ -225,10 +225,6 @@ module SystemRDL
       attr_accessor :msb
       attr_accessor :lsb
 
-      def layer
-        :field
-      end
-
       def definable?(_definition)
         false
       end

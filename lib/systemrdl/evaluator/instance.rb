@@ -45,6 +45,10 @@ module SystemRDL
         elements.map(&:element_name).join('.')
       end
 
+      def layer
+        definition.layer
+      end
+
       def root?
         layer == :root
       end

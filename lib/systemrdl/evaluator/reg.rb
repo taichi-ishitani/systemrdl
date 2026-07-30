@@ -128,10 +128,6 @@ module SystemRDL
       attr_accessor :stride
       attr_accessor :alignment
 
-      def layer
-        :reg
-      end
-
       def definable?(definition)
         definition.layer in :field
       end

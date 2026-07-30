@@ -19,6 +19,7 @@ module SystemRDL
 
       def evaluate(instance, base, id, **optargs)
         component_definition = find_component_definition(base, id, **optargs)
+        check_recursive_instance(instance, component_definition)
         check_instantiable(instance, component_definition)
 
         @insts.each do |inst|
@@ -29,22 +30,27 @@ module SystemRDL
       private
 
       def find_component_definition(base, id, **optargs)
-        component = base
-        while component
+        base.upper_layers(include_self: true).reverse_each do |component|
           definition = component.definitions[id.value]
-          if definition
-            unless optargs[:test] || (definition.layer in :reg | :field)
-              message = "#{definition.layer} instnace not supported yet"
-              raise_evaluation_error message, token_range
-            end
+          next unless definition
 
-            return definition
+          unless optargs[:test] || (definition.layer in :reg | :field)
+            message = "#{definition.layer} instnace not supported yet"
+            raise_evaluation_error message, token_range
           end
 
-          component = component.component
+          return definition
         end
 
         raise_evaluation_error "undefined component: #{id.value}", token_range
+      end
+
+      def check_recursive_instance(instnace, component_definition)
+        components = instnace.definition.upper_layers(include_self: true)
+        return if components.none? { |component| component.equal?(component_definition) }
+
+        message = 'recursive instance not allowed'
+        raise_evaluation_error message, token_range
       end
 
       def check_instantiable(instance, component_definition)
