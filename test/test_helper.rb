@@ -2,3 +2,4 @@
 
 require_relative '../lib/systemrdl'
 require 'minitest/autorun'
+require 'stringio'

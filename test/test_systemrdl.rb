@@ -9,7 +9,7 @@ module SystemRDL
         [File.join(dir, 'gpio.rdl'), File.join(dir, 'pwm.rdl')]
       end
 
-      gpio, pwm = SystemRDL.compile_files(*examples)
+      gpio, pwm = SystemRDL.compile(*examples)
 
       #
       # gpio.rdl
@@ -88,6 +88,38 @@ module SystemRDL
         assert_value(hw, field.hw)
         assert_value(reset, field.reset)
       end
+    end
+
+    def test_sharing_root_items_across_compile_units
+      rdl_a = <<~'RDL'
+        field my_field {
+          sw = rw; hw = r; desc = "field defined in rdl a";
+        };
+        addrmap addrmap_a {
+          reg { my_field a; } a;
+        };
+      RDL
+
+      rdl_b = <<~'RDL'
+        addrmap addrmap_b {
+          reg { my_field b; } b;
+        };
+      RDL
+
+      models = SystemRDL.compile_streams({
+        'rdl_a.rdl' => StringIO.new(rdl_a),
+        'rdl_b.rdl' => StringIO.new(rdl_b),
+      })
+
+      field = models[0].regs[0].fields[0]
+      assert_value('field defined in rdl a', field.desc)
+      assert_value(:rw, field.sw)
+      assert_value(:r, field.hw)
+
+      field = models[1].regs[0].fields[0]
+      assert_value('field defined in rdl a', field.desc)
+      assert_value(:rw, field.sw)
+      assert_value(:r, field.hw)
     end
 
     def assert_value(expected, value)

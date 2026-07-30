@@ -35,7 +35,7 @@ module SystemRDL
           next unless definition
 
           unless optargs[:test] || (definition.layer in :reg | :field)
-            message = "#{definition.layer} instnace not supported yet"
+            message = "#{definition.layer} instance not supported yet"
             raise_evaluation_error message, token_range
           end
 
@@ -45,8 +45,8 @@ module SystemRDL
         raise_evaluation_error "undefined component: #{id.value}", token_range
       end
 
-      def check_recursive_instance(instnace, component_definition)
-        components = instnace.definition.upper_layers(include_self: true)
+      def check_recursive_instance(instance, component_definition)
+        components = instance.definition.upper_layers(include_self: true)
         return if components.none? { |component| component.equal?(component_definition) }
 
         message = 'recursive instance not allowed'

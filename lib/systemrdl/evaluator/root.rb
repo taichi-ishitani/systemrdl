@@ -12,7 +12,8 @@ module SystemRDL
         connect(nil, nil)
       end
 
-      def evaluate(_instance, **optargs)
+      def evaluate(instance, **optargs)
+        inherit(instance) if instance&.root?
         root = create_instance(nil, :root, nil, nil, nil, **optargs)
         root.finalize
         root
@@ -22,6 +23,10 @@ module SystemRDL
 
       def instance_class
         RootInstance
+      end
+
+      def inherit(instance)
+        definitions.merge!(instance.definition.definitions)
       end
     end
 

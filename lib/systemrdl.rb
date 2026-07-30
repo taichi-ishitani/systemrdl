@@ -39,25 +39,47 @@ require_relative 'systemrdl/model/instance'
 require_relative 'systemrdl/model'
 
 module SystemRDL
-  module_function
+  class << self
+    def compile(*filenames)
+      __compile_multiple(filenames, :file_reader)
+    end
 
-  def compile_files(*files)
-    files.flat_map { |file| compile_file(file) }
-  end
+    def compile_streams(streams)
+      __compile_multiple(streams, :stream_reader)
+    end
 
-  def compile_file(file)
-    File.open(file) { |fp| compile(fp, filename: file) }
-  end
+    private
 
-  def compile(string_or_io, filename: 'unknown')
-    rdl =
-      if string_or_io.is_a?(::String)
-        string_or_io
-      else
-        string_or_io.read
+    def file_reader(filename, &)
+      File.open(filename) { |f| stream_reader(filename, f, &) }
+    end
+
+    def stream_reader(filename, stream)
+      rdl = stream.read
+      yield(rdl, filename)
+    end
+
+    def __compile_multiple(inputs, reader)
+      _, models = inputs.inject([nil, nil]) do |(root, results), input|
+        __send__(reader, *input) do |stream, filename|
+          __compile(stream, filename, root, results)
+        end
       end
-    ast = Parser.parse(rdl, filename:)
-    root = Evaluator.evaluate(ast)
-    Model.build(root)
+
+      models
+    end
+
+    def __compile(rdl, filename, root, results)
+      ast = Parser.parse(rdl, filename:)
+      evaluated = Evaluator.evaluate(ast, root)
+      models = Model.build(evaluated)
+
+      if results
+        results.concat(models)
+        [evaluated, results]
+      else
+        [evaluated, models]
+      end
+    end
   end
 end

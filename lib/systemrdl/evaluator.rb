@@ -2,14 +2,12 @@
 
 module SystemRDL
   module Evaluator
-    module_function
-
-    def evaluate(ast, **optargs)
+    def self.evaluate(ast, root = nil, **optargs)
       evaluator = build_evaluator(ast)
-      evaluator.evaluate(nil, **optargs)
+      evaluator.evaluate(root, **optargs)
     end
 
-    def build_evaluator(ast)
+    def self.build_evaluator(ast)
       Processor.new.process(ast)
     end
   end
