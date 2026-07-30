@@ -4,9 +4,9 @@ module SystemRDL
   module Evaluator
     module_function
 
-    def evaluate(ast)
+    def evaluate(ast, **optargs)
       evaluator = build_evaluator(ast)
-      evaluator.evaluate(nil)
+      evaluator.evaluate(nil, **optargs)
     end
 
     def build_evaluator(ast)

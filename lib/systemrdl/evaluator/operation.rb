@@ -7,7 +7,7 @@ module SystemRDL
 
       attr_reader :token_range
 
-      def evaluate(instance, width: nil)
+      def evaluate(instance, width: nil, **_optargs)
         value, type, width = eval_operation(instance, width)
         Value.new(value, type, width, token_range)
       end

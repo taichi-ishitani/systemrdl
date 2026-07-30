@@ -18,7 +18,7 @@ module SystemRDL
       end
 
       def evaluate(instance, base, id, **optargs)
-        component_definition = find_component_definition(base, id)
+        component_definition = find_component_definition(base, id, **optargs)
         check_instantiable(instance, component_definition)
 
         @insts.each do |inst|
@@ -28,11 +28,18 @@ module SystemRDL
 
       private
 
-      def find_component_definition(base, id)
+      def find_component_definition(base, id, **optargs)
         component = base
         while component
           definition = component.definitions[id.value]
-          return definition if definition
+          if definition
+            unless optargs[:test] || (definition.layer in :reg | :field)
+              message = "#{definition.layer} instnace not supported yet"
+              raise_evaluation_error message, token_range
+            end
+
+            return definition
+          end
 
           component = component.component
         end
