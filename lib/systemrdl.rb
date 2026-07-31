@@ -48,6 +48,11 @@ module SystemRDL
       __compile_multiple(streams, :stream_reader)
     end
 
+    def compile_source(rdl, filename: 'unknown')
+      _, models = __compile(rdl, filename, nil, nil)
+      models
+    end
+
     private
 
     def file_reader(filename, &)
@@ -61,8 +66,8 @@ module SystemRDL
 
     def __compile_multiple(inputs, reader)
       _, models = inputs.inject([nil, nil]) do |(root, results), input|
-        __send__(reader, *input) do |stream, filename|
-          __compile(stream, filename, root, results)
+        __send__(reader, *input) do |rdl, filename|
+          __compile(rdl, filename, root, results)
         end
       end
 

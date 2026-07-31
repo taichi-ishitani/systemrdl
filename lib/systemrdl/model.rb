@@ -2,9 +2,7 @@
 
 module SystemRDL
   module Model
-    module_function
-
-    def build(root)
+    def self.build(root)
       root.instances.map do |addrmap|
         AddrMap.new(addrmap, nil)
       end
