@@ -29,7 +29,7 @@ Bypassing the addressing-mode logic does not make the operands unconstrained. Th
 
 These are not "automatic-allocation rules" in the sense excluded by 5.1.2.2; they derive from requirements that hold no matter how an address was chosen.
 
-The `regfile` `alignment` property (Appendix A) is treated differently: it constrains placement only under automatic allocation and is *not* imposed on an explicit operator's value. A user who places an instance explicitly may therefore land off the `alignment` boundary without error. Appendix D explains why this differs from the sub-word boundary.
+The `regfile` / `addrmap` `alignment` property (Appendix A) is treated differently: it constrains placement only under automatic allocation and is *not* imposed on an explicit operator's value. A user who places an instance explicitly may therefore land off the `alignment` boundary without error. Appendix D explains why this differs from the sub-word boundary.
 
 ---
 
@@ -40,7 +40,7 @@ The addressing modes (5.1.2.2.2), the stride bounds (Section 3), and the sub-wor
 - `accesswidth` (in bytes) -- used by `compact`, which packs components tightly while keeping each aligned to the `accesswidth` parameter.
 - `size` (in bytes) -- used by `regalign` (each component's start address is a multiple of its size) and `fullalign` (an array's first element aligns to the size of the whole array, rounded up to a power of two).
 
-The specification defines these for some cases and leaves others silent. This section records the value this implementation uses for each, for a single `reg` (2.1) and `regfile` (2.2). Array-related quantities (occupancy and stride) are derived from these in Section 3.
+The specification defines these for some cases and leaves others silent. This section records the value this implementation uses for each, for a single `reg` (2.1) and `regfile` / `addrmap` (2.2). Array-related quantities (occupancy and stride) are derived from these in Section 3.
 
 ### 2.1 `reg`
 
@@ -54,49 +54,63 @@ The specification does not state what the "size" of a `reg` is for the purpose o
 
 This is the natural reading of "size" for a `reg`: a register physically occupies `regwidth` bits, and addresses in SystemRDL are byte addresses (5.1.2.4 a). The interpretation is recorded here because the specification does not state it explicitly.
 
-### 2.2 `regfile`
+### 2.2 `regfile` / `addrmap`
 
-A `regfile` does not have an `accesswidth` property in the specification, and the specification does not state what its `size` is. Both must be defined by this implementation to make 5.1.2.2.2 well-defined when a `regfile` participates in automatic allocation.
+Neither a `regfile` nor an `addrmap` has an `accesswidth` property in the specification, and the specification does not state what its `size` is. Both must be defined by this implementation to make 5.1.2.2.2 well-defined when a `regfile` or `addrmap` participates in automatic allocation.
+
+The two are treated identically here. The rules below follow from the shared structure -- a component that places address-assigned children and has no `accesswidth` property of its own -- and not from anything specific to either, so wherever this section says `regfile` / `addrmap` the same definition applies to both. A top-level `addrmap` is included as well: its base address is the origin (0 or an externally supplied value), which trivially satisfies any boundary requirement placed on a `regfile` / `addrmap` base.
 
 #### `accesswidth`
 
-The `accesswidth` of a `regfile` is defined as `max_internal_accesswidth`: the maximum of the `accesswidth` values of the components instantiated inside the `regfile` (i.e., the contained `reg` and `regfile` instances, the latter resolved recursively by this same rule).
+The `accesswidth` of a `regfile` / `addrmap` is defined as `max_internal_accesswidth`: the maximum of the `accesswidth` values of the components instantiated inside it (i.e., the contained `reg`, `regfile`, and `addrmap` instances, the latter two resolved recursively by this same rule).
 
-The motivation is to keep each internal `reg`'s software-access boundary intact in absolute-address terms. When the `regfile` is placed at an address that is a multiple of this value, every internal `reg` placed by automatic allocation lands on an address that respects its own `accesswidth`. Taking the maximum is the smallest value that satisfies every internal `reg`'s software-access boundary simultaneously.
+The motivation is to keep each internal `reg`'s software-access boundary intact in absolute-address terms. When the `regfile` / `addrmap` is placed at an address that is a multiple of this value, every internal `reg` placed by automatic allocation lands on an address that respects its own `accesswidth`. Taking the maximum is the smallest value that satisfies every internal `reg`'s software-access boundary simultaneously.
 
-A `regfile` always contains at least one register or register file (per 12.2), so `max_internal_accesswidth` is always well-defined.
+A `regfile` / `addrmap` always contains at least one register, register file, or address map (per 12.2 and 13.3), so `max_internal_accesswidth` is always well-defined.
 
 #### `size`
 
-The `size` of a `regfile` is the end address of its last child (the child's offset plus its size). No rounding is applied: `size` is the address range the `regfile` actually occupies, so that a following instance can be packed immediately after it (e.g., under `compact`) with no spurious gap.
+The `size` of a `regfile` / `addrmap` is the highest end address among its children (for each child, its offset plus its size). Because an explicit address operator can place children out of declaration order, this is the maximum over all children, not the end address of the last one declared. No rounding is applied: `size` is the address range it actually occupies, so that a following instance can be packed immediately after it (e.g., under `compact`) with no spurious gap.
 
 The `accesswidth`-multiple rounding that an array case needs is **not** folded into `size`. It belongs to the default array stride instead, and is described in Section 3. Keeping `size` as the unrounded occupancy gives the quantity a single, consistent meaning -- the space one instance uses -- whether or not the instance is arrayed.
 
 **Example**
 
 ```
-regfile {
-    reg { regwidth = 32; } a;  // accesswidth = 32, offset 0x00, size 4
-    reg { regwidth = 64; } b;  // accesswidth = 64, offset 0x08, size 8
-    reg { regwidth = 32; } c;  // accesswidth = 32, offset 0x10, size 4
-} rf;
+addrmap {
+    addressing = compact;
+    reg { regwidth = 32; } r;      // accesswidth = 32, size 4,  offset 0x00
+    regfile {
+        reg { regwidth = 32; } a;  // accesswidth = 32, size 4,  offset 0x00
+        reg { regwidth = 64; } b;  // accesswidth = 64, size 8,  offset 0x08
+        reg { regwidth = 32; } c;  // accesswidth = 32, size 4,  offset 0x10
+    } rf;                          // accesswidth = 64, size 20, offset 0x08
+} top;                             // accesswidth = 64, size 28
 ```
 
-- `accesswidth` = max(32, 64, 32) = 64 bits = 8 bytes.
-- End address of last child: `c.offset + c.size` = 0x10 + 4 = 0x14 (20).
-- `size` = 20. A following instance placed under `compact` starts at 0x14, with no gap.
+Inside `rf`:
 
-Note that 20 is not a multiple of the `regfile`'s `accesswidth` (8). That matters only when `rf` is arrayed, where the default stride -- not `size` -- supplies the rounding (see Section 3).
+- `accesswidth` = max(32, 64, 32) = 64 bits = 8 bytes.
+- Under `compact` each register is packed forward but kept on its own `accesswidth` boundary: `a` at 0x00, `b` (8-byte boundary) at 0x08, `c` at 0x10.
+- `size` = highest child end = `c.offset + c.size` = 0x10 + 4 = 0x14 (20).
+
+Inside `top`:
+
+- `accesswidth` = max(`r` = 32, `rf` = 64) = 64 bits = 8 bytes; the `rf` value comes from its own contents, resolved recursively.
+- `r` is placed at 0x00. `rf` must sit on its own `accesswidth` boundary (8 bytes), so it is pushed from `r`'s end (0x04) forward to 0x08 rather than packed tight at 0x04.
+- `size` = highest child end = `rf.offset + rf.size` = 0x08 + 20 = 0x1C (28).
+
+The `accesswidth` of `rf` (64, from its internal `b`) is what forces `rf`'s own base onto an 8-byte boundary; without the 64-bit `b` inside it, `rf` would only need a 4-byte boundary and could pack tight at 0x04. Placing it at 0x08 keeps every register inside it on its software-access boundary in absolute-address terms. Note that `rf`'s `size` is the unrounded 20.
 
 ### Status of These Decisions
 
 The decisions in 2.1 and 2.2 are interpretations in silent areas of the specification:
 
 - `reg` size: the specification does not state it; `regwidth / 8` is the natural reading.
-- `regfile` `accesswidth`: not defined by the specification at all; this implementation defines it.
-- `regfile` `size`: the specification does not state it; this implementation defines it as the end address of the last child, with no rounding. The `accesswidth`-multiple rounding needed for arrays lives in the default stride (Section 3), not in `size`.
+- `regfile` / `addrmap` `accesswidth`: not defined by the specification at all; this implementation defines it.
+- `regfile` / `addrmap` `size`: the specification does not state it; this implementation defines it as the highest end address among its children, with no rounding. The `accesswidth`-multiple rounding needed for arrays lives in the default stride (Section 3), not in `size`.
 
-Other implementations may interpret these differently. In particular, the `regfile` `accesswidth` is a strong independent interpretation by this implementation, and since `accesswidth` participates in address computation, cross-tool compatibility cannot be expected where it differs.
+Other implementations may interpret these differently. In particular, the `regfile` / `addrmap` `accesswidth` is a strong independent interpretation by this implementation, and since `accesswidth` participates in address computation, cross-tool compatibility cannot be expected where it differs.
 
 ---
 
@@ -121,9 +135,9 @@ This is grounded in the specification's own numeric example. In 5.1.2.5 Example 
 The `stride` is determined as follows:
 
 - When the array is placed with `+=`, `stride` is the operand value, subject to the constraints of 3.2.
-- Otherwise, `stride` is the **default stride**: the smallest value satisfying those same constraints. For a `reg` this is the element `size` (which already meets both); for a `regfile` it is the `size` (2.2) rounded up to a multiple of the `regfile`'s `accesswidth`, since the raw `size` may not be an `accesswidth` multiple.
+- Otherwise, `stride` is the **default stride**: the smallest value satisfying those same constraints. For a `reg` this is the element `size` (which already meets both); for a `regfile` / `addrmap` it is the `size` (2.2) rounded up to a multiple of its `accesswidth`, since the raw `size` may not be an `accesswidth` multiple.
 
-When the default stride equals `size` (a `reg`, or a `regfile` whose `size` is already an `accesswidth` multiple), `occupied_size` reduces to `size * N`, matching the spec's "size of an array element multiplied by the number of elements" in 5.1.2.2.2 (c).
+When the default stride equals `size` (a `reg`, or a `regfile` / `addrmap` whose `size` is already an `accesswidth` multiple), `occupied_size` reduces to `size * N`, matching the spec's "size of an array element multiplied by the number of elements" in 5.1.2.2.2 (c).
 
 An `alignment` property in effect on the array does **not** widen the stride. Per 5.1.2.4 g), an array's `alignment` fixes the alignment of the *start of the array* only; the spacing between elements is the default stride above (or a `+=` operand). This matches the array model implied by the `fullalign` description in 5.1.2.2.2 (c), where the whole-array size is "the size of an array element multiplied by the number of elements" with "no gaps between the array elements" -- elements are packed, and only the first element carries the larger alignment. So, e.g., a 32-bit `reg a[20]` under `addressing = compact` with `alignment = 8` places `a[0]` on an 8-byte boundary but spaces the elements 4 bytes apart (0x0, 0x4, 0x8, ...), not 8.
 
@@ -131,9 +145,18 @@ An `alignment` property in effect on the array does **not** widen the stride. Pe
 
 A stride -- whether supplied with `+=` or taken as the default of 3.1 -- is subject to two constraints:
 
-1. **Lower bound: `stride >= size`.** A stride smaller than the element size causes consecutive array elements to occupy overlapping address ranges (e.g., a 4-byte `reg` with `+= 0x2` places `c[0]` at 0x0-0x3, `c[1]` at 0x2-0x5, and so on). Such a layout has no coherent hardware realization, since the same byte cannot simultaneously belong to two distinct instances; this is closer in character to the same-address restriction in 10.1 (h) than to a software-access concern. The element `size` is `regwidth / 8` for a `reg` and the `regfile`'s `size` (2.2) for a `regfile`. The elaborator rejects a too-small stride directly at the stride value, before array expansion, so the diagnostic points at the user's choice rather than at the resulting overlap. (A `+=` written on a non-array instantiation has no elements to space and is treated as a harmless no-op.)
+1. **Lower bound: `stride >= size`.** A stride smaller than the element size causes consecutive array elements to occupy overlapping address ranges (e.g., a 4-byte `reg` with `+= 0x2` places `c[0]` at 0x0-0x3, `c[1]` at 0x2-0x5, and so on). Such a layout has no coherent hardware realization, since the same byte cannot simultaneously belong to two distinct instances; this is closer in character to the same-address restriction in 10.1 (h) than to a software-access concern. The element `size` is `regwidth / 8` for a `reg` and the `size` (2.2) for a `regfile` / `addrmap`. The elaborator rejects a too-small stride directly at the stride value, before array expansion, so the diagnostic points at the user's choice rather than at the resulting overlap. (A `+=` written on a non-array instantiation has no elements to space and is treated as a harmless no-op.)
 
-2. **Multiple of `accesswidth`.** For the instances covered by the sub-word boundary (Section 4), the stride must be a multiple of `accesswidth`, so that every element -- not just the first -- lands on an `accesswidth` boundary. The stride determines `c[i]`'s address as `base + stride * i`; a non-multiple stride pushes later elements off the boundary even when the first element is aligned. This is also why a `regfile`'s default stride (3.1) rounds the `regfile`'s raw `size` up to an `accesswidth` multiple: for the `rf` example in 2.2 (`size = 20`, `accesswidth = 8`), a stride of 20 would put `rf[1].b` at `0x14 + 0x08 = 0x1C`, off the 8-byte boundary, whereas the rounded stride of 24 puts it at `0x18 + 0x08 = 0x20`. Folding the rounding into the stride rather than into `size` confines it to the array case, where it is actually needed.
+2. **Multiple of `accesswidth`.** For the instances covered by the sub-word boundary (Section 4), the stride must be a multiple of `accesswidth`, so that every element -- not just the first -- lands on an `accesswidth` boundary. The stride determines `c[i]`'s address as `base + stride * i`; a non-multiple stride pushes later elements off the boundary even when the first element is aligned. This is also why a `regfile` / `addrmap` default stride (3.1) rounds the raw `size` up to an `accesswidth` multiple. Consider:
+
+```
+regfile {
+    reg { regwidth = 64; } a;  // accesswidth = 64, size 8
+    reg { regwidth = 32; } b;  // accesswidth = 32, size 4
+} rf[2];                       // accesswidth = 64, size 12
+```
+
+Here `rf` has `accesswidth` 8 bytes and a raw `size` of 12 (`a` at 0x00, `b` at 0x08), which is not a multiple of 8. A stride equal to the raw `size` (12) would place `rf[1]` at 0x0C, so its internal `a` (a 64-bit register, needing an 8-byte boundary) would land at absolute 0x0C -- off the boundary. Rounding the default stride up to 16 (the next multiple of the `accesswidth`) places `rf[1]` at 0x10, so `rf[1].a` lands at 0x10, back on an 8-byte boundary. Folding the rounding into the stride rather than into `size` confines it to the array case, where it is actually needed.
 
 Both constraints apply equally to a `+=` operand and to a default stride; the default stride is simply constructed to satisfy them from the outset.
 
@@ -161,7 +184,7 @@ Partial reads of fields without read side-effects are explicitly permitted (10.6
 
 Clause 10.6.1 (f) is written in terms of a field's bit position within its register, and is satisfied by laying fields out so that no side-effecting field crosses a sub-word boundary measured *from the register's base*. But the boundary that software actually accesses is on the *absolute* address line: a 32-bit access lands on absolute addresses 0x0, 0x4, 0x8, ... regardless of where any given register sits.
 
-These two notions of "sub-word boundary" coincide only when the register's own base address is a multiple of `accesswidth`. Per 5.1.2.2, an instance's address is relative to its parent, and its absolute address is the sum of its own offset and the offsets of all parent objects. So a register whose intra-register field layout satisfies 10.6.1 (f) can still have its fields split by real software accesses if the register -- or any enclosing `regfile` -- is placed off an `accesswidth` boundary.
+These two notions of "sub-word boundary" coincide only when the register's own base address is a multiple of `accesswidth`. Per 5.1.2.2, an instance's address is relative to its parent, and its absolute address is the sum of its own offset and the offsets of all parent objects. So a register whose intra-register field layout satisfies 10.6.1 (f) can still have its fields split by real software accesses if the register -- or any enclosing `regfile` / `addrmap` -- is placed off an `accesswidth` boundary.
 
 Example: a `reg` with `regwidth = 64`, `accesswidth = 32` (`size = 8`), with a writable field in bits [31:0] and another in bits [63:32]. The intra-register layout satisfies 10.6.1 (f). Placed at absolute 0x02, the register spans 0x02-0x09. A 32-bit software access at 0x04 reads absolute bytes 0x04-0x07, which straddles both fields -- exactly the atomicity break 10.6.1 (f) is meant to prevent. Placing the register at a multiple of 4 (`accesswidth / 8`) avoids this.
 
@@ -169,18 +192,18 @@ This is a derivation, not a verbatim rule: the specification does not state "reg
 
 ### 4.3 The Invariant
 
-Every `reg` and `regfile` instance shall satisfy the following (the per-case reasons, including why the rule is applied uniformly rather than only to the cases 10.6.1 (f) strictly constrains, are given in 4.4):
+Every `reg`, `regfile`, and `addrmap` instance shall satisfy the following (the per-case reasons, including why the rule is applied uniformly rather than only to the cases 10.6.1 (f) strictly constrains, are given in 4.4):
 
 - The instance's resolved absolute address shall be a multiple of `accesswidth` (in bytes).
 - If the instance is an array placed with `+=`, the stride shall also be a multiple of `accesswidth` (in bytes), so that every element -- not just the first -- lands on an `accesswidth` boundary (see also 3.2).
 
-For a `reg`, the `accesswidth` is its own (2.1). For a `regfile`, the boundary requirement propagates to its base address: because the offsets of registers inside a `regfile` are relative (5.1.2.2), a misaligned `regfile` base shifts every contained register's absolute address by the same amount, breaking the requirement for any register inside it. A `regfile`'s base address (and array stride, if placed with `+=`) shall therefore be a multiple of the `regfile`'s `accesswidth` as defined in Section 2.2 -- which is the maximum of the `accesswidth` values its contents require, exactly the value needed to satisfy every internal register simultaneously.
+For a `reg`, the `accesswidth` is its own (2.1). For a `regfile` / `addrmap`, the boundary requirement propagates to its base address: because the offsets of the components inside it are relative (5.1.2.2), a misaligned base shifts every contained register's absolute address by the same amount, breaking the requirement for any register inside it. A `regfile` / `addrmap` base address (and array stride, if placed with `+=`) shall therefore be a multiple of its `accesswidth` as defined in Section 2.2 -- which is the maximum of the `accesswidth` values its contents require, exactly the value needed to satisfy every internal register simultaneously.
 
-This re-frames the Section 2.2 `regfile` `accesswidth` definition: it is not merely a value used by `compact` mode, but the boundary that an internal register's 10.6.1 (f) precondition forces onto the `regfile` as a whole.
+This re-frames the Section 2.2 `regfile` / `addrmap` `accesswidth` definition: it is not merely a value used by `compact` mode, but the boundary that an internal register's 10.6.1 (f) precondition forces onto the `regfile` / `addrmap` as a whole.
 
 ### 4.4 Scope of Application
 
-The invariant is applied uniformly to all `reg` and `regfile` instances, but the reasons differ by case, and recording them keeps the justification honest:
+The invariant is applied uniformly to all `reg`, `regfile`, and `addrmap` instances, but the reasons differ by case, and recording them keeps the justification honest:
 
 - **Split register with a side-effecting field** (`regwidth > accesswidth`, has a writable or read-side-effecting field): constrained by 10.6.1 (f) as derived above. This is the core case.
 - **Non-split register** (`regwidth == accesswidth`): aligning to `accesswidth` is identical to aligning to the register's own width, which is just the default alignment of 5.1.2.2.1 ("aligned to a multiple of their width"). The invariant coincides with existing behavior; no separate justification is needed.
@@ -190,7 +213,7 @@ The invariant is applied uniformly to all `reg` and `regfile` instances, but the
 
 The invariant rests on interpretations of the same kind throughout: each takes a clause of 10.6.1 together with how software actually accesses the address space, and deduces a placement requirement on the absolute address. None is a verbatim placement rule in the specification. They differ in the strength of the premise they start from -- both in whether that clause is a prohibition or a permission, and in how severe a violation is:
 
-- **Strong premise -- side-effecting fields (4.3, 4.4 core case)**: derived from 10.6.1 (f), a prohibition ("shall not span"). A violation breaks the atomicity of a write or read side-effect, so the layout has no faithful hardware realization. The one reconstructed step is reading (f) as presupposing the register's base sits on an `accesswidth` boundary -- not stated outright, but forced by the fact that otherwise (f) would not protect the field it names. The `regfile` propagation then follows by the relative-address rule of 5.1.2.2 as a clean deduction; it inherits the strength of that premise, so base requirement and propagation are one interpretation, not separate claims.
+- **Strong premise -- side-effecting fields (4.3, 4.4 core case)**: derived from 10.6.1 (f), a prohibition ("shall not span"). A violation breaks the atomicity of a write or read side-effect, so the layout has no faithful hardware realization. The one reconstructed step is reading (f) as presupposing the register's base sits on an `accesswidth` boundary -- not stated outright, but forced by the fact that otherwise (f) would not protect the field it names. The `regfile` / `addrmap` propagation then follows by the relative-address rule of 5.1.2.2 as a clean deduction; it inherits the strength of that premise, so base requirement and propagation are one interpretation, not separate claims.
 - **Weaker premise -- read-only registers (4.4)**: derived from 10.6.1 (e), a permission ("partial reads are valid"). Going from "readable in parts" to "the base should be on a boundary" needs the added premise that the register-relative bit positions and access count should remain predictable on the absolute address line -- which the specification does not state. And a violation only degrades the read shape rather than breaking the register. Both the permission starting point and the milder harm make this weaker than the side-effecting case, though it is the same species of deduction.
 
 Below these sits a non-deductive consideration that does not by itself justify the invariant but reinforces applying it uniformly: exempting any case would cost per-register access-type analysis and yield boundary differences by access type, for no expressiveness gained.
@@ -209,9 +232,9 @@ Per 5.1.2.2.1, `alignment` "defines the byte value of which the container's inst
 
 ### Used as a condition on the container's own address
 
-The specification does not state whether `alignment` also constrains the *container's own* address. It is silent here, but the answer follows from relative addressing: a child's offset is relative to the `regfile` base (5.1.2.2), so the child's absolute address is a multiple of `alignment` only if the base is too. To make the child-level requirement hold in absolute terms, this implementation places a `regfile` carrying an `alignment` property so that its own base address is a multiple of `alignment` -- and, combined with the sub-word boundary, a multiple of `max(accesswidth, alignment)` (both being powers of two).
+The specification does not state whether `alignment` also constrains the *instance's own* address. It is silent here, but the answer follows from relative addressing: a child's offset is relative to the `regfile` / `addrmap` base (5.1.2.2), so the child's absolute address is a multiple of `alignment` only if the base is too. To make the child-level requirement hold in absolute terms, this implementation places a `regfile` / `addrmap` carrying an `alignment` property so that its own base address is a multiple of `alignment` -- and, combined with the sub-word boundary, a multiple of `max(accesswidth, alignment)` (both being powers of two).
 
-This propagation applies **under automatic allocation only**. When the `regfile` is placed with an explicit operator (`@`, `%=`, `+=`), the resulting address or stride is accepted even if it is not a multiple of `alignment`; see Appendix D.
+This propagation applies **under automatic allocation only**. When the `regfile` / `addrmap` is placed with an explicit operator (`@`, `%=`, `+=`), the resulting address or stride is accepted even if it is not a multiple of `alignment`; see Appendix D.
 
 ### Interpretation: a preference, not a floor
 
@@ -234,9 +257,9 @@ automatic placement:  (addr % accesswidth) == 0  &&  (addr % global_alignment) =
 
 Under automatic allocation the container's `global_alignment` applies. A `%=` operand replaces it with the locally specified `local_alignment` for that instance (the "more localized version" of 5.1.2.4 c), rather than adding to it -- the global value is not also imposed. An `@` address is subject to neither; only the model-validity boundary (`accesswidth`, and the sub-word requirement of Section 4) remains. This lets a design place, say, 2-byte registers contiguously in a 4-byte-`accesswidth` map by writing explicit addresses, which a floor reading would reject.
 
-## Appendix B: `regalign` Alignment of a `regfile`
+## Appendix B: `regalign` Alignment of a `regfile` / `addrmap`
 
-`regalign` (5.1.2.2.2 b) places each component so that "each component's start address is a multiple of its size (in bytes)." Taken literally with the `size` defined in 2.2, a `regfile` would be aligned to its raw occupied size, which need not be a multiple of its `accesswidth`.
+`regalign` (5.1.2.2.2 b) places each component so that "each component's start address is a multiple of its size (in bytes)." Taken literally with the `size` defined in 2.2, a `regfile` / `addrmap` would be aligned to its raw occupied size, which need not be a multiple of its `accesswidth`.
 
 Consider:
 
@@ -247,11 +270,11 @@ regfile my_file {
 };
 ```
 
-Here `my_file` has `accesswidth` = 32 bits and `size` = 6 bytes (0x00-0x05). A literal reading of `regalign` would align `my_file` to a multiple of 6, allowing it at, say, `0x6`. But then the internal `a` (which requires a 4-byte access boundary) would sit at absolute `0x6`, off its `accesswidth` boundary -- violating the sub-word boundary invariant of Section 4, which requires a `regfile`'s base to be a multiple of its `accesswidth`.
+Here `my_file` has `accesswidth` = 32 bits and `size` = 6 bytes (0x00-0x05). A literal reading of `regalign` would align `my_file` to a multiple of 6, allowing it at, say, `0x6`. But then the internal `a` (which requires a 4-byte access boundary) would sit at absolute `0x6`, off its `accesswidth` boundary -- violating the sub-word boundary invariant of Section 4, which requires a `regfile` / `addrmap` base to be a multiple of its `accesswidth`.
 
-This implementation therefore aligns a `regfile` under `regalign` to its `size` **rounded up to a multiple of its `accesswidth`**, not to the raw `size`. For `my_file` the alignment basis is 8 (6 rounded up to the next multiple of 4), so it is placed at `0x0, 0x8, 0x10, ...`, and the internal `a` always lands on a 4-byte boundary.
+This implementation therefore aligns a `regfile` / `addrmap` under `regalign` to its `size` **rounded up to a multiple of its `accesswidth`**, not to the raw `size`. For `my_file` the alignment basis is 8 (6 rounded up to the next multiple of 4), so it is placed at `0x0, 0x8, 0x10, ...`, and the internal `a` always lands on a 4-byte boundary.
 
-This does not change the definition of `size` in 2.2, which remains the unrounded occupancy (used for packing the *next* instance without a gap). It affects only the value used as the *alignment basis* under `regalign`. The rounding is exactly the same operation already applied to the default array stride (3.1); both are cases of "when `size` is used to align or space an instance, round it up to an `accesswidth` multiple, while the raw `size` stays the occupancy." The occupancy meaning and the alignment/spacing meaning of `size` diverge only for a `regfile`; for a `reg`, `size` (`regwidth / 8`) is already a multiple of `accesswidth`, so the rounding has no effect and this distinction does not arise.
+This does not change the definition of `size` in 2.2, which remains the unrounded occupancy (used for packing the *next* instance without a gap). It affects only the value used as the *alignment basis* under `regalign`. The rounding is exactly the same operation already applied to the default array stride (3.1); both are cases of "when `size` is used to align or space an instance, round it up to an `accesswidth` multiple, while the raw `size` stays the occupancy." The occupancy meaning and the alignment/spacing meaning of `size` diverge only for a `regfile` / `addrmap`; for a `reg`, `size` (`regwidth / 8`) is already a multiple of `accesswidth`, so the rounding has no effect and this distinction does not arise.
 
 ## Appendix C: Value of a `%=` Operand
 
@@ -265,7 +288,7 @@ Note that this is a deliberate relaxation of one possible reading of the specifi
 
 ## Appendix D: Sub-Word Boundary vs. `alignment`
 
-Both the sub-word boundary (Section 4) and `alignment` propagation (Appendix A) require an instance's absolute address to be a multiple of some boundary, and both propagate to a `regfile` base through relative addressing. They are nevertheless enforced on different placement paths: the sub-word boundary on every path (automatic, `@`, `%=`, `+=`), `alignment` on automatic allocation only. The difference comes from the strength of the underlying requirement.
+Both the sub-word boundary (Section 4) and `alignment` propagation (Appendix A) require an instance's absolute address to be a multiple of some boundary, and both propagate to a `regfile` / `addrmap` base through relative addressing. They are nevertheless enforced on different placement paths: the sub-word boundary on every path (automatic, `@`, `%=`, `+=`), `alignment` on automatic allocation only. The difference comes from the strength of the underlying requirement.
 
 The sub-word boundary derives from a hardware requirement. A side-effecting field split across software-access sub-words breaks the atomicity that 10.6.1 (f) mandates; the layout has no faithful hardware realization. Because the harm is real regardless of how the address was chosen, the boundary is enforced on explicit operators too -- even though 5.1.2.2 might be read as exempting them -- since the requirement originates in 10.6.1 (f), outside the scope of that exemption.
 
