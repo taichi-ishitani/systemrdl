@@ -77,7 +77,7 @@ module SystemRDL
 
         message =
           "stride less than #{instance.layer} size: " \
-          "stride 0x#{stride.value.to_s(16)} #{instance.layer} size #{size}"
+          "stride 0x#{stride.value.to_s(16)} size #{size}"
         raise_evaluation_error message, stride.token_range
       end
 

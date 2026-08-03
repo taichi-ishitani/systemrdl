@@ -133,6 +133,107 @@ module SystemRDL
           assert_equal(size, regfiles[i].size)
         end
       end
+
+      def test_power_of_2_alignment_is_accepted
+        [1, 2, 4, 8, 16, 32].each do |alignment|
+          regfile = evaluate(<<~RDL).instances[0].instances[0]
+            addrmap my_map {
+              regfile {
+                alignment = #{alignment};
+                reg {
+                  field { sw = rw; hw = r; } a;
+                } a;
+              } a;
+            };
+          RDL
+
+          assert_property_value(regfile, :alignment, alignment)
+        end
+      end
+
+      def test_non_power_of_2_alignment_is_rejected
+        [0, 3, 5, 7, 9, 15, 17, 31, 33].each do |alignment|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                regfile {
+                  alignment = #{alignment};
+                  reg {
+                    field { sw = rw; hw = r; } a;
+                  } a;
+                } a;
+              };
+            RDL
+            "alignment must be a power of 2: #{alignment}"
+          )
+        end
+      end
+
+      def test_inheriting_alignment
+        regfile_define = <<~'RDL'
+          regfile my_regfile {
+            reg {
+              regwidth = 32;
+              field { sw = rw; hw = r; } a;
+            } a;
+            reg {
+              regwidth = 32;
+              field { sw = rw; hw = r; } b;
+            } b;
+          };
+        RDL
+
+        regfile = evaluate(<<~RDL).instances[0].instances[0]
+          #{regfile_define}
+          addrmap my_addrmap {
+            alignment = 8;
+            my_regfile a;
+          };
+        RDL
+
+        assert_property_value(regfile, :alignment, 8)
+        assert_value(0x08, regfile.instances[1].address)
+
+        regfile = evaluate(<<~RDL).instances[0].instances[0].instances[0]
+          #{regfile_define}
+          addrmap my_addrmap {
+            alignment = 8;
+            regfile {
+              my_regfile a;
+            } a;
+          };
+        RDL
+
+        assert_property_value(regfile, :alignment, 8)
+        assert_value(0x08, regfile.instances[1].address)
+
+        regfile = evaluate(<<~RDL).instances[0].instances[0].instances[0]
+          #{regfile_define}
+          addrmap my_addrmap {
+            regfile {
+              alignment = 8;
+              my_regfile a;
+            } a;
+          };
+        RDL
+
+        assert_property_value(regfile, :alignment, 8)
+        assert_value(0x08, regfile.instances[1].address)
+
+        regfile = evaluate(<<~RDL).instances[0].instances[0].instances[0]
+          #{regfile_define}
+          addrmap my_addrmap {
+            alignment = 4;
+            regfile {
+              alignment = 8;
+              my_regfile a;
+            } a;
+          };
+        RDL
+
+        assert_property_value(regfile, :alignment, 8)
+        assert_value(0x08, regfile.instances[1].address)
+      end
     end
   end
 end

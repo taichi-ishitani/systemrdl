@@ -3,8 +3,7 @@
 module SystemRDL
   module Evaluator
     class AddrMapDefinition < ComponentDefinition
-      include AddressAllocation
-      include ContainerComponent
+      include BlockComponent
 
       def evaluate(instance, **optargs)
         if instance.root?
@@ -16,7 +15,7 @@ module SystemRDL
 
       def validate(instance)
         check_structural_component_instances(instance)
-        check_alignment(instance)
+        check_alignment_property(instance)
         check_endianness_exclusivity(instance)
         check_rsvdset_exclusivity(instance)
         check_bit_ordering_exclusivity(instance)
@@ -35,10 +34,6 @@ module SystemRDL
 
       def instance_class
         AddrMapInstance
-      end
-
-      def check_alignment(instance)
-        check_power_of_2(instance, :alignment, 1)
       end
 
       def check_endianness_exclusivity(instance)

@@ -492,7 +492,6 @@ module SystemRDL
       end
 
       def test_element_assignment_to_allow_listed_property_is_allowed
-        skip 'not implemented yet'
         regfiles = evaluate(<<~'RDL').instances[0].instances
           addrmap my_map {
             regfile {

@@ -2,6 +2,19 @@
 
 module SystemRDL
   module Evaluator
+    module BlockComponent
+      include AddressOperation
+      include ArrayComponent
+      include ContainerComponent
+      include AddressAllocation
+
+      private
+
+      def check_alignment_property(instance)
+        check_power_of_2(instance, :alignment, 1)
+      end
+    end
+
     module BlockInstance
       attr_accessor :address
       attr_accessor :stride

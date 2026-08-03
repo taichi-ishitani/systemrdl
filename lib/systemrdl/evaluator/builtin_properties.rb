@@ -44,6 +44,9 @@ module SystemRDL
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
+        prop.default_value = proc do |inst|
+          (inst.regfile? && inst.parent.property_value(:alignment)) || nil
+        end
       end
 
       def_property :anded do |prop|

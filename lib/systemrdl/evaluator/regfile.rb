@@ -3,13 +3,11 @@
 module SystemRDL
   module Evaluator
     class RegFileDefinition < ComponentDefinition
-      include AddressOperation
-      include ArrayComponent
-      include ContainerComponent
-      include AddressAllocation
+      include BlockComponent
 
       def validate(instance)
         check_structural_component_instances(instance)
+        check_alignment_property(instance)
       end
 
       def finalize(instance)

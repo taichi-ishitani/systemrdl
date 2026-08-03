@@ -94,10 +94,12 @@ module SystemRDL
                 field { sw = rw; hw = r; } a;
               } a;
               regfile {
+                alignment = 4;
                 reg { regwidth = 64; field { sw = rw; hw = r; } a; } x;
                 reg { regwidth = 32; field { sw = rw; hw = r; } a; } y;
               } b;
               regfile {
+                alignment = 4;
                 reg { regwidth = 64; field { sw = rw; hw = r; } a; } x;
                 reg { regwidth = 32; field { sw = rw; hw = r; } a; } y;
               } c[20];
@@ -349,6 +351,7 @@ module SystemRDL
             alignment = 32;
 
             regfile some_regfile {
+              alignment = 4;
               reg { regwidth = 64; field { sw = rw; hw = r; } a; } a;
               reg { regwidth = 32; field { sw = rw; hw = r; } b; } b;
             };

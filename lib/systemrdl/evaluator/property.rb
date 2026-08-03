@@ -101,7 +101,7 @@ module SystemRDL
 
         return if value.nil?
 
-        create_value(value)
+        value.is_a?(Value) ? value : create_value(value)
       end
 
       def create_value(value)
