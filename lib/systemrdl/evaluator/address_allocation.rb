@@ -8,8 +8,8 @@ module SystemRDL
       def allocate_addresses(instance)
         address = 0
         instance.instances.each do |child_inst|
-          # For now, support reg only
-          next unless child_inst.reg?
+          # For now, support reg/regfile only
+          next unless child_inst.reg? || child_inst.regfile?
 
           assign_address(address, instance, child_inst)
           address = calc_next_address(child_inst)
@@ -43,12 +43,22 @@ module SystemRDL
       end
 
       def alignment_by_addressing(inst, child_inst)
-        addressing = inst.property_value(:addressing).value
+        addressing = effective_addressing(inst)
         case addressing
         when :compact then child_inst.accesswidth / 8
         when :regalign then aligned_size(child_inst)
         when :fullalign then calc_fullalign_alignment(child_inst)
         end
+      end
+
+      def effective_addressing(inst)
+        addrmap =
+          if RUBY_VERSION >= '4.0'
+            inst.upper_instances(include_root: false, include_self: true).rfind(&:addrmap?)
+          else
+            inst.upper_instances(include_root: false, include_self: true).reverse_each.find(&:addrmap?)
+          end
+        addrmap.property_value(:addressing).value
       end
 
       def calc_fullalign_alignment(child_inst)
@@ -72,26 +82,26 @@ module SystemRDL
         child_inst.address.value + delta
       end
 
-      def check_overlapping_regs(instance)
-        # For now, support reg only but not regfile
-        regs = instance.instances.select { |reg| reg.reg? && reg.first_element? }
-        regs.combination(2).each do |(reg_a, reg_b)|
-          next unless overlapping_pair?(reg_a, reg_b)
+      def check_overlapping_address_ranges(instance)
+        # For now, support reg/regfile only but not addrmap/mem
+        insts = instance.instances.select { |inst| (inst.reg? || inst.regfile?) && inst.first_element? }
+        insts.combination(2).each do |(inst_a, inst_b)|
+          next unless overlapping_pair?(inst_a, inst_b)
 
-          message = 'overlapping regs not allowed'
-          raise_evaluation_error message, reg_a.token_range, reg_b.token_range
+          message = 'overlapping address ranges not allowed'
+          raise_evaluation_error message, inst_a.token_range, inst_b.token_range
         end
       end
 
-      def overlapping_pair?(reg_a, reg_b)
-        range_a = calc_address_range(reg_a)
-        range_b = calc_address_range(reg_b)
+      def overlapping_pair?(inst_a, inst_b)
+        range_a = calc_address_range(inst_a)
+        range_b = calc_address_range(inst_b)
         return false unless range_a.include?(range_b.begin) || range_b.include?(range_a.begin)
 
-        r_a = reg_a.sw_readable?
-        w_a = reg_a.sw_writable?
-        r_b = reg_b.sw_readable?
-        w_b = reg_b.sw_writable?
+        r_a = inst_a.sw_readable?
+        w_a = inst_a.sw_writable?
+        r_b = inst_b.sw_readable?
+        w_b = inst_b.sw_writable?
         (r_a && r_b) || (w_a && w_b)
       end
 

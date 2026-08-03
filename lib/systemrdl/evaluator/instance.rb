@@ -35,14 +35,13 @@ module SystemRDL
       end
 
       def full_name
-        elements = [self]
-        current = parent
-        until current.root?
-          elements.unshift(current)
-          current = current.parent
-        end
+        upper_instances(include_root: false, include_self: true).map(&:element_name).join('.')
+      end
 
-        elements.map(&:element_name).join('.')
+      def upper_instances(include_root: false, include_self: false)
+        instances = (root? && []) || parent.upper_instances(include_root:, include_self: true)
+        instances << self if (root? && include_root) || (!root? && include_self)
+        instances
       end
 
       def layer
@@ -112,8 +111,8 @@ module SystemRDL
       end
 
       def finalize
-        @definition.finalize(self)
         @instances.each(&:finalize)
+        @definition.finalize(self)
       end
     end
   end

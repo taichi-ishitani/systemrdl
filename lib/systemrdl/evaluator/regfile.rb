@@ -3,10 +3,19 @@
 module SystemRDL
   module Evaluator
     class RegFileDefinition < ComponentDefinition
+      include AddressOperation
+      include ArrayComponent
       include ContainerComponent
+      include AddressAllocation
 
       def validate(instance)
         check_structural_component_instances(instance)
+      end
+
+      def finalize(instance)
+        allocate_addresses(instance)
+        check_address_operations(instance)
+        check_overlapping_address_ranges(instance)
       end
 
       def layer
@@ -18,9 +27,16 @@ module SystemRDL
       def instance_class
         RegFileInstance
       end
+
+      def apply_inst_values(instance, inst_values)
+        apply_address_operations(instance, inst_values)
+        check_range(inst_values)
+      end
     end
 
     class RegFileInstance < Instance
+      include BlockInstance
+
       def definable?(definition)
         definition.layer in :regfile | :reg | :field
       end

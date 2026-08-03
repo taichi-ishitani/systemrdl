@@ -25,9 +25,7 @@ module SystemRDL
       end
 
       def upper_layers(include_self: false)
-        return [] if layer == :root
-
-        layers = [*component.upper_layers, component]
+        layers = (layer == :root && []) || component.upper_layers(include_self: true)
         layers << self if include_self
         layers
       end
