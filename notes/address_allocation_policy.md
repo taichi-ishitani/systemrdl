@@ -236,6 +236,14 @@ The specification does not state whether `alignment` also constrains the *instan
 
 This propagation applies **under automatic allocation only**. When the `regfile` / `addrmap` is placed with an explicit operator (`@`, `%=`, `+=`), the resulting address or stride is accepted even if it is not a multiple of `alignment`; see Appendix D.
 
+### Which `alignment` value applies: nearest ancestor
+
+5.1.2.2.1 states that an `alignment` value is inherited by a container's non-`addrmap` children, but describes only this single step. Once containers nest, more than one ancestor may set `alignment`, and the specification does not say which value then applies. This implementation uses the value from the closest ancestor container that sets one, found by walking up the instance hierarchy: intermediate `regfile`s that set none of their own are passed through, and a nearer setting takes precedence over a farther one.
+
+One limit on this walk is fixed by the specification rather than chosen here: because the inheritance in 5.1.2.2.1 is limited to non-`addrmap` children, a nested `addrmap` does not take its parent's `alignment`, and nothing below it sees the outer value. Each `addrmap` begins a fresh `alignment` scope, so the walk stops at the nearest enclosing `addrmap`.
+
+The nearest-ancestor rule is this implementation's reading of how the single-step inheritance composes once containers nest; the specification states neither multi-level propagation nor any precedence. The `addrmap` boundary, by contrast, follows directly from the "non-`addrmap` children" limit.
+
 ### Interpretation: a preference, not a floor
 
 A question runs through both uses above and the `%=` operator: when an instance is placed by an explicit operator, must it still respect an `alignment` in effect on its container? Two readings are possible. Under a *floor* reading, `alignment` is a minimum the container guarantees for everything in it, which even an explicit operator must satisfy. Under a *preference* reading, `alignment` expresses how automatic allocation should place children, and an explicit operator -- which by 5.1.2.2 bypasses automatic allocation -- is free of it.
