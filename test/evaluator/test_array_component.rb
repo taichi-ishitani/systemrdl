@@ -8,7 +8,7 @@ module SystemRDL
       def test_array_instances
         test_codes = [
           <<~'RDL',
-            addrmap my_addrmap {
+            addrmap top {
               reg my_reg {
                 field { sw = rw; hw = r; } a;
               };
@@ -18,8 +18,8 @@ module SystemRDL
               my_reg d;
             };
           RDL
-          <<~'RDL'
-            addrmap my_addrmap {
+          <<~'RDL',
+            addrmap top {
               regfile my_regfile {
                 reg {
                   field { sw = rw; hw = r; } a;
@@ -29,6 +29,19 @@ module SystemRDL
               my_regfile b[1][2];
               my_regfile c[1][2][3];
               my_regfile d;
+            };
+          RDL
+          <<~'RDL'
+            addrmap top {
+              addrmap my_addrmap {
+                reg {
+                  field { sw = rw; hw = r; } a;
+                } a;
+              };
+              my_addrmap a[1];
+              my_addrmap b[1][2];
+              my_addrmap c[1][2][3];
+              my_addrmap d;
             };
           RDL
         ]
@@ -62,14 +75,17 @@ module SystemRDL
       end
 
       def test_range_is_rejected
-        [[:reg, 'my_reg'], [:regfile, 'my_regfile']].each do |(layer, comp)|
+        [[:reg, 'my_reg'], [:regfile, 'my_regfile'], [:addrmap, 'my_addrmap']].each do |(layer, comp)|
           assert_raises_evaluation_error(
             <<~RDL,
-              addrmap my_addrmap {
+              addrmap top {
                 reg my_reg {
                   field { sw = rw; hw = r; } a;
                 };
                 regfile my_regfile {
+                  my_reg a;
+                };
+                addrmap my_addrmap {
                   my_reg a;
                 };
                 #{comp} a[0:0];
@@ -81,14 +97,17 @@ module SystemRDL
       end
 
       def test_address_stride_for_scalar_instance_is_rejected
-        [[:reg, 'my_reg'], [:regfile, 'my_regfile']].each do |(layer, comp)|
+        [[:reg, 'my_reg'], [:regfile, 'my_regfile'], [:addrmap, 'my_addrmap']].each do |(layer, comp)|
           assert_raises_evaluation_error(
             <<~RDL,
-              addrmap my_addrmap {
+              addrmap top {
                 reg my_reg {
                   field { sw = rw; hw = r; } a;
                 };
                 regfile my_regfile {
+                  my_reg a;
+                };
+                addrmap my_addrmap {
                   my_reg a;
                 };
                 #{comp} a += 0x4;
@@ -107,12 +126,15 @@ module SystemRDL
           regfile my_regfile {
             my_reg a;
           };
+          addrmap my_addrmap {
+            my_reg a;
+          };
         RDL
 
         ['my_reg', 'my_regfile'].each do |comp|
           assert_raises_evaluation_error(
             <<~RDL,
-              addrmap my_map {
+              addrmap top {
                 #{defines}
                 #{comp} a[0];
               };
@@ -122,7 +144,7 @@ module SystemRDL
 
           assert_raises_evaluation_error(
             <<~RDL,
-              addrmap my_map {
+              addrmap top {
                 #{defines}
                 #{comp} a[1][0];
               };
@@ -132,7 +154,7 @@ module SystemRDL
 
           assert_raises_evaluation_error(
             <<~RDL,
-              addrmap my_map {
+              addrmap top {
                 #{defines}
                 #{comp} a[1][2][0];
               };

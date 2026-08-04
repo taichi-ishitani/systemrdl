@@ -7,7 +7,7 @@ module SystemRDL
     class TestCase < Minitest::Test
       def evaluate(code, **optargs)
         ast = SystemRDL::Parser.parse(code, **optargs)
-        SystemRDL::Evaluator.evaluate(ast, test: true)
+        SystemRDL::Evaluator.evaluate(ast)
       end
 
       def assert_property(instance, name, types, value: nil)

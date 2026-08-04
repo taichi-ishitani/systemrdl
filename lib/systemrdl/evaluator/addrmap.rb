@@ -23,6 +23,7 @@ module SystemRDL
 
       def finalize(instance)
         allocate_addresses(instance)
+        check_address_operations(instance)
         check_overlapping_address_ranges(instance)
       end
 
@@ -34,6 +35,13 @@ module SystemRDL
 
       def instance_class
         AddrMapInstance
+      end
+
+      def apply_inst_values(instance, inst_values)
+        return if instance.parent.root?
+
+        apply_address_operations(instance, inst_values)
+        check_range(inst_values)
       end
 
       def check_endianness_exclusivity(instance)
@@ -50,6 +58,8 @@ module SystemRDL
     end
 
     class AddrMapInstance < Instance
+      include BlockInstance
+
       def definable?(definition)
         definition.layer in :addrmap | :regfile | :reg | :field
       end

@@ -34,7 +34,7 @@ module SystemRDL
           definition = component.definitions[id.value]
           next unless definition
 
-          unless optargs[:test] || (definition.layer in :reg | :field)
+          unless optargs[:test] || instantiable_component?(definition)
             message = "#{definition.layer} instance not supported yet"
             raise_evaluation_error message, token_range
           end
@@ -43,6 +43,10 @@ module SystemRDL
         end
 
         raise_evaluation_error "undefined component: #{id.value}", token_range
+      end
+
+      def instantiable_component?(definition)
+        definition.layer in :addrmap | :regfile | :reg | :field
       end
 
       def check_recursive_instance(instance, component_definition)

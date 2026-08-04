@@ -35,36 +35,97 @@ module SystemRDL
         )
       end
 
-      def test_range_for_addrmap_instance_is_rejected
-        skip 'not implemented yet'
-        assert_raises_evaluation_error(
-          <<~'RDL',
-            addrmap my_addrmap {
+      def test_accesswidth
+        addrmaps = evaluate(<<~'RDL').instances[0].instances
+          addrmap my_addrmap {
+            addrmap {
+              reg { regwidth = 32; field { sw = rw; hw = r; } a; } a;
+              reg { regwidth = 32; field { sw = rw; hw = r; } b; } b;
+            } a;
+            addrmap {
+              reg { regwidth = 32; field { sw = rw; hw = r; } a; } a;
+              reg { regwidth = 64; field { sw = rw; hw = r; } b; } b;
+            } b;
+            addrmap {
+              reg { regwidth = 32; field { sw = rw; hw = r; } a; } a;
               addrmap {
-                reg {
-                  field { sw = rw; hw = r; } a;
-                } a;
-              } a[0:0];
-            };
-          RDL
-          'range not allowed for addrmap instance'
-        )
+                reg { regwidth = 64; field { sw = rw; hw = r; } b; } b;
+              } b;
+            } c;
+          };
+        RDL
+
+        assert_equal(32, addrmaps[0].accesswidth)
+        assert_equal(64, addrmaps[1].accesswidth)
+        assert_equal(64, addrmaps[2].accesswidth)
       end
 
-      def test_address_stride_for_scalar_addrmap_instance_is_rejected
-        skip 'not implemented yet'
-        assert_raises_evaluation_error(
-          <<~'RDL',
-            addrmap my_addrmap {
+      def test_size
+        addrmaps = evaluate(<<~'RDL').instances[0].instances
+          addrmap my_addrmap {
+            addressing = compact;
+
+            addrmap {
+              reg { regwidth = 32; field { sw = rw; hw = r; } a; } a;
+              reg { regwidth = 32; field { sw = rw; hw = r; } b; } b;
+            } a;
+            addrmap {
+              reg { regwidth = 32; field { sw = rw; hw = r; } a; } a;
+              reg { regwidth = 64; field { sw = rw; hw = r; } b; } b;
+            } b;
+            addrmap {
+              reg { regwidth = 64; field { sw = rw; hw = r; } a; } a;
+              reg { regwidth = 32; field { sw = rw; hw = r; } b; } b;
+            } c;
+            addrmap {
+              reg { regwidth = 64; field { sw = rw; hw = r; } a; } a[3];
+            } d;
+            addrmap {
               addrmap {
-                reg {
-                  field { sw = rw; hw = r; } a;
-                } a;
-              } a += 0x4;
-            };
-          RDL
-          'address stride not allowed for scalar addrmap instance'
-        )
+                reg { regwidth = 32; field { sw = rw; hw = r; } a; } a;
+                reg { regwidth = 64; field { sw = rw; hw = r; } b; } b;
+              } a;
+              reg { regwidth = 32; field { sw = rw; hw = r; } b; } b;
+            } e;
+            addrmap {
+              addrmap {
+                reg { regwidth = 64; field { sw = rw; hw = r; } a; } a;
+                reg { regwidth = 32; field { sw = rw; hw = r; } b; } b;
+              } a;
+              reg { regwidth = 32; field { sw = rw; hw = r; } b; } b;
+            } f;
+            addrmap {
+              addrmap {
+                reg { regwidth = 32; field { sw = rw; hw = r; } a; } a;
+                reg { regwidth = 64; field { sw = rw; hw = r; } b; } b;
+              } a[3];
+              reg { regwidth = 32; field { sw = rw; hw = r; } b; } b;
+            } g;
+            addrmap {
+              addrmap {
+                reg { regwidth = 64; field { sw = rw; hw = r; } a; } a;
+                reg { regwidth = 32; field { sw = rw; hw = r; } b; } b;
+              } a[3];
+              reg { regwidth = 32; field { sw = rw; hw = r; } b; } b;
+            } h;
+            addrmap {
+              reg { regwidth = 32; field { sw = rw; hw = r; } a; } a;
+              reg { regwidth = 32; field { sw = rw; hw = r; } b; } b @0xC;
+            } i;
+            addrmap {
+              reg { regwidth = 32; field { sw = rw; hw = r; } a; } a @0xC;
+              reg { regwidth = 32; field { sw = rw; hw = r; } b; } b @0x0;
+            } j;
+            addrmap {
+              reg { regwidth = 128; field { sw = r; hw = r; } a; } a @0x0;
+              reg { regwidth = 32 ; field { sw = w; hw = r; } b; } b @0x4;
+            } k;
+          };
+        RDL
+
+        [8, 16, 12, 24, 20, 16, 52, 48, 16, 16, 16].each_with_index do |size, i|
+          assert_equal(size, addrmaps[i].size)
+        end
       end
 
       def test_power_of_2_alignment_is_accepted
@@ -154,6 +215,49 @@ module SystemRDL
           RDL
           'bigendian and littleendian properties are mutually exclusive'
         )
+      end
+
+      def test_alignment_is_not_inherited_from_upper_addrmap
+        addrmap = evaluate(<<~RDL).instances[0].instances[0]
+          addrmap my_addrmap {
+            alignment = 8;
+            addrmap {
+              reg {
+                regwidth = 32;
+                field { sw = rw; hw = r; } a;
+              } a;
+              reg {
+                regwidth = 32;
+                field { sw = rw; hw = r; } b;
+              } b;
+            } a;
+          };
+        RDL
+
+        assert_property_value(addrmap, :alignment, nil)
+        assert_value(0x04, addrmap.instances[1].address)
+      end
+
+      def test_addressing_is_not_inherited_from_upper_addrmap
+        addrmap = evaluate(<<~RDL).instances[0].instances[0]
+          addrmap my_addrmap {
+            addressing = compact;
+            addrmap {
+              reg {
+                regwidth = 32;
+                field { sw = rw; hw = r; } a;
+              } a;
+              reg {
+                regwidth = 64;
+                accesswidth = 32;
+                field { sw = rw; hw = r; } b;
+              } b;
+            } a;
+          };
+        RDL
+
+        assert_property_value(addrmap, :addressing, :regalign)
+        assert_value(0x08, addrmap.instances[1].address)
       end
 
       def test_rsvdset_rsvdsetx_can_be_set_individually

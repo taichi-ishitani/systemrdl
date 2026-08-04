@@ -573,7 +573,6 @@ module SystemRDL
       end
 
       def test_element_assignment_to_allow_listed_property_is_allowed
-        skip 'not implemented yet'
         submaps = evaluate(<<~'RDL').instances[0].instances
           addrmap my_map {
             addrmap {
@@ -591,7 +590,6 @@ module SystemRDL
       end
 
       def test_element_assignment_to_other_property_is_rejected
-        skip 'not implemented yet'
         { bigendian: true, littleendian: true }.each do |prop_name, prop_value|
           assert_raises_evaluation_error(
             <<~RDL,

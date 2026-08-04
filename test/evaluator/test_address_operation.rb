@@ -89,6 +89,36 @@ module SystemRDL
           assert_value(addresses[0], regfiles[0].address)
           assert_value(addresses[1], regfiles[1].address)
           assert_value(addresses[2], regfiles[2].address)
+
+          addrmaps = evaluate(<<~RDL).instances[0].instances
+            addrmap my_map {
+              addrmap {
+                reg {
+                  regwidth = #{width};
+                  accesswidth = #{width};
+                  field { sw = rw; hw = r; } a;
+                } a;
+              } a @#{addresses[0]};
+              addrmap {
+                reg {
+                  regwidth = #{width};
+                  accesswidth = #{width};
+                  field { sw = rw; hw = r; } a;
+                } b;
+              } b @#{addresses[1]};
+              addrmap {
+                reg {
+                  regwidth = #{width};
+                  accesswidth = #{width};
+                  field { sw = rw; hw = r; } a;
+                } c;
+              } c @#{addresses[2]};
+            };
+          RDL
+
+          assert_value(addresses[0], addrmaps[0].address)
+          assert_value(addresses[1], addrmaps[1].address)
+          assert_value(addresses[2], addrmaps[2].address)
         end
       end
 
@@ -126,6 +156,21 @@ module SystemRDL
               <<~RDL,
                 addrmap my_map {
                   regfile {
+                    reg {
+                      regwidth = #{width};
+                      accesswidth = #{width};
+                      field { sw = r; hw = r; } a;
+                    } a;
+                  } a @#{address};
+                };
+              RDL
+              "address not aligned to accesswidth: address 0x#{address.to_s(16)} accesswidth #{width}"
+            )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  addrmap {
                     reg {
                       regwidth = #{width};
                       accesswidth = #{width};
@@ -224,6 +269,36 @@ module SystemRDL
           assert_value(strides[0], regfiles[0].stride)
           assert_value(strides[1], regfiles[1].stride)
           assert_value(strides[2], regfiles[2].stride)
+
+          addrmaps = evaluate(<<~RDL).instances[0].instances
+            addrmap my_map {
+              addrmap {
+                reg {
+                  regwidth = #{width};
+                  accesswidth = #{width};
+                  field { sw = rw; hw = r; } a;
+                } a;
+              } a[1] += #{strides[0]};
+              addrmap {
+                reg {
+                  regwidth = #{width};
+                  accesswidth = #{width};
+                  field { sw = rw; hw = r; } a;
+                } b;
+              } b[1] += #{strides[1]};
+              addrmap {
+                reg {
+                  regwidth = #{width};
+                  accesswidth = #{width};
+                  field { sw = rw; hw = r; } a;
+                } c;
+              } c[1] += #{strides[2]};
+            };
+          RDL
+
+          assert_value(strides[0], addrmaps[0].stride)
+          assert_value(strides[1], addrmaps[1].stride)
+          assert_value(strides[2], addrmaps[2].stride)
         end
       end
 
@@ -271,6 +346,21 @@ module SystemRDL
               RDL
               "stride not aligned to accesswidth: stride 0x#{stride.to_s(16)} accesswidth #{width}"
             )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  addrmap {
+                    reg {
+                      regwidth = #{width};
+                      accesswidth = #{width};
+                      field { sw = r; hw = r; } a;
+                    } a;
+                  } a[1] += #{stride};
+                };
+              RDL
+              "stride not aligned to accesswidth: stride 0x#{stride.to_s(16)} accesswidth #{width}"
+            )
           end
         end
       end
@@ -303,6 +393,21 @@ module SystemRDL
               };
             RDL
             "stride less than regfile size: stride 0x#{stride.to_s(16)} size #{size}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                addrmap {
+                  reg {
+                    regwidth = #{size * 8};
+                    accesswidth = 8;
+                    field { sw = r; hw = r; } a;
+                  } a;
+                } a[2] += #{stride};
+              };
+            RDL
+            "stride less than addrmap size: stride 0x#{stride.to_s(16)} size #{size}"
           )
         end
       end
@@ -391,6 +496,36 @@ module SystemRDL
           assert_value(alignments[0], regfiles[0].alignment)
           assert_value(alignments[1], regfiles[1].alignment)
           assert_value(alignments[2], regfiles[2].alignment)
+
+          addrmaps = evaluate(<<~RDL).instances[0].instances
+            addrmap my_map {
+              addrmap {
+                reg {
+                  regwidth = #{width};
+                  accesswidth = #{width};
+                  field { sw = rw; hw = r; } a;
+                } a;
+              } a %= #{alignments[0]};
+              addrmap {
+                reg {
+                  regwidth = #{width};
+                  accesswidth = #{width};
+                  field { sw = rw; hw = r; } a;
+                } b;
+              } b %= #{alignments[1]};
+              addrmap {
+                reg {
+                  regwidth = #{width};
+                  accesswidth = #{width};
+                  field { sw = rw; hw = r; } a;
+                } c;
+              } c %= #{alignments[2]};
+            };
+          RDL
+
+          assert_value(alignments[0], addrmaps[0].alignment)
+          assert_value(alignments[1], addrmaps[1].alignment)
+          assert_value(alignments[2], addrmaps[2].alignment)
         end
       end
 
@@ -438,6 +573,21 @@ module SystemRDL
               RDL
               "alignment not aligned to accesswidth: alignment 0x#{alignment.to_s(16)} accesswidth #{width}"
             )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  addrmap {
+                    reg {
+                      regwidth = #{width};
+                      accesswidth = #{width};
+                      field { sw = r; hw = r; } a;
+                    } a;
+                  } a %= #{alignment};
+                };
+              RDL
+              "alignment not aligned to accesswidth: alignment 0x#{alignment.to_s(16)} accesswidth #{width}"
+            )
           end
         end
       end
@@ -468,6 +618,20 @@ module SystemRDL
           RDL
           "alignment must be positive"
         )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap my_map {
+              addrmap {
+                reg {
+                  regwidth = 32;
+                  field { sw = r; hw = r; } a;
+                } a;
+              } a %= 0;
+            };
+          RDL
+          "alignment must be positive"
+        )
       end
 
       def test_address_alignment_are_mutually_exclusive
@@ -487,6 +651,20 @@ module SystemRDL
           <<~RDL,
             addrmap my_map {
               regfile {
+                reg {
+                  regwidth = 32;
+                  field { sw = r; hw = r; } a;
+                } a;
+              } a @0x0 %= 0x4;
+            };
+          RDL
+          "@ and %= address operations are mutually exclusive"
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap my_map {
+              addrmap {
                 reg {
                   regwidth = 32;
                   field { sw = r; hw = r; } a;

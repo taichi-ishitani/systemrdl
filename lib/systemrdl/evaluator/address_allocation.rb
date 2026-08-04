@@ -8,8 +8,7 @@ module SystemRDL
       def allocate_addresses(instance)
         address = 0
         instance.instances.each do |child_inst|
-          # For now, support reg/regfile only
-          next unless child_inst.reg? || child_inst.regfile?
+          next unless addressable_inst?(child_inst)
 
           assign_address(address, instance, child_inst)
           address = calc_next_address(child_inst)
@@ -83,8 +82,7 @@ module SystemRDL
       end
 
       def check_overlapping_address_ranges(instance)
-        # For now, support reg/regfile only but not addrmap/mem
-        insts = instance.instances.select { |inst| (inst.reg? || inst.regfile?) && inst.first_element? }
+        insts = instance.instances.select { |inst| addressable_inst?(inst) && inst.first_element? }
         insts.combination(2).each do |(inst_a, inst_b)|
           next unless overlapping_pair?(inst_a, inst_b)
 
@@ -130,6 +128,11 @@ module SystemRDL
 
       def element_stride(child_inst)
         child_inst.stride&.value || aligned_size(child_inst)
+      end
+
+      def addressable_inst?(inst)
+        # For now, support reg/regfile/addrmap only but not mem
+        inst.addrmap? || inst.regfile? || inst.reg?
       end
     end
   end
