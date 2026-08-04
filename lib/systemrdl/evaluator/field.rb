@@ -32,6 +32,10 @@ module SystemRDL
         :field
       end
 
+      def support_inst_type?(inst_type)
+        inst_type.nil?
+      end
+
       private
 
       def instance_class

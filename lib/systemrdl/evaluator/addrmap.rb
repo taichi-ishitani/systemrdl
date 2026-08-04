@@ -7,7 +7,7 @@ module SystemRDL
 
       def evaluate(instance, **optargs)
         if instance.root?
-          create_instance(instance, @id, nil, nil, nil, **optargs)
+          create_instance(instance, @id, nil, nil, nil, nil, **optargs)
         else
           super
         end
@@ -29,6 +29,10 @@ module SystemRDL
 
       def layer
         :addrmap
+      end
+
+      def support_inst_type?(inst_type)
+        inst_type.nil?
       end
 
       private

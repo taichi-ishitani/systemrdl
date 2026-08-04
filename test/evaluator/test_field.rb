@@ -5,6 +5,78 @@ require_relative 'test_helper'
 module SystemRDL
   module Evaluator
     class TestField < TestCase
+      def test_field_instance_with_internal_is_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap top {
+              field my_field { sw = rw; hw = r; };
+              reg {
+                internal my_field a;
+              } a;
+            };
+          RDL
+          'field instance with internal not allowed'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap top {
+              reg {
+                field { sw = rw; hw = r; } internal a;
+              } a;
+            };
+          RDL
+          'field instance with internal not allowed'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap top {
+              reg {
+                internal field { sw = rw; hw = r; } a;
+              } a;
+            };
+          RDL
+          'field instance with internal not allowed'
+        )
+      end
+
+      def test_field_instance_with_external_is_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap top {
+              field my_field { sw = rw; hw = r; };
+              reg {
+                external my_field a;
+              } a;
+            };
+          RDL
+          'field instance with external not allowed'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap top {
+              reg {
+                field { sw = rw; hw = r; } external a;
+              } a;
+            };
+          RDL
+          'field instance with external not allowed'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap top {
+              reg {
+                external field { sw = rw; hw = r; } a;
+              } a;
+            };
+          RDL
+          'field instance with external not allowed'
+        )
+      end
+
       def test_address_allocation_operator_for_field_instance_is_rejected
         assert_raises_evaluation_error(
           <<~'RDL',

@@ -130,6 +130,16 @@ module SystemRDL
         ComponentInsts.new(insts, node.token_range)
       end
 
+      def on_internal_component_insts(node)
+        insts = process_all(node.children)
+        InternalComponentInsts.new(insts, node.token_range)
+      end
+
+      def on_external_component_insts(node)
+        insts = process_all(node.children)
+        ExternalComponentInsts.new(insts, node.token_range)
+      end
+
       def on_explicit_component_inst(node)
         id = process(node.children[0])
         insts = process(node.children[1])

@@ -5,6 +5,80 @@ require_relative 'test_helper'
 module SystemRDL
   module Evaluator
     class TestRegFile < TestCase
+      def test_regfile_instance_with_internal_is_allowed
+        regfiles = evaluate(<<~'RDL').instances[0].instances
+          addrmap top {
+            regfile my_regfile {
+              reg { field { sw = rw; hw = r; } a; } a;
+            };
+            internal my_regfile a;
+            regfile {
+              reg { field { sw = rw; hw = r; } a; } a;
+            } internal b;
+            internal regfile {
+              reg { field { sw = rw; hw = r; } a; } a;
+            } c;
+          };
+        RDL
+
+        refute(regfiles[0].external?)
+        refute(regfiles[1].external?)
+        refute(regfiles[2].external?)
+      end
+
+      def test_regfile_instance_with_external_is_allowed
+        regfiles = evaluate(<<~'RDL').instances[0].instances
+          addrmap top {
+            regfile my_regfile {
+              reg { field { sw = rw; hw = r; } a; } a;
+            };
+            external my_regfile a;
+            regfile {
+              reg { field { sw = rw; hw = r; } a; } a;
+            } external b;
+            external regfile {
+              reg { field { sw = rw; hw = r; } a; } a;
+            } c;
+          };
+        RDL
+
+        assert(regfiles[0].external?)
+        assert(regfiles[1].external?)
+        assert(regfiles[2].external?)
+      end
+
+      def test_instances_with_internal_in_regfile_are_allowed
+        insts = evaluate(<<~'RDL').instances[0].instances[0].instances
+          addrmap top {
+            regfile {
+            reg my_reg { field { sw = rw; hw = r; } a; };
+            regfile my_regfile { my_reg a; };
+            internal my_reg a;
+            internal my_regfile b;
+            } a;
+          };
+        RDL
+
+        refute(insts[0].external?)
+        refute(insts[1].external?)
+      end
+
+      def test_instances_with_external_in_regfile_are_allowed
+        insts = evaluate(<<~'RDL').instances[0].instances[0].instances
+          addrmap top {
+            regfile {
+            reg my_reg { field { sw = rw; hw = r; } a; };
+            regfile my_regfile { my_reg a; };
+            external my_reg a;
+            external my_regfile b;
+            } a;
+          };
+        RDL
+
+        assert(insts[0].external?)
+        assert(insts[1].external?)
+      end
+
       def test_regfile_without_structural_component_instance_is_rejected
         assert_raises_evaluation_error(
           <<~'RDL',

@@ -20,10 +20,11 @@ module SystemRDL
       def evaluate(instance, base, id, **optargs)
         component_definition = find_component_definition(base, id, **optargs)
         check_recursive_instance(instance, component_definition)
+        check_inst_type(component_definition)
         check_instantiable(instance, component_definition)
 
         @insts.each do |inst|
-          inst.evaluate(instance, component_definition, **optargs)
+          inst.evaluate(instance, component_definition, inst_type, **optargs)
         end
       end
 
@@ -57,11 +58,37 @@ module SystemRDL
         raise_evaluation_error message, token_range
       end
 
+      def check_inst_type(component_definition)
+        return if component_definition.support_inst_type?(inst_type)
+
+        message = "#{component_definition.layer} instance with #{inst_type} not allowed"
+        raise_evaluation_error message, token_range
+      end
+
+      def inst_type
+      end
+
       def check_instantiable(instance, component_definition)
         return if instance.instantiable?(component_definition)
 
         message = "#{component_definition.layer} instance not allowed in #{instance.layer}"
         raise_evaluation_error message, token_range
+      end
+    end
+
+    class InternalComponentInsts < ComponentInsts
+      private
+
+      def inst_type
+        :internal
+      end
+    end
+
+    class ExternalComponentInsts < ComponentInsts
+      private
+
+      def inst_type
+        :external
       end
     end
 
@@ -76,9 +103,10 @@ module SystemRDL
 
       attr_reader :inst_id
 
-      def evaluate(instance, component_definition, **optargs)
+      def evaluate(instance, component_definition, inst_type, **optargs)
         inst_values = eval_inst_values(instance, **optargs)
-        component_definition.create_instances(instance, @inst_id.value, inst_values, @token_range, **optargs)
+        component_definition
+          .create_instances(instance, @inst_id.value, inst_type, inst_values, @token_range, **optargs)
       end
 
       private

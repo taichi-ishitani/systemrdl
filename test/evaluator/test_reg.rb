@@ -5,6 +5,36 @@ require_relative 'test_helper'
 module SystemRDL
   module Evaluator
     class TestReg < TestCase
+      def test_reg_instances_with_internal_are_allowed
+        regs = evaluate(<<~'RDL').instances[0].instances
+          addrmap top {
+            reg my_reg { field { sw = rw; hw = r; } a; };
+            internal my_reg a;
+            reg { field { sw = rw; hw = r; } a; } internal b;
+            internal reg { field { sw = rw; hw = r; } a; } c;
+          };
+        RDL
+
+        refute(regs[0].external?)
+        refute(regs[1].external?)
+        refute(regs[2].external?)
+      end
+
+      def test_reg_instances_with_external_are_allowed
+        regs = evaluate(<<~'RDL').instances[0].instances
+          addrmap top {
+            reg my_reg { field { sw = rw; hw = r; } a; };
+            external my_reg a;
+            reg { field { sw = rw; hw = r; } a; } external b;
+            external reg { field { sw = rw; hw = r; } a; } c;
+          };
+        RDL
+
+        assert(regs[0].external?)
+        assert(regs[1].external?)
+        assert(regs[2].external?)
+      end
+
       def test_reg_without_structural_component_instance_is_rejected
         assert_raises_evaluation_error(
           <<~'RDL',

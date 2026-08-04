@@ -14,7 +14,7 @@ module SystemRDL
 
       def evaluate(instance, **optargs)
         inherit(instance) if instance&.root?
-        root = create_instance(nil, :root, nil, nil, nil, **optargs)
+        root = create_instance(nil, :root, nil, nil, nil, nil, **optargs)
         root.finalize
         root
       end

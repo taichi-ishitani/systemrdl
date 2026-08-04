@@ -20,6 +20,10 @@ module SystemRDL
         :regfile
       end
 
+      def support_inst_type?(_inst_type)
+        true
+      end
+
       private
 
       def instance_class

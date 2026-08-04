@@ -35,10 +35,10 @@ module SystemRDL
         @insts&.evaluate(instance, @parent, @id, **optargs)
       end
 
-      def create_instances(parent_instance, inst_name, inst_values, token_range, **optargs)
+      def create_instances(parent_instance, inst_name, inst_type, inst_values, token_range, **optargs)
         eval_array(inst_values) do |array_info|
           create_instance(
-            parent_instance, inst_name, inst_values,
+            parent_instance, inst_name, inst_type, inst_values,
             array_info, token_range, **optargs
           )
         end
@@ -112,13 +112,13 @@ module SystemRDL
         yield(nil, nil)
       end
 
-      def create_instance(parent_instance, inst_name, inst_values, array_info, token_range, **optargs)
+      def create_instance(parent_instance, inst_name, inst_type, inst_values, array_info, token_range, **optargs)
         unless unique_instance?(parent_instance, inst_name, array_info)
           message = "duplicated instance: #{inst_name}"
           raise_evaluation_error message, token_range
         end
 
-        instance = instance_class.new(self, parent_instance, inst_name, array_info, token_range)
+        instance = instance_class.new(self, parent_instance, inst_name, inst_type, array_info, token_range)
 
         init_properties(instance)
         eval_body(instance, **optargs)

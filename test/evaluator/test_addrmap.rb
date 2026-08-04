@@ -5,6 +5,106 @@ require_relative 'test_helper'
 module SystemRDL
   module Evaluator
     class TestAddrMap < TestCase
+      def test_addrmap_instance_with_internal_is_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap top {
+              addrmap my_map {
+                reg { field { sw = rw; hw = r; } a; } a;
+              };
+              internal my_map a;
+            };
+          RDL
+          'addrmap instance with internal not allowed'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap top {
+              addrmap {
+                reg { field { sw = rw; hw = r; } a; } a;
+              } internal a;
+            };
+          RDL
+          'addrmap instance with internal not allowed'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap top {
+              internal addrmap {
+                reg { field { sw = rw; hw = r; } a; } a;
+              } a;
+            };
+          RDL
+          'addrmap instance with internal not allowed'
+        )
+      end
+
+      def test_addrmap_instance_with_external_is_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap top {
+              addrmap my_map {
+                reg { field { sw = rw; hw = r; } a; } a;
+              };
+              external my_map a;
+            };
+          RDL
+          'addrmap instance with external not allowed'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap top {
+              addrmap {
+                reg { field { sw = rw; hw = r; } a; } a;
+              } external a;
+            };
+          RDL
+          'addrmap instance with external not allowed'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap top {
+              external addrmap {
+                reg { field { sw = rw; hw = r; } a; } a;
+              } a;
+            };
+          RDL
+          'addrmap instance with external not allowed'
+        )
+      end
+
+      def test_instances_with_internal_in_addrmap_are_allowed
+        insts = evaluate(<<~'RDL').instances[0].instances
+          addrmap top {
+            reg my_reg { field { sw = rw; hw = r; } a; };
+            regfile my_regfile { my_reg a; };
+            internal my_reg a;
+            internal my_regfile b;
+          };
+        RDL
+
+        refute(insts[0].external?)
+        refute(insts[1].external?)
+      end
+
+      def test_instances_with_external_in_addrmap_are_allowed
+        insts = evaluate(<<~'RDL').instances[0].instances
+          addrmap top {
+            reg my_reg { field { sw = rw; hw = r; } a; };
+            regfile my_regfile { my_reg a; };
+            external my_reg a;
+            external my_regfile b;
+          };
+        RDL
+
+        assert(insts[0].external?)
+        assert(insts[1].external?)
+      end
+
       def test_addrmap_without_structural_component_instance_is_rejected
         assert_raises_evaluation_error(
           <<~'RDL',
