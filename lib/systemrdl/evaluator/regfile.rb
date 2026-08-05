@@ -3,6 +3,7 @@
 module SystemRDL
   module Evaluator
     class RegFileDefinition < ComponentDefinition
+      include InstTypeAwareComponent
       include BlockComponent
 
       def validate(instance)
@@ -37,6 +38,7 @@ module SystemRDL
     end
 
     class RegFileInstance < Instance
+      include InstTypeAwareInstance
       include BlockInstance
 
       def definable?(definition)

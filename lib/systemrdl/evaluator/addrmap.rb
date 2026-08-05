@@ -7,7 +7,7 @@ module SystemRDL
 
       def evaluate(instance, **optargs)
         if instance.root?
-          create_instance(instance, @id, nil, nil, nil, nil, **optargs)
+          create_instance(instance, InstArgs.new(@id, nil, nil), nil, nil, **optargs)
         else
           super
         end

@@ -92,6 +92,8 @@ module SystemRDL
       end
     end
 
+    InstArgs = Data.define(:name, :type, :values)
+
     class ComponentInst
       include Common
 
@@ -105,8 +107,8 @@ module SystemRDL
 
       def evaluate(instance, component_definition, inst_type, **optargs)
         inst_values = eval_inst_values(instance, **optargs)
-        component_definition
-          .create_instances(instance, @inst_id.value, inst_type, inst_values, @token_range, **optargs)
+        args = InstArgs.new(@inst_id.value, inst_type, inst_values)
+        component_definition.create_instances(instance, args, @token_range, **optargs)
       end
 
       private

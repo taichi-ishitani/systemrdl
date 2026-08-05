@@ -3,12 +3,10 @@
 module SystemRDL
   module Evaluator
     class Instance
-      def initialize(definition, parent, name, type, array_info, token_range)
+      def initialize(definition, parent, name, token_range)
         @definition = definition
         @parent = parent
         @name = name
-        @type = type
-        @array_info = array_info
         @token_range = token_range
         @properties = []
         @instances = []
@@ -73,28 +71,8 @@ module SystemRDL
         addrmap? || regfile? || reg? || field?
       end
 
-      def external?
-        @type == :external
-      end
-
       def array?
-        !array_info.nil?
-      end
-
-      def array_indices
-        array_info&.indices
-      end
-
-      def array_sizes
-        array_info&.sizes
-      end
-
-      def first_element?
-        !array? || array_info.first
-      end
-
-      def last_element?
-        !array? || array_info.last
+        false
       end
 
       def property(name)

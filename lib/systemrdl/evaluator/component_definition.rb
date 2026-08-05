@@ -35,12 +35,9 @@ module SystemRDL
         @insts&.evaluate(instance, @parent, @id, **optargs)
       end
 
-      def create_instances(parent_instance, inst_name, inst_type, inst_values, token_range, **optargs)
-        eval_array(inst_values) do |array_info|
-          create_instance(
-            parent_instance, inst_name, inst_type, inst_values,
-            array_info, token_range, **optargs
-          )
+      def create_instances(parent_instance, inst_args, token_range, **optargs)
+        eval_array(inst_args.values) do |array_info|
+          create_instance(parent_instance, inst_args, array_info, token_range, **optargs)
         end
       end
 
@@ -91,8 +88,8 @@ module SystemRDL
       def check_property_exclusivity(instance, names)
         properties =
           names
-            .map { |name| instance.property_value(name) }
-            .select { |v| v&.value }
+          .map { |name| instance.property_value(name) }
+          .select { |v| v&.value }
         return if properties.size <= 1
 
         labels = [names[..-2].join(', '), names[-1]].join(' and ')
@@ -112,17 +109,19 @@ module SystemRDL
         yield(nil, nil)
       end
 
-      def create_instance(parent_instance, inst_name, inst_type, inst_values, array_info, token_range, **optargs)
-        unless unique_instance?(parent_instance, inst_name, array_info)
-          message = "duplicated instance: #{inst_name}"
+      def create_instance(parent_instance, inst_args, array_info, token_range, **optargs)
+        unless unique_instance?(parent_instance, inst_args.name, array_info)
+          message = "duplicated instance: #{inst_args.name}"
           raise_evaluation_error message, token_range
         end
 
-        instance = instance_class.new(self, parent_instance, inst_name, inst_type, array_info, token_range)
+        instance = instance_class.new(self, parent_instance, inst_args.name, token_range)
 
         init_properties(instance)
         eval_body(instance, **optargs)
-        apply_inst_values(instance, inst_values)
+        apply_array(instance, array_info)
+        apply_inst_values(instance, inst_args.values)
+        apply_inst_type(instance, inst_args.type)
         post_build(instance)
         instance.validate
 
@@ -159,7 +158,13 @@ module SystemRDL
         @elements.each { |element| element.evaluate(instance, **optargs) }
       end
 
+      def apply_inst_type(_instance, _inst_type)
+      end
+
       def apply_inst_values(_instance, _inst_values)
+      end
+
+      def apply_array(_instance, _array_info)
       end
 
       def post_build(_instance)

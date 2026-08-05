@@ -4,6 +4,7 @@ module SystemRDL
   module Evaluator
     class RegDefinition < ComponentDefinition
       include AddressOperation
+      include InstTypeAwareComponent
       include ArrayComponent
       include ContainerComponent
 
@@ -128,6 +129,9 @@ module SystemRDL
     end
 
     class RegInstance < Instance
+      include ArrayInstance
+      include InstTypeAwareInstance
+
       attr_accessor :address
       attr_accessor :stride
       attr_accessor :alignment

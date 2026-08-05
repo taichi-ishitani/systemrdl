@@ -3,8 +3,8 @@
 module SystemRDL
   module Evaluator
     module BlockComponent
-      include AddressOperation
       include ArrayComponent
+      include AddressOperation
       include ContainerComponent
       include AddressAllocation
 
@@ -16,6 +16,8 @@ module SystemRDL
     end
 
     module BlockInstance
+      include ArrayInstance
+
       attr_accessor :address
       attr_accessor :stride
       attr_accessor :alignment
