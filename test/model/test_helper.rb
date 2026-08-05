@@ -11,8 +11,24 @@ module SystemRDL
         Model.build(root)
       end
 
-      def collect_fields(addrmap)
-        addrmap.regs.flat_map { |reg| reg.fields }
+      def collect_regs(model)
+        case model.layer
+        when :addrmap, :regfile
+          model.regs.flat_map { |reg| collect_regs(reg) }
+        when :reg
+          [model]
+        else
+          []
+        end
+      end
+
+      def collect_fields(model)
+        case model.layer
+        when :addrmap, :regfile
+          model.regs.flat_map { |reg| collect_fields(reg) }
+        when :reg
+          model.fields
+        end
       end
 
       def assert_value(expected, value)

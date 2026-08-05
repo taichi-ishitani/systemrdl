@@ -24,8 +24,8 @@ module SystemRDL
 
         private
 
-        def def_property(property_name)
-          (@properties ||= []) << property_name
+        def def_property(property_name, value_class = nil, &body)
+          (@properties ||= {})[property_name] = [value_class, body]
           class_eval(<<~M, __FILE__, __LINE__ + 1)
             # def display_name
             #   @properties[:display_name]&.value
@@ -36,9 +36,6 @@ module SystemRDL
           M
         end
       end
-
-      def_property :display_name
-      def_property :desc
 
       def to_s
         "#{name} (#{layer})"
@@ -86,48 +83,53 @@ module SystemRDL
       end
 
       def build_properties(inst)
-        properties.to_h do |prop_name|
-          prop_value =
-            if prop_name == :display_name
-              inst.property_value(:name)
-            elsif (property = inst.property(prop_name))
-              property.value
+        self.class.properties.to_h do |prop_name, (default_class, body)|
+          prop_value, prop_value_class, token_range =
+            if body
+              value, klass = body.call(inst)
+              [value, klass || Value]
             else
-              inst.__send__(prop_name)
+              value = eval_prop_value(prop_name, inst)
+              klass = select_value_class(value, default_class)
+              [value&.value, klass, value&.token_range]
             end
-          [prop_name, create_property_value(prop_name, prop_value)]
+          [prop_name, prop_value_class.new(prop_name.to_s, prop_value, self, token_range)]
         end
       end
 
-      def properties
-        klass = self.class
-        [klass.superclass, klass].flat_map(&:properties)
+      def eval_prop_value(prop_name, inst)
+        if prop_name == :display_name
+          inst.property_value(:name)
+        elsif (property = inst.property(prop_name))
+          property.value
+        else
+          inst.__send__(prop_name)
+        end
       end
 
-      def create_property_value(name, value)
-        klass =
-          if reference_value?(value)
-            ReferenceValue
-          elsif hex_value?(name, value)
-            HexValue
-          else
-            Value
-          end
-        klass.new(name.to_s, value&.value, self, value&.token_range)
+      def select_value_class(value, default_class)
+        if reference_value?(value)
+          ReferenceValue
+        elsif default_class && value&.value
+          default_class
+        else
+          Value
+        end
       end
 
       def reference_value?(value)
-        return false unless value
+        return false unless value.respond_to?(:type)
 
         value.type in :property_reference | :field_reference
-      end
-
-      def hex_value?(_name, _value)
-        false
       end
     end
 
     class AddrMap < Instance
+      def_property :display_name
+      def_property :desc
+      def_property :address, HexValue
+      def_property :size, &:size
+      def_property :accesswidth, &:accesswidth
       def_property :sharedextbus
       def_property :errextbus
       def_property :bigendian
@@ -138,28 +140,46 @@ module SystemRDL
       alias_method :regs, :instances
     end
 
+    class RegFile < Instance
+      def_property :display_name
+      def_property :desc
+      def_property :external, &:external
+      def_property :address, HexValue
+      def_property :size, &:size
+      def_property :accesswidth, &:accesswidth
+      def_property :sharedextbus
+      def_property :errextbus
+
+      alias_method :regs, :instances
+    end
+
     class Reg < Instance
-      def_property :address
+      def_property :display_name
+      def_property :desc
+      def_property :external, &:external
+      def_property :address, HexValue
+      def_property :size, &:size
       def_property :accesswidth
       def_property :errextbus
       def_property :shared
 
       alias_method :fields, :instances
-
-      private
-
-      def hex_value?(name, _value)
-        name == :address
-      end
     end
 
     class Field < Instance
+      def_property :display_name
+      def_property :desc
       def_property :msb
       def_property :lsb
+      def_property :width do |inst|
+        msb = inst.msb.value
+        lsb = inst.lsb.value
+        msb - lsb + 1
+      end
       def_property :hw
       def_property :sw
       def_property :next
-      def_property :reset
+      def_property :reset, HexValue
       def_property :resetsignal
       def_property :rclr
       def_property :rset
@@ -183,12 +203,6 @@ module SystemRDL
       def_property :hwmask
       def_property :precedence
       def_property :paritycheck
-
-      private
-
-      def hex_value?(name, value)
-        name == :reset && value&.type == :bit
-      end
     end
   end
 end

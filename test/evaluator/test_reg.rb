@@ -15,9 +15,9 @@ module SystemRDL
           };
         RDL
 
-        refute(regs[0].external?)
-        refute(regs[1].external?)
-        refute(regs[2].external?)
+        refute(regs[0].external)
+        refute(regs[1].external)
+        refute(regs[2].external)
       end
 
       def test_reg_instances_with_external_are_allowed
@@ -30,9 +30,9 @@ module SystemRDL
           };
         RDL
 
-        assert(regs[0].external?)
-        assert(regs[1].external?)
-        assert(regs[2].external?)
+        assert(regs[0].external)
+        assert(regs[1].external)
+        assert(regs[2].external)
       end
 
       def test_reg_without_structural_component_instance_is_rejected

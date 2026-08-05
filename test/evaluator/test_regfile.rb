@@ -21,9 +21,9 @@ module SystemRDL
           };
         RDL
 
-        refute(regfiles[0].external?)
-        refute(regfiles[1].external?)
-        refute(regfiles[2].external?)
+        refute(regfiles[0].external)
+        refute(regfiles[1].external)
+        refute(regfiles[2].external)
       end
 
       def test_regfile_instance_with_external_is_allowed
@@ -42,9 +42,9 @@ module SystemRDL
           };
         RDL
 
-        assert(regfiles[0].external?)
-        assert(regfiles[1].external?)
-        assert(regfiles[2].external?)
+        assert(regfiles[0].external)
+        assert(regfiles[1].external)
+        assert(regfiles[2].external)
       end
 
       def test_instances_with_internal_in_regfile_are_allowed
@@ -59,8 +59,8 @@ module SystemRDL
           };
         RDL
 
-        refute(insts[0].external?)
-        refute(insts[1].external?)
+        refute(insts[0].external)
+        refute(insts[1].external)
       end
 
       def test_instances_with_external_in_regfile_are_allowed
@@ -75,8 +75,8 @@ module SystemRDL
           };
         RDL
 
-        assert(insts[0].external?)
-        assert(insts[1].external?)
+        assert(insts[0].external)
+        assert(insts[1].external)
       end
 
       def test_regfile_without_structural_component_instance_is_rejected

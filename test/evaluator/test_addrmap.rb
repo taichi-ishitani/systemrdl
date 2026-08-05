@@ -87,8 +87,8 @@ module SystemRDL
           };
         RDL
 
-        refute(insts[0].external?)
-        refute(insts[1].external?)
+        refute(insts[0].external)
+        refute(insts[1].external)
       end
 
       def test_instances_with_external_in_addrmap_are_allowed
@@ -101,8 +101,8 @@ module SystemRDL
           };
         RDL
 
-        assert(insts[0].external?)
-        assert(insts[1].external?)
+        assert(insts[0].external)
+        assert(insts[1].external)
       end
 
       def test_addrmap_without_structural_component_instance_is_rejected
