@@ -51,10 +51,10 @@ module SystemRDL
         insts = evaluate(<<~'RDL').instances[0].instances[0].instances
           addrmap top {
             regfile {
-            reg my_reg { field { sw = rw; hw = r; } a; };
-            regfile my_regfile { my_reg a; };
-            internal my_reg a;
-            internal my_regfile b;
+              reg my_reg { field { sw = rw; hw = r; } a; };
+              regfile my_regfile { my_reg a; };
+              internal my_reg a;
+              internal my_regfile b;
             } a;
           };
         RDL
@@ -67,10 +67,10 @@ module SystemRDL
         insts = evaluate(<<~'RDL').instances[0].instances[0].instances
           addrmap top {
             regfile {
-            reg my_reg { field { sw = rw; hw = r; } a; };
-            regfile my_regfile { my_reg a; };
-            external my_reg a;
-            external my_regfile b;
+              reg my_reg { field { sw = rw; hw = r; } a; };
+              regfile my_regfile { my_reg a; };
+              external my_reg a;
+              external my_regfile b;
             } a;
           };
         RDL
@@ -307,6 +307,78 @@ module SystemRDL
 
         assert_property_value(regfile, :alignment, 8)
         assert_value(0x08, regfile.instances[1].address)
+      end
+
+      def test_mem_field_instnaces_are_rejected
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap top {
+              mem my_mem { memwidth = 32; };
+              regfile { external my_mem a; } a;
+            };
+          RDL
+          "mem instance not allowed in regfile"
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap top {
+              field my_field { sw = rw; hw = r; };
+              regfile { my_field a; } a;
+            };
+          RDL
+          "field instance not allowed in regfile"
+        )
+      end
+
+      def test_regfile_reg_field_definitions_are_allowed
+        regfile = evaluate(<<~RDL).instances[0].instances[0]
+          addrmap top {
+            regfile {
+              field my_field { sw = rw; hw = r; };
+              reg my_reg { my_field a; };
+              regfile my_regfile { my_reg b; };
+              my_regfile c;
+            } d;
+          };
+        RDL
+
+        regfile = regfile.instances[0]
+        assert_property_value(regfile, :name, 'c')
+
+        reg = regfile.instances[0]
+        assert_property_value(reg, :name, 'b')
+
+        field = reg.instances[0]
+        assert_property_value(field, :name, 'a')
+      end
+
+      def test_addrmap_mem_definitions_are_rejected
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap a_addrmap {
+              regfile {
+                addrmap b_addrmap {
+                  reg b_reg {
+                    field b_field { hw = r; };
+                  };
+                };
+              } a;
+            };
+          RDL
+          'addrmap definition not allowed in regfile'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap a_addrmap {
+              regfile {
+                mem my_mem { memwidth = 32; };
+              } a;
+            };
+          RDL
+          'mem definition not allowed in regfile'
+        )
       end
     end
   end

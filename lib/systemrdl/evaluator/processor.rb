@@ -167,6 +167,7 @@ module SystemRDL
         case node.children[0].to_sym
         when :addrmap then AddrMapDefinition
         when :regfile then RegFileDefinition
+        when :mem then MemDefinition
         when :reg then RegDefinition
         when :field then FieldDefinition
         end

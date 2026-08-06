@@ -13,7 +13,7 @@ module SystemRDL
 
       def collect_regs(model)
         case model.layer
-        when :addrmap, :regfile
+        when :addrmap, :regfile, :mem
           model.regs.flat_map { |reg| collect_regs(reg) }
         when :reg
           [model]
@@ -24,7 +24,7 @@ module SystemRDL
 
       def collect_fields(model)
         case model.layer
-        when :addrmap, :regfile
+        when :addrmap, :regfile, :mem
           model.regs.flat_map { |reg| collect_fields(reg) }
         when :reg
           model.fields

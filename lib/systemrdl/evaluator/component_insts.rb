@@ -47,7 +47,7 @@ module SystemRDL
       end
 
       def instantiable_component?(definition)
-        definition.layer in :addrmap | :regfile | :reg | :field
+        definition.layer in :addrmap | :regfile | :mem | :reg | :field
       end
 
       def check_recursive_instance(instance, component_definition)
@@ -61,7 +61,12 @@ module SystemRDL
       def check_inst_type(component_definition)
         return if component_definition.support_inst_type?(inst_type)
 
-        message = "#{component_definition.layer} instance with #{inst_type} not allowed"
+        message =
+          if inst_type
+            "#{component_definition.layer} instance with #{inst_type} not allowed"
+          else
+            "#{component_definition.layer} instance without instance type not allowed"
+          end
         raise_evaluation_error message, token_range
       end
 

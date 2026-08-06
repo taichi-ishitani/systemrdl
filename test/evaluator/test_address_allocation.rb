@@ -153,6 +153,53 @@ module SystemRDL
               } d;
             };
           RDL
+          <<~RDL,
+            addrmap my_map {
+              addressing = #{addressing_mode};
+              external mem {
+                memwidth = 32;
+              } a;
+              external mem {
+                reg {
+                  regwidth = 64;
+                  accesswidth = 32;
+                  field { sw = rw; hw = r; } a;
+                } b;
+              } b;
+              external mem {
+                memwidth = 16;
+                mementries = 2;
+              } c[20];
+              external mem {
+                memwidth = 8;
+                mementries = 4;
+              } d;
+            };
+          RDL
+          <<~RDL
+            addrmap my_map {
+              alignment = #{alignment};
+              addressing = #{addressing_mode};
+              external mem {
+                memwidth = 32;
+              } a;
+              external mem {
+                reg {
+                  regwidth = 64;
+                  accesswidth = 32;
+                  field { sw = rw; hw = r; } a;
+                } b;
+              } b;
+              external mem {
+                memwidth = 16;
+                mementries = 2;
+              } c[20];
+              external mem {
+                memwidth = 8;
+                mementries = 4;
+              } d;
+            };
+          RDL
         ]
       end
 
@@ -216,6 +263,24 @@ module SystemRDL
           assert_value(0x40 + 0x10 * i, regs[2+i].address)
         end
         assert_value(0x180, regs[22].address)
+
+        test_codes = addressing_test_code(:compact, 8)
+
+        regs = evaluate(test_codes[7]).instances[0].instances
+        assert_value(0x00, regs[0].address)
+        assert_value(0x04, regs[1].address)
+        20.times do |i|
+          assert_value(0x0C + 0x4 * i, regs[2+i].address)
+        end
+        assert_value(0x5c, regs[22].address)
+
+        regs = evaluate(test_codes[8]).instances[0].instances
+        assert_value(0x00, regs[0].address)
+        assert_value(0x08, regs[1].address)
+        20.times do |i|
+          assert_value(0x10 + 0x4 * i, regs[2+i].address)
+        end
+        assert_value(0x60, regs[22].address)
       end
 
       def test_addressing_mode_regalign
@@ -270,6 +335,24 @@ module SystemRDL
           assert_value(0x40 + 0x10 * i, regs[2+i].address)
         end
         assert_value(0x180, regs[22].address)
+
+        test_codes = addressing_test_code(:regalign, 16)
+
+        regs = evaluate(test_codes[7]).instances[0].instances
+        assert_value(0x00, regs[0].address)
+        assert_value(0x08, regs[1].address)
+        20.times do |i|
+          assert_value(0x10 + 0x4 * i, regs[2+i].address)
+        end
+        assert_value(0x60, regs[22].address)
+
+        regs = evaluate(test_codes[8]).instances[0].instances
+        assert_value(0x00, regs[0].address)
+        assert_value(0x10, regs[1].address)
+        20.times do |i|
+          assert_value(0x20 + 0x4 * i, regs[2+i].address)
+        end
+        assert_value(0x70, regs[22].address)
       end
 
       def test_addressing_mode_fullalign
@@ -298,6 +381,14 @@ module SystemRDL
           assert_value(0x200 + 0x10 * i, regs[2+i].address)
         end
         assert_value(0x33C, regs[22].address)
+
+        regs = evaluate(test_codes[7]).instances[0].instances
+        assert_value(0x00, regs[0].address)
+        assert_value(0x08, regs[1].address)
+        20.times do |i|
+          assert_value(0x80 + 0x4 * i, regs[2+i].address)
+        end
+        assert_value(0xD0, regs[22].address)
       end
 
       def test_explicit_address_assignment
@@ -335,6 +426,22 @@ module SystemRDL
         assert_value(0x20, regs[2].address)
         assert_value(0x30, regs[3].address)
         assert_value(0x40, regs[4].address)
+
+        regs = evaluate(<<~'RDL').instances[0].instances
+          addrmap top {
+            mem some_mem { memwidth = 8; mementries = 4; };
+            external some_mem a @0x0;
+            external some_mem b @0x4;
+            external some_mem c;
+            external some_mem d [2] @0x10;
+          };
+        RDL
+
+        assert_value(0x00, regs[0].address)
+        assert_value(0x04, regs[1].address)
+        assert_value(0x08, regs[2].address)
+        assert_value(0x10, regs[3].address)
+        assert_value(0x14, regs[4].address)
 
         regs = evaluate(<<~'RDL').instances[0].instances
           addrmap top {
@@ -393,6 +500,23 @@ module SystemRDL
           assert_value(0x100 + 0x20 * i, regs[i+10].address)
         end
         assert_value(0x230, regs[20].address)
+
+        regs = evaluate(<<~'RDL').instances[0].instances
+          addrmap top {
+            mem some_mem { memwidth = 8; mementries = 4; };
+            external some_mem a[10];
+            external some_mem b[10] @0x100 += 0x10;
+            external some_mem c;
+          };
+        RDL
+
+        10.times do |i|
+          assert_value(0x00 + 0x04 * i, regs[i].address)
+        end
+        10.times do |i|
+          assert_value(0x100 + 0x10 * i, regs[i+10].address)
+        end
+        assert_value(0x194, regs[20].address)
 
         regs = evaluate(<<~'RDL').instances[0].instances
           addrmap top {
@@ -458,6 +582,24 @@ module SystemRDL
           addrmap top {
             addressing = fullalign;
 
+            mem some_mem { memwidth = 8; mementries = 4; };
+            external some_mem a;
+            external some_mem b[4] += 0x10;
+            external some_mem c;
+          };
+        RDL
+
+        assert_value(0x00, regs[0].address)
+        assert_value(0x40, regs[1].address)
+        assert_value(0x50, regs[2].address)
+        assert_value(0x60, regs[3].address)
+        assert_value(0x70, regs[4].address)
+        assert_value(0x74, regs[5].address)
+
+        regs = evaluate(<<~'RDL').instances[0].instances
+          addrmap top {
+            addressing = fullalign;
+
             addrmap some_addrmap {
               reg { regwidth = 64; field { sw = rw; hw = r; } a; } a;
               reg { regwidth = 32; field { sw = rw; hw = r; } b; } b;
@@ -511,6 +653,20 @@ module SystemRDL
         assert_value(0x00, regs[0].address)
         assert_value(0x40, regs[1].address)
         assert_value(0x60, regs[2].address)
+
+        regs = evaluate(<<~'RDL').instances[0].instances
+          addrmap top {
+            alignment = 4;
+            mem some_mem { memwidth = 8; mementries = 4; };
+            external some_mem a;
+            external some_mem b %= 0x10;
+            external some_mem c;
+          };
+        RDL
+
+        assert_value(0x00, regs[0].address)
+        assert_value(0x10, regs[1].address)
+        assert_value(0x14, regs[2].address)
 
         regs = evaluate(<<~'RDL').instances[0].instances
           addrmap top {
@@ -876,6 +1032,101 @@ module SystemRDL
                 addrmap my_map {
                   #{comps[0]} a @0x10;
                   #{comps[1]} b[3] @0x0C;
+                };
+              RDL
+              'overlapping address ranges not allowed'
+            )
+          end
+      end
+
+      def test_overlapping_with_mem_is_rejected
+        defines = <<~'RDL'
+          reg reg_rw {
+            field { sw = rw; hw = r; } a;
+          };
+          reg reg_ro {
+            field { sw = r; hw = r; } a;
+          };
+          reg reg_wo {
+            field { sw = w; hw = r; } a;
+          };
+          mem mem_rw {
+            sw = rw;
+            reg_rw a;
+          };
+          mem mem_ro {
+            sw = r;
+            reg_ro a;
+          };
+          mem mem_wo {
+            sw = w;
+            reg_wo a;
+          };
+        RDL
+
+        ['mem_rw', 'mem_ro', 'mem_wo']
+          .product(['reg_rw', 'reg_ro', 'reg_wo', 'mem_rw', 'mem_ro', 'mem_wo']) do |comps|
+            assert_raises_evaluation_error(
+              <<~RDL,
+                #{defines}
+                addrmap my_map {
+                  external #{comps[0]} a @0x10;
+                  external #{comps[1]} b @0x10;
+                };
+              RDL
+              'overlapping address ranges not allowed'
+            )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                #{defines}
+                addrmap my_map {
+                  external #{comps[0]} a[2] @0x10;
+                  external #{comps[1]} b[2] @0x10;
+                };
+              RDL
+              'overlapping address ranges not allowed'
+            )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                #{defines}
+                addrmap my_map {
+                  external #{comps[0]} a[2] @0x10 += 0x08;
+                  external #{comps[1]} b @0x18;
+                };
+              RDL
+              'overlapping address ranges not allowed'
+            )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                #{defines}
+                addrmap my_map {
+                  external #{comps[0]} a[3] @0x0C;
+                  external #{comps[1]} b @0x10;
+                };
+              RDL
+              'overlapping address ranges not allowed'
+            )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                #{defines}
+                addrmap my_map {
+                  external #{comps[0]} a @0x10;
+                  external #{comps[1]} b[2] @0x08 += 0x8;
+                };
+              RDL
+              'overlapping address ranges not allowed'
+            )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                #{defines}
+                addrmap my_map {
+                  external #{comps[0]} a @0x10;
+                  external #{comps[1]} b[3] @0x0C;
                 };
               RDL
               'overlapping address ranges not allowed'

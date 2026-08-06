@@ -146,9 +146,9 @@ module SystemRDL
       def init_properties(instance)
         prop_defs = BuiltinProperties.properties
         prop_defs.each do |prop_def|
-          next unless prop_def.target?(instance)
-
           prop = prop_def.create(instance)
+          next unless prop
+
           instance.properties << prop
         end
       end

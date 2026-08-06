@@ -541,6 +541,16 @@ module SystemRDL
         assert_raises_evaluation_error(
           <<~RDL,
             addrmap a_addrmap {
+              mem a_mem { mem_width = 32; };
+              reg { external a_mem b; } b;
+            };
+          RDL
+          "mem instance not allowed in reg"
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap a_addrmap {
               regfile a_regfile {
                 reg {
                   field { hw=r; } a;
@@ -583,6 +593,15 @@ module SystemRDL
             };
           RDL
           'addrmap definition not allowed in reg'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap a_addrmap {
+              reg { mem b_mem { memwidth = 32; }; } a;
+            };
+          RDL
+          'mem definition not allowed in reg'
         )
 
         assert_raises_evaluation_error(

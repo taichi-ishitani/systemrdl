@@ -60,6 +60,24 @@ module SystemRDL
           assert_value(addresses[1], regs[1].address)
           assert_value(addresses[2], regs[2].address)
 
+          mems = evaluate(<<~RDL).instances[0].instances
+            addrmap my_map {
+              external mem {
+                memwidth = #{width};
+              } a @#{addresses[0]};
+              external mem {
+                memwidth = #{width};
+              } b @#{addresses[1]};
+              external mem {
+                memwidth = #{width};
+              } c @#{addresses[2]};
+            };
+          RDL
+
+          assert_value(addresses[0], mems[0].address)
+          assert_value(addresses[1], mems[1].address)
+          assert_value(addresses[2], mems[2].address)
+
           regfiles = evaluate(<<~RDL).instances[0].instances
             addrmap my_map {
               regfile {
@@ -155,6 +173,17 @@ module SystemRDL
             assert_raises_evaluation_error(
               <<~RDL,
                 addrmap my_map {
+                  external mem {
+                    memwidth = #{width};
+                  } a @#{address};
+                };
+              RDL
+              "address not aligned to accesswidth: address 0x#{address.to_s(16)} accesswidth #{width}"
+            )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
                   regfile {
                     reg {
                       regwidth = #{width};
@@ -239,6 +268,24 @@ module SystemRDL
           assert_value(strides[0], regs[0].stride)
           assert_value(strides[1], regs[1].stride)
           assert_value(strides[2], regs[2].stride)
+
+          mems = evaluate(<<~RDL).instances[0].instances
+            addrmap my_map {
+              external mem {
+                memwidth = #{width};
+              } a[1] += #{strides[0]};
+              external mem {
+                memwidth = #{width};
+              } b[1] += #{strides[1]};
+              external mem {
+                memwidth = #{width};
+              } c[1] += #{strides[2]};
+            };
+          RDL
+
+          assert_value(strides[0], mems[0].stride)
+          assert_value(strides[1], mems[1].stride)
+          assert_value(strides[2], mems[2].stride)
 
           regfiles = evaluate(<<~RDL).instances[0].instances
             addrmap my_map {
@@ -335,6 +382,17 @@ module SystemRDL
             assert_raises_evaluation_error(
               <<~RDL,
                 addrmap my_map {
+                  external mem {
+                    memwidth = #{width};
+                  } a[1] += #{stride};
+                };
+              RDL
+              "stride not aligned to accesswidth: stride 0x#{stride.to_s(16)} accesswidth #{width}"
+            )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
                   regfile {
                     reg {
                       regwidth = #{width};
@@ -378,6 +436,21 @@ module SystemRDL
               };
             RDL
             "stride less than reg size: stride 0x#{stride.to_s(16)} size #{size}"
+          )
+
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                external mem {
+                  reg {
+                    regwidth = #{size * 8};
+                    accesswidth = 8;
+                    field { sw = rw; hw = r; } a;
+                  } a;
+                } a[2] += #{stride};
+              };
+            RDL
+            "stride less than mem size: stride 0x#{stride.to_s(16)} size #{size}"
           )
 
           assert_raises_evaluation_error(
@@ -466,6 +539,24 @@ module SystemRDL
           assert_value(alignments[0], regs[0].alignment)
           assert_value(alignments[1], regs[1].alignment)
           assert_value(alignments[2], regs[2].alignment)
+
+          mems = evaluate(<<~RDL).instances[0].instances
+            addrmap my_map {
+              external mem {
+                memwidth = #{width};
+              } a %= #{alignments[0]};
+              external mem {
+                memwidth = #{width};
+              } b %= #{alignments[1]};
+              external mem {
+                memwidth = #{width};
+              } c %= #{alignments[2]};
+            };
+          RDL
+
+          assert_value(alignments[0], mems[0].alignment)
+          assert_value(alignments[1], mems[1].alignment)
+          assert_value(alignments[2], mems[2].alignment)
 
           regfiles = evaluate(<<~RDL).instances[0].instances
             addrmap my_map {
@@ -562,6 +653,17 @@ module SystemRDL
             assert_raises_evaluation_error(
               <<~RDL,
                 addrmap my_map {
+                  external mem {
+                    memwidth = #{width};
+                  } a %= #{alignment};
+                };
+              RDL
+              "alignment not aligned to accesswidth: alignment 0x#{alignment.to_s(16)} accesswidth #{width}"
+            )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
                   regfile {
                     reg {
                       regwidth = #{width};
@@ -608,6 +710,17 @@ module SystemRDL
         assert_raises_evaluation_error(
           <<~RDL,
             addrmap my_map {
+              external mem {
+                memwidth = 32;
+              } a %= 0;
+            };
+          RDL
+          "alignment must be positive"
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap my_map {
               regfile {
                 reg {
                   regwidth = 32;
@@ -641,6 +754,17 @@ module SystemRDL
               reg {
                 regwidth = 32;
                 field { sw = r; hw = r; } a;
+              } a @0x0 %= 0x4;
+            };
+          RDL
+          "@ and %= address operations are mutually exclusive"
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap my_map {
+              external mem {
+                memwidth = 32;
               } a @0x0 %= 0x4;
             };
           RDL

@@ -481,14 +481,18 @@ module SystemRDL
           addrmap some_map {
             field my_field { sw = rw; hw = r; };
             reg my_reg { my_field a; };
+            mem my_mem { memwidth = 32; };
             regfile my_regfile { my_reg b; };
-            addrmap my_map { my_regfile c; };
-            my_map d;
+            addrmap my_map { my_regfile c; external my_mem d; };
+            my_map e;
           };
         RDL
 
         addrmap = addrmap.instances[0]
-        assert_property_value(addrmap, :name, 'd')
+        assert_property_value(addrmap, :name, 'e')
+
+        mem = addrmap.instances[1]
+        assert_property_value(mem, :name, 'd')
 
         regfile = addrmap.instances[0]
         assert_property_value(regfile, :name, 'c')

@@ -229,6 +229,10 @@ module SystemRDL
       attr_accessor :msb
       attr_accessor :lsb
 
+      def virtual_field?
+        parent.virtual_reg?
+      end
+
       def definable?(_definition)
         false
       end

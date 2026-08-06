@@ -34,11 +34,21 @@ module SystemRDL
         return inst_alignment if inst_alignment
 
         alignments = [
-          inst.property_value(:alignment)&.value || 0,
+          inst_alignment(inst),
           child_inst.accesswidth / 8,
           alignment_by_addressing(inst, child_inst)
         ]
         alignments.max
+      end
+
+      def inst_alignment(inst)
+        alignment =
+          if inst.mem?
+            inst.parent.property_value(:alignment)
+          else
+            inst.property_value(:alignment)
+          end
+        alignment&.value || 0
       end
 
       def alignment_by_addressing(inst, child_inst)
@@ -131,8 +141,7 @@ module SystemRDL
       end
 
       def addressable_inst?(inst)
-        # For now, support reg/regfile/addrmap only but not mem
-        inst.addrmap? || inst.regfile? || inst.reg?
+        inst.addrmap? || inst.regfile? || inst.mem? || inst.reg?
       end
     end
   end

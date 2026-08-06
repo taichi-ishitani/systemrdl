@@ -136,6 +136,10 @@ module SystemRDL
       attr_accessor :stride
       attr_accessor :alignment
 
+      def virtual_reg?
+        parent.mem?
+      end
+
       def definable?(definition)
         definition.layer in :field
       end

@@ -59,6 +59,10 @@ module SystemRDL
         layer == :regfile
       end
 
+      def mem?
+        layer == :mem
+      end
+
       def reg?
         layer == :reg
       end
@@ -68,7 +72,7 @@ module SystemRDL
       end
 
       def structural_component?
-        addrmap? || regfile? || reg? || field?
+        addrmap? || regfile? || mem? || reg? || field?
       end
 
       def array?

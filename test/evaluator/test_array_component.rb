@@ -31,6 +31,15 @@ module SystemRDL
               my_regfile d;
             };
           RDL
+          <<~'RDL',
+            addrmap top {
+              mem my_mem { memwidth = 32 ;};
+              external my_mem a[1];
+              external my_mem b[1][2];
+              external my_mem c[1][2][3];
+              external my_mem d;
+            };
+          RDL
           <<~'RDL'
             addrmap top {
               addrmap my_addrmap {
@@ -75,7 +84,10 @@ module SystemRDL
       end
 
       def test_range_is_rejected
-        [[:reg, 'my_reg'], [:regfile, 'my_regfile'], [:addrmap, 'my_addrmap']].each do |(layer, comp)|
+        {
+          reg: 'my_reg', regfile: 'my_regfile', mem: 'my_mem', addrmap: 'my_addrmap'
+        }.each do |layer, comp|
+          external = (layer == :mem && 'external') || ''
           assert_raises_evaluation_error(
             <<~RDL,
               addrmap top {
@@ -85,10 +97,11 @@ module SystemRDL
                 regfile my_regfile {
                   my_reg a;
                 };
+                mem my_mem { memwidth = 32; };
                 addrmap my_addrmap {
                   my_reg a;
                 };
-                #{comp} a[0:0];
+                #{external} #{comp} a[0:0];
               };
             RDL
             "range not allowed for #{layer} instance"
@@ -97,7 +110,10 @@ module SystemRDL
       end
 
       def test_address_stride_for_scalar_instance_is_rejected
-        [[:reg, 'my_reg'], [:regfile, 'my_regfile'], [:addrmap, 'my_addrmap']].each do |(layer, comp)|
+        {
+          reg: 'my_reg', regfile: 'my_regfile', mem: 'my_mem', addrmap: 'my_addrmap'
+        }.each do |(layer, comp)|
+          external = (layer == :mem && 'external') || ''
           assert_raises_evaluation_error(
             <<~RDL,
               addrmap top {
@@ -107,10 +123,11 @@ module SystemRDL
                 regfile my_regfile {
                   my_reg a;
                 };
+                mem my_mem { memwidth = 32; };
                 addrmap my_addrmap {
                   my_reg a;
                 };
-                #{comp} a += 0x4;
+                #{external} #{comp} a += 0x4;
               };
             RDL
             "address stride not allowed for scalar #{layer} instance"
@@ -126,17 +143,19 @@ module SystemRDL
           regfile my_regfile {
             my_reg a;
           };
+          mem my_mem { memwidth = 32; };
           addrmap my_addrmap {
             my_reg a;
           };
         RDL
 
-        ['my_reg', 'my_regfile'].each do |comp|
+        ['my_reg', 'my_regfile', 'my_mem', 'my_addrmap'].each do |comp|
+          external = (comp == 'my_mem' && 'external') || ''
           assert_raises_evaluation_error(
             <<~RDL,
               addrmap top {
                 #{defines}
-                #{comp} a[0];
+                #{external} #{comp} a[0];
               };
             RDL
             "array size must be positive"
@@ -146,7 +165,7 @@ module SystemRDL
             <<~RDL,
               addrmap top {
                 #{defines}
-                #{comp} a[1][0];
+                #{external} #{comp} a[1][0];
               };
             RDL
             "array size must be positive"
@@ -156,7 +175,7 @@ module SystemRDL
             <<~RDL,
               addrmap top {
                 #{defines}
-                #{comp} a[1][2][0];
+                #{external} #{comp} a[1][2][0];
               };
             RDL
             "array size must be positive"

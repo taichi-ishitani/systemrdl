@@ -31,6 +31,11 @@ module SystemRDL
               } r0;
             } rf0;
 
+            external mem {
+              memwidth = 24;
+              mementries = 4;
+            } mem0;
+
             addrmap {
               reg {
                 field { sw = rw; hw = r; } a;
@@ -50,7 +55,7 @@ module SystemRDL
         assert_value('Sample', addrmap.display_name)
         assert_value('', addrmap.desc)
         assert_value(nil, addrmap.address)
-        assert_value(24, addrmap.size)
+        assert_value(52, addrmap.size)
         assert_value(32, addrmap.accesswidth)
         assert_value(false, addrmap.sharedextbus)
         assert_value(false, addrmap.errextbus)
@@ -59,12 +64,12 @@ module SystemRDL
         assert_value(false, addrmap.rsvdset)
         assert_value(false, addrmap.rsvdsetX)
 
-        addrmap = @addrmaps[0].regs[5]
+        addrmap = @addrmaps[0].regs[6]
         assert_value('sub0', addrmap.name)
         assert_value('my_map.sub0', addrmap.full_name)
         assert_value('sub0', addrmap.display_name)
         assert_value('', addrmap.desc)
-        assert_value(0x14, addrmap.address)
+        assert_value(0x30, addrmap.address)
         assert_value(4, addrmap.size)
         assert_value(32, addrmap.accesswidth)
         assert_value(false, addrmap.sharedextbus)
@@ -86,7 +91,7 @@ module SystemRDL
         assert_property_value(addrmap, :rsvdset, false)
         assert_property_value(addrmap, :rsvdsetX, false)
 
-        addrmap = @addrmaps[0].regs[5]
+        addrmap = @addrmaps[0].regs[6]
         assert_property_value(addrmap, :display_name, 'sub0')
         assert_property_value(addrmap, :desc, '')
         assert_property_value(addrmap, :sharedextbus, false)
@@ -98,12 +103,36 @@ module SystemRDL
       end
 
       def test_addrmap_dropped_properties
-        [@addrmaps[0], @addrmaps[0].regs[5]].each do |addrmap|
+        [@addrmaps[0], @addrmaps[0].regs[6]].each do |addrmap|
           refute_property(addrmap, :alignment)
           refute_property(addrmap, :addressing)
           refute_property(addrmap, :msb0)
           refute_property(addrmap, :lsb0)
         end
+      end
+
+      def test_mem_accessors
+        mem = @addrmaps[0].regs[5]
+        assert_value('mem0', mem.name)
+        assert_value('my_map.mem0', mem.full_name)
+        assert_value('mem0', mem.display_name)
+        assert_value('', mem.desc)
+        assert_value(0x20, mem.address)
+        assert_value(16, mem.size)
+        assert_value(32, mem.accesswidth)
+        assert_value(32, mem.entrywidth)
+        assert_value(24, mem.memwidth)
+        assert_value(4, mem.mementries)
+        assert_value(:rw, mem.sw)
+      end
+
+      def test_mem_propertyes
+        mem = @addrmaps[0].regs[5]
+        assert_property_value(mem, :display_name, 'mem0')
+        assert_property_value(mem, :desc, '')
+        assert_property_value(mem, :memwidth, 24)
+        assert_property_value(mem, :mementries, 4)
+        assert_property_value(mem, :sw, :rw)
       end
 
       def test_regfile_accessors
@@ -511,7 +540,7 @@ module SystemRDL
             display_name: "Sample"
             desc: ""
             address: nil
-            size: 24
+            size: 52
             accesswidth: 32
             sharedextbus: false
             errextbus: false
@@ -870,10 +899,20 @@ module SystemRDL
                   hwmask: nil
                   precedence: :sw
                   paritycheck: false}}}
+            mem0 (mem) {
+              display_name: "mem0"
+              desc: ""
+              address: 0x20
+              size: 16
+              accesswidth: 32
+              entrywidth: 32
+              memwidth: 24
+              mementries: 4
+              sw: :rw}
             sub0 (addrmap) {
               display_name: "sub0"
               desc: ""
-              address: 0x14
+              address: 0x30
               size: 4
               accesswidth: 32
               sharedextbus: false

@@ -65,11 +65,11 @@ module SystemRDL
       include BlockInstance
 
       def definable?(definition)
-        definition.layer in :addrmap | :regfile | :reg | :field
+        definition.layer in :addrmap | :regfile | :mem | :reg | :field
       end
 
       def instantiable?(definition)
-        definition.layer in :addrmap | :regfile | :reg
+        definition.layer in :addrmap | :regfile | :mem | :reg
       end
     end
   end

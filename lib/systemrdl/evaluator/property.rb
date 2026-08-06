@@ -69,11 +69,21 @@ module SystemRDL
 
       attr_reader :name
       attr_accessor :targets
+      attr_accessor :exist
       attr_accessor :types
       attr_accessor :ref_target
       attr_accessor :dynamic_assign
       attr_accessor :per_element_assign
       attr_accessor :default_value
+
+      def create(instance)
+        return unless target?(instance) && exist?(instance)
+
+        value = eval_value(instance)
+        Property.new(instance, self, value)
+      end
+
+      private
 
       def target?(instance)
         return false if instance.root?
@@ -81,12 +91,13 @@ module SystemRDL
         targets.nil? || targets.include?(instance.layer)
       end
 
-      def create(instance)
-        value = eval_value(instance)
-        Property.new(instance, self, value)
+      def exist?(instance)
+        if @exist.is_a?(Proc)
+          @exist.call(instance)
+        else
+          @exist
+        end
       end
-
-      private
 
       def eval_value(instance)
         value = instance.definition.find_default_property(name)

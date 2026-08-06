@@ -75,6 +75,7 @@ module SystemRDL
         inst.instances.map do |sub_inst|
           case sub_inst.layer
           when :addrmap then AddrMap.new(sub_inst, self)
+          when :mem then Mem.new(sub_inst, self)
           when :regfile then RegFile.new(sub_inst, self)
           when :reg then Reg.new(sub_inst, self)
           when :field then Field.new(sub_inst, self)
@@ -136,6 +137,20 @@ module SystemRDL
       def_property :littleendian
       def_property :rsvdset
       def_property :rsvdsetX
+
+      alias_method :regs, :instances
+    end
+
+    class Mem < Instance
+      def_property :display_name
+      def_property :desc
+      def_property :address, HexValue
+      def_property :size, &:size
+      def_property :accesswidth, &:accesswidth
+      def_property :entrywidth, &:entrywidth
+      def_property :memwidth
+      def_property :mementries
+      def_property :sw
 
       alias_method :regs, :instances
     end

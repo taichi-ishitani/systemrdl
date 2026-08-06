@@ -425,10 +425,10 @@ module SystemRDL
       def test_assigning_container_reference_value_to_not_supported_property_is_rejected
         template = proc do |layer, prop_name|
           case layer
-          when :addrmap
+          when :addrmap, :regfile
             <<~RDL
               addrmap my_map {
-                addrmap {
+                #{layer} {
                   reg {
                     field { sw = r; hw = r; } a;
                   } a;
@@ -436,10 +436,10 @@ module SystemRDL
                 #{prop_name} = a;
               };
             RDL
-          when :regfile
+          when :mem
             <<~RDL
               addrmap my_map {
-                regfile {
+                external mem {
                   reg {
                     field { sw = r; hw = r; } a;
                   } a;
