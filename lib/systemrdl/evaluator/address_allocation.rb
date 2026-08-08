@@ -30,8 +30,8 @@ module SystemRDL
       end
 
       def calc_alignment(inst, child_inst)
-        inst_alignment = child_inst.alignment&.value
-        return inst_alignment if inst_alignment
+        alignment = child_inst.alignment&.value
+        return alignment if alignment
 
         alignments = [
           inst_alignment(inst),
