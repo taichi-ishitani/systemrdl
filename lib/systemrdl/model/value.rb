@@ -2,7 +2,7 @@
 
 module SystemRDL
   module Model
-    Value = Data.define(:name, :value, :instance, :token_range) do
+    Value = Struct.new(:name, :value, :instance, :token_range) do
       def full_name
         "#{instance.full_name}.#{name}"
       end
@@ -20,6 +20,18 @@ module SystemRDL
         pp_value(pp)
       end
 
+      def value?
+        true
+      end
+
+      def instance_ref?
+        false
+      end
+
+      def property_ref?
+        false
+      end
+
       private
 
       def pp_value(pp)
@@ -30,6 +42,18 @@ module SystemRDL
     class ReferenceValue < Value
       def to_s
         full_name
+      end
+
+      def value?
+        false
+      end
+
+      def instance_ref?
+        value.is_a?(Instance)
+      end
+
+      def property_ref?
+        value.is_a?(Value)
       end
 
       private

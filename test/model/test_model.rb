@@ -533,6 +533,30 @@ module SystemRDL
         end
       end
 
+      def test_type_identifier
+        fields = collect_fields(@addrmaps[0])
+
+        prop = fields[0].property(:hwset)
+        assert(prop.value?)
+        refute(prop.instance_ref?)
+        refute(prop.property_ref?)
+
+        prop = fields[0].property(:reset)
+        assert(prop.value?)
+        refute(prop.instance_ref?)
+        refute(prop.property_ref?)
+
+        prop = fields[6].property(:hwenable)
+        refute(prop.value?)
+        assert(prop.instance_ref?)
+        refute(prop.property_ref?)
+
+        prop = fields[7].property(:hwset)
+        refute(prop.value?)
+        refute(prop.instance_ref?)
+        assert(prop.property_ref?)
+      end
+
       def test_pp
         addrmap = @addrmaps[0]
         assert_output(<<~'PP') { pp addrmap }

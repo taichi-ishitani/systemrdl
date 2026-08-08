@@ -7,8 +7,8 @@ module SystemRDL
         @name = inst.element_name
         @layer = inst.layer
         @parent = parent
-        @instances = build_sub_instances(inst)
-        @properties = build_properties(inst)
+        @instances = build_sub_instances(inst).freeze
+        @properties = build_properties(inst).freeze
         @token_range = inst.token_range
         freeze
       end
@@ -17,6 +17,7 @@ module SystemRDL
       attr_reader :layer
       attr_reader :parent
       attr_reader :instances
+      attr_reader :properties
       attr_reader :token_range
 
       class << self
