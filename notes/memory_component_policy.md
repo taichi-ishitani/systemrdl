@@ -61,7 +61,7 @@ Because the logical field region and the address-map entry width diverge when `m
 - `memwidth` -- the logical entry bit width; the region within which fields must fit.
 - `size` -- the address-map occupancy in bytes (rounded entry width times `mementries`).
 
-`size` is the address-basis quantity, matching every other component. A logical total (`memwidth` * `mementries`) is not exposed as a separate accessor: it is derivable from `memwidth` and `mementries`, and no current use requires it, consistent with the general policy of not adding speculative accessors.
+`size` is the address-basis quantity, matching every other component.
 
 ---
 
@@ -97,9 +97,9 @@ Per 11.2 (a), every memory instance has an external instance type; a memory cann
 
 Per 11.2 (f), virtual registers, register files, and fields shall have the same `sw` (software access) as the parent memory. This implementation verifies the match on the memory side: the memory checks that the `sw` of its virtual contents agrees with its own `sw`, and a disagreement is an error. Locating the check on the memory keeps this memory-specific rule within the memory rather than adding a "parent is a memory" branch to ordinary field evaluation.
 
-### Hardware properties -- validated, not exposed
+### Hardware properties -- validated and retained, without address-map effect
 
-Per 11.2 (g), hardware properties on virtual registers and fields are "ignored." This implementation reads "ignored" as *not reflected in the memory's address-map (software) view*, not as *unchecked*. The virtual instances are virtual only in how they appear in the memory's address map; the underlying hardware is still implemented as described. Hardware properties therefore continue to govern that physical implementation, and their validity is checked exactly as for an ordinary register or field -- individual values, combinations among hardware properties, and combinations of hardware and software properties are all validated, and a contradictory hardware description is an error. What "ignored" removes is only the *effect* on the address-map representation: hardware behaviour is not surfaced in the memory's software view. Validation is retained; the address-map effect is dropped.
+Per 11.2 (g), hardware properties on virtual registers and fields are "ignored." The specification does not say whether "ignored" reaches as far as validation, so whether to validate them is implementation-defined. This implementation validates and retains them exactly as for an ordinary register or field -- to avoid adding a "parent is a memory" branch to the validation and to the model -- so a contradictory hardware description is an error. What "ignored" removes is only the effect on the address-map access behaviour, not the values or their validation.
 
 ### Virtual fields -- `sw` only among software properties
 
@@ -110,7 +110,7 @@ Per 11.2 (h), a virtual field cannot carry software properties other than `sw`. 
 The three property rules differ in how a stray property is treated, driven by the specification's wording:
 
 - `sw` (11.2 (f), "shall have the same") -- must match the parent; a mismatch is an error.
-- Hardware properties (11.2 (g), "ignored") -- validated as usual (they describe the real implementation), but not surfaced in the address-map view; never an error merely for being present.
+- Hardware properties (11.2 (g), "ignored") -- validating them is implementation-defined; this implementation validates and retains them, but they have no effect on the address-map access behaviour and are never an error merely for being present.
 - Non-`sw` software properties (11.2 (h), "cannot have") -- not allowed on a virtual field; their presence is an error.
 
 ---
