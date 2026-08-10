@@ -16,10 +16,10 @@ module SystemRDL
 
       def finalize(models)
         instances = models.flat_map { |model| collect_instances(model) }
-        proeprties = instances.flat_map { |inst| inst.properties.values }
+        properties = instances.flat_map { |inst| inst.properties.values }
 
-        proeprties.each do |property|
-          resolve_reference(property, instances, proeprties)
+        properties.each do |property|
+          resolve_reference(property, instances, properties)
           property.freeze
         end
       end
@@ -28,7 +28,7 @@ module SystemRDL
         model.instances.flat_map { |inst| [inst, *collect_instances(inst)] }
       end
 
-      def resolve_reference(property, instances, proeprties)
+      def resolve_reference(property, instances, properties)
         return if property.value?
 
         path = property.value.full_name
@@ -38,7 +38,7 @@ module SystemRDL
           return
         end
 
-        if (ref = proeprties.find { |prop| prop.full_name == path })
+        if (ref = properties.find { |prop| prop.full_name == path })
           property.value = ref
         end
       end
