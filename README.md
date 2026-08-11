@@ -105,8 +105,38 @@ end
 
 ## Scope
 
-This gem currently supports only the basic syntax needed to describe register maps that consist of address maps, registers, and fields.
-More advanced constructs of the SystemRDL language are not supported yet.
+### Supported Features
+
+The following SystemRDL 2.0 language features are supported (parsed and evaluated).
+
+#### Components
+
+* The `addrmap`, `regfile`, `reg`, `field`, and `mem` components
+* Definitive and anonymous component definitions/instances
+* Arrays of instances
+* Address allocation operators (`@`, `+=`, `%=`)
+* `internal` / `external` instance types
+
+#### Properties
+
+* Most built-in properties of the supported components, except the `counter` and `interrupt` property groups (see below)
+* Property assignment in all three forms: direct assignment, default assignment (`default`), and dynamic assignment (`->`)
+* Property references and instance references as property values
+
+### Unsupported Features
+
+The following features are not supported. Some of their keywords are recognized by the lexer (reserved), but they are not evaluated.
+
+* `signal` component
+* User-defined properties (`property` definitions)
+* Enumerations (`enum`) and `encode`
+* `struct` types
+* `constraint`
+* `alias` registers
+* Counter field properties
+* Interrupt field properties
+* Component parameters
+* Preprocessing, both embedded Perl preprocessing and Verilog-style directives
 
 ## Design notes
 
