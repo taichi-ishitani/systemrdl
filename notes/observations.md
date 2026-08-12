@@ -49,3 +49,66 @@ this implementation follows Table 18 as written.
 The observation is recorded here so that, should the specification be
 revisited upstream or should an issue be raised for clarification, the
 reasoning is available.
+
+---
+
+## 2. Automatic field placement can cross an accesswidth sub-word boundary
+
+### Observation
+
+Section 9.2 (d)/(e) specifies that width-only fields are packed sequentially
+with no padding between them (each field's LSB is one greater than the
+previous field's MSB, in lsb0 mode). When a register has `regwidth` greater
+than `accesswidth`, this packing can place a single field so that it straddles
+an accesswidth sub-word boundary.
+
+For example, with `regwidth = 64` and `accesswidth = 32`:
+
+```systemrdl
+reg {
+    regwidth = 64;
+    accesswidth = 32;
+    field { sw = rw; hw = r; } a[31];
+    field { sw = rw; hw = r; } b[2];
+} a;
+```
+
+Field `a` occupies bits `[30:0]`, and the next width-only field `b` is placed
+immediately above it at bits `[32:31]`. That range crosses the sub-word
+boundary between the lower access word (bits `[31:0]`) and the upper access
+word (bits `[63:32]`): `b` cannot be read or written in a single `accesswidth`
+access, and this implementation rejects it as an error.
+
+### Why It Looks Noteworthy
+
+A designer using width-only fields for convenience generally expects the tool
+to lay fields out sensibly, and a field that silently straddles an access
+boundary is easy to overlook and awkward to access in hardware. Because the
+specification also defines `accesswidth`, one might expect automatic placement
+to take it into account and avoid such straddling. It does not: the packing
+rule is defined purely in terms of sequential bit positions, independent of
+`accesswidth`. In this sense the no-padding rule reduces the usefulness of
+automatic placement for registers wider than their access width.
+
+### Why No Implementation Change
+
+Section 9.2 (d)/(e) explicitly requires "no padding between fields." Inserting
+padding to avoid a sub-word boundary crossing would directly violate that
+rule.
+
+A designer who needs a field to stay within an access word can express that
+directly with an explicit bit range (for example, placing `b` at `[33:32]`),
+which makes the intent visible at the source. This implementation therefore
+follows the specification and packs width-only fields with no padding; when
+the sequential layout leads a field across a sub-word boundary, it is reported
+as an error rather than silently accepted or worked around.
+
+The observation is recorded here because the inconvenience originates in the
+specification itself: conforming to the no-padding rule is what can lead
+automatic placement to produce a boundary-crossing field in the first place.
+Bit placement is fundamental to SystemRDL and is the front-end's
+responsibility. It is therefore recorded here as feedback toward the
+specification: automatic placement and the `accesswidth` sub-word boundary are
+in tension under the current no-padding rule, and the specification should be
+updated to have automatic placement take `accesswidth` into account so that
+this tension is resolved.
