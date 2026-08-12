@@ -138,6 +138,7 @@ module SystemRDL
       def_property :littleendian
       def_property :rsvdset
       def_property :rsvdsetX
+      def_property :msb0
 
       alias_method :regs, :instances
     end

@@ -86,6 +86,23 @@ module SystemRDL
           assert_value(1, fields[1].msb)
           assert_value(17, fields[3].lsb)
           assert_value(17, fields[3].msb)
+
+          fields = evaluate(<<~RDL).instances[0].instances[0].instances
+            addrmap my_map {
+              msb0;
+              reg {
+                field { sw = #{accesses[0]}; hw = r; } a;
+                field { sw = #{accesses[1]}; hw = r; } b;
+                field { sw = #{accesses[0]}; hw = r; } c[16:16];
+                field { sw = #{accesses[1]}; hw = r; } d;
+              } my_reg;
+            };
+          RDL
+
+          assert_value(30, fields[1].lsb)
+          assert_value(30, fields[1].msb)
+          assert_value(15, fields[3].lsb)
+          assert_value(15, fields[3].msb)
         end
       end
 
@@ -93,87 +110,79 @@ module SystemRDL
         [:rw, :rw1, :r, :w, :w1].product([:rw, :rw1, :r, :w, :w1]).each do |accesses|
           next if accesses in [:r, :w] | [:r, :w1] | [:w, :r] | [:w1, :r]
 
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  field { sw = #{accesses[0]}; hw = r; } a[7:4];
-                  field { sw = #{accesses[1]}; hw = r; } b[4:3];
-                } my_reg;
-              };
-            RDL
-            'overlapping fields not allowed'
-          )
+          [['[7:4]', '[4:3]'], ['[7:4]', '[6:5]'], ['[7:4]', '[8:7]']].each do |(a_range, b_range)|
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  reg {
+                    field { sw = #{accesses[0]}; hw = r; } a#{a_range};
+                    field { sw = #{accesses[1]}; hw = r; } b#{b_range};
+                  } my_reg;
+                };
+              RDL
+              'overlapping fields not allowed'
+            )
+          end
 
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  field { sw = #{accesses[0]}; hw = r; } a[7:4];
-                  field { sw = #{accesses[1]}; hw = r; } b[6:5];
-                } my_reg;
-              };
-            RDL
-            'overlapping fields not allowed'
-          )
-
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  field { sw = #{accesses[0]}; hw = r; } a[7:4];
-                  field { sw = #{accesses[1]}; hw = r; } b[8:7];
-                } my_reg;
-              };
-            RDL
-            'overlapping fields not allowed'
-          )
+          [['[4:7]', '[3:4]'], ['[4:7]', '[5:6]'], ['[4:7]', '[7:8]']].each do |(a_range, b_range)|
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  msb0;
+                  reg {
+                    field { sw = #{accesses[0]}; hw = r; } a#{a_range};
+                    field { sw = #{accesses[1]}; hw = r; } b#{b_range};
+                  } my_reg;
+                };
+              RDL
+              'overlapping fields not allowed'
+            )
+          end
         end
       end
 
       def test_overlapping_ro_wo_fields_are_allowed
         [[:r, :w], [:r, :w1], [:w, :r], [:w1, :r]].each do |accesses|
-          fields = evaluate(<<~RDL).instances[0].instances[0].instances
-            addrmap my_map {
-              reg {
-                field { sw = #{accesses[0]}; hw = r; } a[7:4];
-                field { sw = #{accesses[1]}; hw = r; } b[4:3];
-              } my_reg;
-            };
-          RDL
+          [
+            ['[7:4]', '[4:3]', [4, 7, 3, 4]],
+            ['[7:4]', '[6:5]', [4, 7, 5, 6]],
+            ['[7:4]', '[8:7]', [4, 7, 7, 8]]
+          ].each do |(a_range, b_range, pos)|
+            fields = evaluate(<<~RDL).instances[0].instances[0].instances
+              addrmap my_map {
+                reg {
+                  field { sw = #{accesses[0]}; hw = r; } a#{a_range};
+                  field { sw = #{accesses[1]}; hw = r; } b#{b_range};
+                } my_reg;
+              };
+            RDL
 
-          assert_value(4, fields[0].lsb);
-          assert_value(7, fields[0].msb);
-          assert_value(3, fields[1].lsb);
-          assert_value(4, fields[1].msb);
+            assert_value(pos[0], fields[0].lsb);
+            assert_value(pos[1], fields[0].msb);
+            assert_value(pos[2], fields[1].lsb);
+            assert_value(pos[3], fields[1].msb);
+          end
 
-          fields = evaluate(<<~RDL).instances[0].instances[0].instances
-            addrmap my_map {
-              reg {
-                field { sw = #{accesses[0]}; hw = r; } a[7:4];
-                field { sw = #{accesses[1]}; hw = r; } b[6:5];
-              } my_reg;
-            };
-          RDL
+          [
+            ['[4:7]', '[3:4]', [7, 4, 4, 3]],
+            ['[4:7]', '[5:6]', [7, 4, 6, 5]],
+            ['[4:7]', '[7:8]', [7, 4, 8, 7]]
+          ].each do |(a_range, b_range, pos)|
+            fields = evaluate(<<~RDL).instances[0].instances[0].instances
+              addrmap my_map {
+                msb0;
+                reg {
+                  field { sw = #{accesses[0]}; hw = r; } a#{a_range};
+                  field { sw = #{accesses[1]}; hw = r; } b#{b_range};
+                } my_reg;
+              };
+            RDL
 
-          assert_value(4, fields[0].lsb);
-          assert_value(7, fields[0].msb);
-          assert_value(5, fields[1].lsb);
-          assert_value(6, fields[1].msb);
-
-          fields = evaluate(<<~RDL).instances[0].instances[0].instances
-            addrmap my_map {
-              reg {
-                field { sw = #{accesses[0]}; hw = r; } a[7:4];
-                field { sw = #{accesses[1]}; hw = r; } b[8:7];
-              } my_reg;
-            };
-          RDL
-
-          assert_value(4, fields[0].lsb);
-          assert_value(7, fields[0].msb);
-          assert_value(7, fields[1].lsb);
-          assert_value(8, fields[1].msb);
+            assert_value(pos[0], fields[0].lsb);
+            assert_value(pos[1], fields[0].msb);
+            assert_value(pos[2], fields[1].lsb);
+            assert_value(pos[3], fields[1].msb);
+          end
         end
       end
 
@@ -208,20 +217,52 @@ module SystemRDL
         end
       end
 
+      def test_field_with_invalid_ordering_is_rejected
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap my_map {
+              reg {
+                field { sw = rw; hw = r; } a[0:1];
+              } a;
+              lsb0;
+            };
+          RDL
+          'invalid field ordering: bit range [0:1] mode lsb0'
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            addrmap my_map {
+              reg {
+                field { sw = rw; hw = r; } a[1:0];
+              } a;
+              msb0;
+            };
+          RDL
+          'invalid field ordering: bit range [1:0] mode msb0'
+        )
+      end
+
       def test_field_out_of_register
-        [8, 16, 32, 64, 128].each do |width|
-          msb = width
-          lsb = width - 1
+        [8, 16, 32, 64, 128].product([:lsb0, :msb0]).each do |width, mode|
+          msb, lsb =
+            if mode == :lsb0
+              [width, width - 1]
+            else
+              [width - 1, width]
+            end
+
           assert_raises_evaluation_error(
             <<~RDL,
               addrmap my_map {
+                #{mode};
                 reg {
                   regwidth = #{width};
                   field { sw = rw; hw = r; } a[#{msb}:#{lsb}];
                 } my_reg;
               };
             RDL
-            "field out of register: bit position [#{msb}:#{lsb}] regwidth #{width}"
+            "field out of register: bit range [#{msb}:#{lsb}] regwidth #{width}"
           )
 
           msb = width
@@ -229,26 +270,34 @@ module SystemRDL
           assert_raises_evaluation_error(
             <<~RDL,
               addrmap my_map {
+                #{mode};
                 reg {
                   regwidth = #{width};
                   field { sw = rw; hw = r; } a[#{msb}:#{lsb}];
                 } my_reg;
               };
             RDL
-            "field out of register: bit position [#{msb}:#{lsb}] regwidth #{width}"
+            "field out of register: bit range [#{msb}:#{lsb}] regwidth #{width}"
           )
 
+          msb, lsb, pos_a =
+            if mode == :lsb0
+              [width, width, "[#{width - 1}:0]"]
+            else
+              [-1, -1, "[0:#{width - 1}]"]
+            end
           assert_raises_evaluation_error(
             <<~RDL,
               addrmap my_map {
+                #{mode};
                 reg {
                   regwidth = #{width};
-                  field { sw = rw; hw = r; } a[#{width - 1}:0];
+                  field { sw = rw; hw = r; } a#{pos_a};
                   field { sw = rw; hw = r; } b;
                 } my_reg;
               };
             RDL
-            "field out of register: bit position [#{msb}:#{lsb}] regwidth #{width}"
+            "field out of register: bit range [#{msb}:#{lsb}] regwidth #{width}"
           )
         end
       end
@@ -351,150 +400,220 @@ module SystemRDL
       end
 
       def test_writable_fields_spanning_sub_word_boundary_are_rejected
-        [[16, 8], [32, 16], [64, 32], [128, 64]].product(['rw', 'w']).each do |(regwidth, accesswidth), sw|
-          lsb = accesswidth - 1
-          msb = accesswidth
+        [[16, 8], [32, 16], [64, 32], [128, 64]]
+          .product(['rw', 'w'], [:lsb0, :msb0]).each do |(regwidth, accesswidth), sw, mode|
+            msb, lsb =
+              if mode == :lsb0
+                [accesswidth, accesswidth - 1]
+              else
+                [accesswidth - 1, accesswidth]
+              end
 
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  regwidth = #{regwidth};
-                  accesswidth = #{accesswidth};
-                  field { sw = #{sw}; hw = r; } a[#{msb}:#{lsb}];
-                } a;
-              };
-            RDL
-            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
-          )
+            pos_a = mode == :lsb0 ? lsb - 1 : lsb + 1
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  #{mode};
+                  reg {
+                    regwidth = #{regwidth};
+                    accesswidth = #{accesswidth};
+                    field { sw = rw; hw = r; } a[#{pos_a}:#{pos_a}];
+                    field { sw = rw; hw = r; } b[2];
+                  } a;
+                };
+              RDL
+              "field spanning sub-word boundary not allowed: bit range [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+            )
 
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  regwidth = #{regwidth};
-                  field { sw = #{sw}; hw = r; } a[#{msb}:#{lsb}];
-                } a;
-                a->accesswidth = #{accesswidth};
-              };
-            RDL
-            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
-          )
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  #{mode};
+                  reg {
+                    regwidth = #{regwidth};
+                    accesswidth = #{accesswidth};
+                    field { sw = #{sw}; hw = r; } a[#{msb}:#{lsb}];
+                  } a;
+                };
+              RDL
+              "field spanning sub-word boundary not allowed: bit range [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+            )
 
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  regwidth = #{regwidth};
-                  accesswidth = #{accesswidth};
-                  field { sw = r; hw = r; } a[#{msb}:#{lsb}];
-                } a;
-                a.a->sw = #{sw};
-              };
-            RDL
-            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
-          )
-        end
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  #{mode};
+                  reg {
+                    regwidth = #{regwidth};
+                    field { sw = #{sw}; hw = r; } a[#{msb}:#{lsb}];
+                  } a;
+                  a->accesswidth = #{accesswidth};
+                };
+              RDL
+              "field spanning sub-word boundary not allowed: bit range [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+            )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  #{mode};
+                  reg {
+                    regwidth = #{regwidth};
+                    accesswidth = #{accesswidth};
+                    field { sw = r; hw = r; } a[#{msb}:#{lsb}];
+                  } a;
+                  a.a->sw = #{sw};
+                };
+              RDL
+              "field spanning sub-word boundary not allowed: bit range [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+            )
+          end
       end
 
       def test_ro_fields_with_side_effect_spanning_sub_word_boundary_are_rejected
-        [
-          [16, 8], [32, 16], [64, 32], [128, 64]
-        ].product(['rclr', 'rset', 'ruser']).each do |(regwidth, accesswidth), onread|
-          lsb = accesswidth - 1
-          msb = accesswidth
+        [[16, 8], [32, 16], [64, 32], [128, 64]]
+          .product(['rclr', 'rset', 'ruser'], [:lsb0, :msb0]).each do |(regwidth, accesswidth), onread, mode|
+            msb, lsb =
+              if mode == :lsb0
+                [accesswidth, accesswidth - 1]
+              else
+                [accesswidth - 1, accesswidth]
+              end
 
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  regwidth = #{regwidth};
-                  accesswidth = #{accesswidth};
-                  field { sw = r; hw = r; onread = #{onread}; } a[#{msb}:#{lsb}];
-                } a;
-              };
-            RDL
-            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
-          )
+            pos_a = mode == :lsb0 ? lsb - 1 : lsb + 1
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  #{mode};
+                  reg {
+                    regwidth = #{regwidth};
+                    accesswidth = #{accesswidth};
+                    field { sw = r; hw = r; } a[#{pos_a}:#{pos_a}];
+                    field { sw = r; hw = r; onread = #{onread}; } b[2];
+                  } a;
+                };
+              RDL
+              "field spanning sub-word boundary not allowed: bit range [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+            )
 
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  regwidth = #{regwidth};
-                  field { sw = r; hw = r; onread = #{onread}; } a[#{msb}:#{lsb}];
-                } a;
-                a->accesswidth = #{accesswidth};
-              };
-            RDL
-            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
-          )
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  #{mode};
+                  reg {
+                    regwidth = #{regwidth};
+                    accesswidth = #{accesswidth};
+                    field { sw = r; hw = r; onread = #{onread}; } a[#{msb}:#{lsb}];
+                  } a;
+                };
+              RDL
+              "field spanning sub-word boundary not allowed: bit range [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+            )
 
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  regwidth = #{regwidth};
-                  accesswidth = #{accesswidth};
-                  field { sw = r; hw = r; } a[#{msb}:#{lsb}];
-                } a;
-                a.a->onread = #{onread};
-              };
-            RDL
-            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
-          )
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  #{mode};
+                  reg {
+                    regwidth = #{regwidth};
+                    field { sw = r; hw = r; onread = #{onread}; } a[#{msb}:#{lsb}];
+                  } a;
+                  a->accesswidth = #{accesswidth};
+                };
+              RDL
+              "field spanning sub-word boundary not allowed: bit range [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+            )
 
-          next if onread == 'ruser'
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  #{mode};
+                  reg {
+                    regwidth = #{regwidth};
+                    accesswidth = #{accesswidth};
+                    field { sw = r; hw = r; } a[#{msb}:#{lsb}];
+                  } a;
+                  a.a->onread = #{onread};
+                };
+              RDL
+              "field spanning sub-word boundary not allowed: bit range [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+            )
 
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  regwidth = #{regwidth};
-                  accesswidth = #{accesswidth};
-                  field { sw = r; hw = r; #{onread}; } a[#{msb}:#{lsb}];
-                } a;
-              };
-            RDL
-            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
-          )
+            next if onread == 'ruser'
 
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  regwidth = #{regwidth};
-                  field { sw = r; hw = r; #{onread}; } a[#{msb}:#{lsb}];
-                } a;
-                a->accesswidth = #{accesswidth};
-              };
-            RDL
-            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
-          )
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  #{mode};
+                  reg {
+                    regwidth = #{regwidth};
+                    accesswidth = #{accesswidth};
+                    field { sw = r; hw = r; #{onread}; } a[#{msb}:#{lsb}];
+                  } a;
+                };
+              RDL
+              "field spanning sub-word boundary not allowed: bit range [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+            )
 
-          assert_raises_evaluation_error(
-            <<~RDL,
-              addrmap my_map {
-                reg {
-                  regwidth = #{regwidth};
-                  accesswidth = #{accesswidth};
-                  field { sw = r; hw = r; } a[#{msb}:#{lsb}];
-                } a;
-                a.a->#{onread};
-              };
-            RDL
-            "field spanning sub-word boundary not allowed: bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
-          )
-        end
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  #{mode};
+                  reg {
+                    regwidth = #{regwidth};
+                    field { sw = r; hw = r; #{onread}; } a[#{msb}:#{lsb}];
+                  } a;
+                  a->accesswidth = #{accesswidth};
+                };
+              RDL
+              "field spanning sub-word boundary not allowed: bit range [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+            )
+
+            assert_raises_evaluation_error(
+              <<~RDL,
+                addrmap my_map {
+                  #{mode};
+                  reg {
+                    regwidth = #{regwidth};
+                    accesswidth = #{accesswidth};
+                    field { sw = r; hw = r; } a[#{msb}:#{lsb}];
+                  } a;
+                  a.a->#{onread};
+                };
+              RDL
+              "field spanning sub-word boundary not allowed: bit range [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+            )
+          end
       end
 
       def test_ro_fields_without_side_effect_spanning_sub_word_boundary_are_allowed
-        [[16, 8], [32, 16], [64, 32], [128, 64]].each do |(regwidth, accesswidth)|
-          lsb = accesswidth - 1
-          msb = accesswidth
+        [[16, 8], [32, 16], [64, 32], [128, 64]].product([:lsb0, :msb0]).each do |(regwidth, accesswidth), mode|
+          msb, lsb =
+            if mode == :lsb0
+              [accesswidth, accesswidth - 1]
+            else
+              [accesswidth - 1, accesswidth]
+            end
+
+          pos_a = mode == :lsb0 ? lsb - 1 : lsb + 1
+          fields = evaluate(<<~RDL).instances[0].instances[0].instances
+            addrmap my_map {
+              #{mode};
+              reg {
+                regwidth = #{regwidth};
+                accesswidth = #{accesswidth};
+                field { sw = rw; hw = r; } a[#{pos_a}:#{pos_a}];
+                field { sw = r; hw = r; } b[2];
+              } a;
+            };
+          RDL
+
+          assert_value(lsb, fields[1].lsb)
+          assert_value(msb, fields[1].msb)
 
           fields = evaluate(<<~RDL).instances[0].instances[0].instances
             addrmap my_map {
+              #{mode};
               reg {
                 regwidth = #{regwidth};
                 accesswidth = #{accesswidth};
@@ -503,11 +622,12 @@ module SystemRDL
             };
           RDL
 
-          assert_value(lsb, fields[0].lsb);
-          assert_value(msb, fields[0].msb);
+          assert_value(lsb, fields[0].lsb)
+          assert_value(msb, fields[0].msb)
 
           fields = evaluate(<<~RDL).instances[0].instances[0].instances
             addrmap my_map {
+              #{mode};
               reg {
                 regwidth = #{regwidth};
                 field { sw = r; hw = r; } a[#{msb}:#{lsb}];
@@ -516,8 +636,8 @@ module SystemRDL
             };
           RDL
 
-          assert_value(lsb, fields[0].lsb);
-          assert_value(msb, fields[0].msb);
+          assert_value(lsb, fields[0].lsb)
+          assert_value(msb, fields[0].msb)
         end
       end
 

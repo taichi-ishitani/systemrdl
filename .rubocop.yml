@@ -39,6 +39,7 @@ Naming/MemoizedInstanceVariableName:
 Naming/VariableNumber:
   EnforcedStyle: snake_case
   CheckSymbols: false
+  AllowedPatterns: ['_lsb0', '_msb0']
 
 Style/AccessorGrouping:
   EnforcedStyle: separated

@@ -75,6 +75,14 @@ module SystemRDL
         addrmap? || regfile? || mem? || reg? || field?
       end
 
+      def find_addrmap
+        if RUBY_VERSION >= '4.0'
+          upper_instances(include_root: false, include_self: true).rfind(&:addrmap?)
+        else
+          upper_instances(include_root: false, include_self: true).reverse_each.find(&:addrmap?)
+        end
+      end
+
       def array?
         false
       end

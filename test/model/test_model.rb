@@ -63,6 +63,7 @@ module SystemRDL
         assert_value(false, addrmap.littleendian)
         assert_value(false, addrmap.rsvdset)
         assert_value(false, addrmap.rsvdsetX)
+        assert_value(false, addrmap.msb0)
 
         addrmap = @addrmaps[0].regs[6]
         assert_value('sub0', addrmap.name)
@@ -78,6 +79,7 @@ module SystemRDL
         assert_value(false, addrmap.littleendian)
         assert_value(false, addrmap.rsvdset)
         assert_value(false, addrmap.rsvdsetX)
+        assert_value(false, addrmap.msb0)
       end
 
       def test_addrmap_properties
@@ -90,6 +92,7 @@ module SystemRDL
         assert_property_value(addrmap, :littleendian, false)
         assert_property_value(addrmap, :rsvdset, false)
         assert_property_value(addrmap, :rsvdsetX, false)
+        assert_property_value(addrmap, :msb0, false)
 
         addrmap = @addrmaps[0].regs[6]
         assert_property_value(addrmap, :display_name, 'sub0')
@@ -100,13 +103,13 @@ module SystemRDL
         assert_property_value(addrmap, :littleendian, false)
         assert_property_value(addrmap, :rsvdset, false)
         assert_property_value(addrmap, :rsvdsetX, false)
+        assert_property_value(addrmap, :msb0, false)
       end
 
       def test_addrmap_dropped_properties
         [@addrmaps[0], @addrmaps[0].regs[6]].each do |addrmap|
           refute_property(addrmap, :alignment)
           refute_property(addrmap, :addressing)
-          refute_property(addrmap, :msb0)
           refute_property(addrmap, :lsb0)
         end
       end
@@ -572,6 +575,7 @@ module SystemRDL
             littleendian: false
             rsvdset: false
             rsvdsetX: false
+            msb0: false
             r0 (reg) {
               display_name: "r0"
               desc: ""
@@ -945,6 +949,7 @@ module SystemRDL
               littleendian: false
               rsvdset: false
               rsvdsetX: false
+              msb0: false
               r0 (reg) {
                 display_name: "r0"
                 desc: ""

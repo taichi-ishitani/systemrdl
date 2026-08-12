@@ -12,7 +12,6 @@ module SystemRDL
         check_structural_component_instances(instance)
         check_regwidth(instance)
         check_accesswidth(instance)
-        check_overlapping_fields(instance)
         check_fields_out_of_register(instance)
         check_fields_spanning_sub_word_boundary(instance)
         check_address_operations(instance)
@@ -22,6 +21,14 @@ module SystemRDL
         check_accesswidth(instance)
         check_fields_spanning_sub_word_boundary(instance)
         check_address_operations(instance)
+      end
+
+      def finalize(instance)
+        check_field_ordering(instance)
+        allocate_bits(instance)
+        check_overlapping_fields(instance)
+        check_fields_out_of_register(instance)
+        check_fields_spanning_sub_word_boundary(instance)
       end
 
       def layer
@@ -70,6 +77,73 @@ module SystemRDL
         raise_evaluation_error message, accesswidth.token_range, regwidth.token_range
       end
 
+      def check_field_ordering(instance)
+        mode = bit_allocation_mode(instance)
+        instance.instances.each do |field|
+          next unless field.msb
+
+          msb = field.msb
+          lsb = field.lsb
+          next if valid_field_ordering?(mode, msb, lsb)
+
+          message = "invalid field ordering: bit range [#{msb}:#{lsb}] mode #{mode}"
+          raise_evaluation_error message, msb.token_range, lsb.token_range
+        end
+      end
+
+      def bit_allocation_mode(instance)
+        (instance.find_addrmap.property_value(:msb0).value && :msb0) || :lsb0
+      end
+
+      def valid_field_ordering?(mode, msb, lsb)
+        mode == :lsb0 ? msb.value >= lsb.value : msb.value <= lsb.value
+      end
+
+      def allocate_bits(instance)
+        mode = bit_allocation_mode(instance)
+        instance.instances.inject(nil) do |previous_field, field|
+          unless field.msb
+            msb, lsb = allocate_field_bits(mode, instance, previous_field, field)
+            field.msb = msb
+            field.lsb = lsb
+          end
+
+          field
+        end
+      end
+
+      def allocate_field_bits(mode, instance, previous_field, field)
+        msb, lsb =
+          if mode == :lsb0
+            allocate_field_bits_lsb0(previous_field, field)
+          else
+            allocate_field_bits_msb0(instance, previous_field, field)
+          end
+        [msb, lsb].map { |pos| Value.new(pos, :bit, 64, field.width.token_range) }
+      end
+
+      def allocate_field_bits_lsb0(previous_field, field)
+        lsb =
+          if previous_field
+            previous_field.msb.value + 1
+          else
+            0
+          end
+        msb = lsb + field.width.value - 1
+        [msb, lsb]
+      end
+
+      def allocate_field_bits_msb0(instance, previous_field, field)
+        lsb =
+          if previous_field
+            previous_field.msb.value - 1
+          else
+            instance.property_value(:regwidth).value - 1
+          end
+        msb = lsb - field.width.value + 1
+        [msb, lsb]
+      end
+
       def check_overlapping_fields(instance)
         instance.instances.combination(2).each do |(field_a, field_b)|
           next unless overlapping_field_pair?(field_a, field_b)
@@ -80,8 +154,8 @@ module SystemRDL
       end
 
       def overlapping_field_pair?(field_a, field_b)
-        range_a = (field_a.lsb.value..field_a.msb.value)
-        range_b = (field_b.lsb.value..field_b.msb.value)
+        range_a = field_bit_range(field_a)
+        range_b = field_bit_range(field_b)
         return false unless range_a.include?(range_b.begin) || range_b.include?(range_a.begin)
 
         r_a = field_a.sw_readable?
@@ -91,22 +165,34 @@ module SystemRDL
         (r_a && r_b) || (w_a && w_b)
       end
 
+      def field_bit_range(field)
+        pos = [field.msb.value, field.lsb.value].sort
+        pos[0]..pos[1]
+      end
+
       def check_fields_out_of_register(instance)
         regwidth = instance.property_value(:regwidth).value
         instance.instances.each do |field|
-          msb = field.msb.value
-          lsb = field.lsb.value
-          next if msb < regwidth
+          next unless field.msb
 
-          message = "field out of register: bit position [#{msb}:#{lsb}] regwidth #{regwidth}"
+          msb = field.msb
+          lsb = field.lsb
+          next if inside_regwidth?(msb, lsb, regwidth)
+
+          message = "field out of register: bit range [#{msb}:#{lsb}] regwidth #{regwidth}"
           raise_evaluation_error message, field.token_range
         end
+      end
+
+      def inside_regwidth?(msb, lsb, regwidth)
+        range = [msb.value, lsb.value]
+        range.none?(&:negative?) && range.sort[1] < regwidth
       end
 
       def check_fields_spanning_sub_word_boundary(instance)
         accesswidth = instance.property_value(:accesswidth).value
         instance.instances.each do |field|
-          next unless field_with_side_effect?(field)
+          next unless field.msb && field_with_side_effect?(field)
 
           msb = field.msb.value
           lsb = field.lsb.value
@@ -114,7 +200,7 @@ module SystemRDL
 
           message =
             'field spanning sub-word boundary not allowed: ' \
-            "bit position [#{msb}:#{lsb}] accesswidth #{accesswidth}"
+            "bit range [#{msb}:#{lsb}] accesswidth #{accesswidth}"
           raise_evaluation_error message, field.token_range
         end
       end

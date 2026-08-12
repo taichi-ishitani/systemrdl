@@ -343,6 +343,25 @@ module SystemRDL
             "virtual field outside memwidth not allowed: memwidth 24 msb #{msb} lsb #{lsb}"
           )
         end
+
+        [[30, 31], [24, 25], [23, 24]].each do |(msb, lsb)|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              addrmap my_map {
+                msb0;
+                external mem {
+                  memwidth = 24;
+                  reg {
+                    regwidth = 32;
+                    field { sw = rw; hw = r; } a[0:1];
+                    field { sw = rw; hw = r; } b[#{msb}:#{lsb}];
+                  } a;
+                } a;
+              };
+            RDL
+            "virtual field outside memwidth not allowed: memwidth 24 msb #{msb} lsb #{lsb}"
+          )
+        end
       end
 
       def test_mismatch_between_mem_sw_and_virtual_field_sw_is_rejected

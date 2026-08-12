@@ -135,6 +135,30 @@ module SystemRDL
 
         assert_value(16, fields[3].lsb)
         assert_value(20, fields[3].msb)
+
+        fields = evaluate(<<~'RDL').instances[0].instances[0].instances
+          addrmap my_map {
+            msb0;
+            reg {
+              field { hw = r; } a;
+              field { hw = r; } b[3];
+              field { hw = r; } c[8:15];
+              field { hw = r; } d[5];
+            } my_reg;
+          };
+        RDL
+
+        assert_value(31, fields[0].lsb)
+        assert_value(31, fields[0].msb)
+
+        assert_value(30, fields[1].lsb)
+        assert_value(28, fields[1].msb)
+
+        assert_value(15, fields[2].lsb)
+        assert_value(8 , fields[2].msb)
+
+        assert_value(7, fields[3].lsb)
+        assert_value(3, fields[3].msb)
       end
 
       def test_fieldwidth_provides_default_bit_width

@@ -10,7 +10,6 @@ module SystemRDL
         check_positive_value(instance, :mementries)
         check_memwidth(instance)
         check_regwidth(instance)
-        check_virtual_field_pos(instance)
         check_virtual_field_sw(instance)
       end
 
@@ -19,6 +18,7 @@ module SystemRDL
       end
 
       def finalize(instance)
+        check_virtual_field_pos(instance)
         allocate_addresses(instance)
         check_address_operations(instance)
         check_reg_size(instance)
@@ -96,13 +96,17 @@ module SystemRDL
 
         memwidth = instance.property_value(:memwidth).value
         instance.instances.flat_map(&:instances).each do |field|
-          next if field.msb.value < memwidth
+          next if valid_virtual_field_pos?(field, memwidth)
 
           message =
             'virtual field outside memwidth not allowed: ' \
             "memwidth #{memwidth} msb #{field.msb} lsb #{field.lsb}"
           raise_evaluation_error message, field.token_range
         end
+      end
+
+      def valid_virtual_field_pos?(field, memwidth)
+        [field.msb.value, field.lsb.value].sort[1] < memwidth
       end
 
       def check_virtual_field_sw(instance)

@@ -61,12 +61,7 @@ module SystemRDL
       end
 
       def effective_addressing(inst)
-        addrmap =
-          if RUBY_VERSION >= '4.0'
-            inst.upper_instances(include_root: false, include_self: true).rfind(&:addrmap?)
-          else
-            inst.upper_instances(include_root: false, include_self: true).reverse_each.find(&:addrmap?)
-          end
+        addrmap = inst.find_addrmap
         addrmap.property_value(:addressing).value
       end
 

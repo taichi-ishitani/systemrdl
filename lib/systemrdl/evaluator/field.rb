@@ -43,33 +43,30 @@ module SystemRDL
       end
 
       def apply_inst_values(instance, inst_values)
-        assign_bit_pos(instance, inst_values)
+        assign_bit_range(instance, inst_values)
         apply_reset_value(instance, inst_values)
         check_address_allocation_operator(inst_values)
       end
 
-      def assign_bit_pos(instance, inst_values)
-        msb, lsb =
-          if (range = inst_values[:range])
-            range.elements
-          else
-            calc_bit_pos(instance, inst_values)
-          end
-        instance.msb = msb
-        instance.lsb = lsb
+      def assign_bit_range(instance, inst_values)
+        if (range = inst_values[:range])
+          msb, lsb = range.elements
+          instance.msb = msb
+          instance.lsb = lsb
+        else
+          instance.width = bit_width(instance, inst_values)
+        end
       end
 
-      def calc_bit_pos(instance, inst_values)
-        width = calc_bit_width(instance, inst_values)
-        last_msb = instance.parent.instances.last&.msb
-        lsb = (last_msb&.value || -1) + 1
-        msb = lsb + (width&.value || 1) - 1
-        [msb, lsb].map { |pos| Value.new(pos, :bit, 64, width&.token_range) }
-      end
-
-      def calc_bit_width(instance, inst_values)
+      def bit_width(instance, inst_values)
         size = inst_values[:array]
-        return instance.property_value(:fieldwidth) unless size
+        unless size
+          if (fieldwidth = instance.property_value(:fieldwidth))
+            return fieldwidth
+          else
+            return Value.new(1, :bit, 64, nil)
+          end
+        end
 
         if size.size >= 2
           message = 'multidimensional size specification not allowed for field'
@@ -94,13 +91,21 @@ module SystemRDL
           raise_evaluation_error message, fieldwidth.token_range
         end
 
-        msb = instance.msb
-        lsb = instance.lsb
-        width = msb.value - lsb.value + 1
+        width, width_token_range = extract_width(instance)
         return if width == fieldwidth.value
 
         message = "bit width mismatch: instance width #{width} fieldwidth property #{fieldwidth}"
-        raise_evaluation_error message, msb.token_range, lsb.token_range
+        raise_evaluation_error message, *width_token_range
+      end
+
+      def extract_width(instance)
+        if instance.msb
+          pos = [instance.msb.value, instance.lsb.value].sort
+          width = pos[1] - pos[0] + 1
+          [width, [instance.msb.token_range, instance.lsb.token_range]]
+        else
+          [instance.width.value, [instance.width.token_range].compact]
+        end
       end
 
       def apply_reset_value(instance, inst_values)
@@ -124,7 +129,7 @@ module SystemRDL
       end
 
       def check_reset_value(instance, reset_value)
-        width = instance.msb.value - instance.lsb.value + 1
+        width, _ = extract_width(instance)
         range = 0..((2**width) - 1)
         return if range.include?(reset_value.value)
 
@@ -228,6 +233,7 @@ module SystemRDL
     class FieldInstance < Instance
       attr_accessor :msb
       attr_accessor :lsb
+      attr_accessor :width
 
       def virtual_field?
         parent.virtual_reg?
