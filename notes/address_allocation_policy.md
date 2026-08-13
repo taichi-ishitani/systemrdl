@@ -40,7 +40,7 @@ The addressing modes (5.1.2.2.2), the stride bounds (Section 3), and the sub-wor
 - `accesswidth` (in bytes) -- used by `compact`, which packs components tightly while keeping each aligned to the `accesswidth` parameter.
 - `size` (in bytes) -- used by `regalign` (each component's start address is a multiple of its size) and `fullalign` (an array's first element aligns to the size of the whole array, rounded up to a power of two).
 
-The specification defines these for some cases and leaves others silent. This section records the value this implementation uses for each, for a single `reg` (2.1) and `regfile` / `addrmap` (2.2). Array-related quantities (occupancy and stride) are derived from these in Section 3.
+The specification defines these for some cases and leaves others silent. This section records the value this implementation uses for each, for a single `reg` (2.1), `regfile` / `addrmap` (2.2), and `mem` (2.3). Array-related quantities (occupancy and stride) are derived from these in Section 3.
 
 ### 2.1 `reg`
 
@@ -102,13 +102,21 @@ Inside `top`:
 
 The `accesswidth` of `rf` (64, from its internal `b`) is what forces `rf`'s own base onto an 8-byte boundary; without the 64-bit `b` inside it, `rf` would only need a 4-byte boundary and could pack tight at 0x04. Placing it at 0x08 keeps every register inside it on its software-access boundary in absolute-address terms. Note that `rf`'s `size` is the unrounded 20.
 
+### 2.3 `mem`
+
+A `mem` is placed in the address space as a child of a `regfile` / `addrmap`, so it needs an `accesswidth` and a `size` for 5.1.2.2.2 just as the other components do. Both are defined in `memory_component_policy.md` and are only summarized here:
+
+- `accesswidth` -- the maximum `accesswidth` of the contained virtual registers when any are present, and the entry address width (`memwidth` rounded up to the minimum power-of-two number of bytes) when none are.
+- `size` -- the entry address width times `mementries`, in bytes.
+
 ### Status of These Decisions
 
-The decisions in 2.1 and 2.2 are interpretations in silent areas of the specification:
+The decisions in 2.1, 2.2, and 2.3 are interpretations in silent areas of the specification:
 
 - `reg` size: the specification does not state it; `regwidth / 8` is the natural reading.
 - `regfile` / `addrmap` `accesswidth`: not defined by the specification at all; this implementation defines it.
 - `regfile` / `addrmap` `size`: the specification does not state it; this implementation defines it as the highest end address among its children, with no rounding. The `accesswidth`-multiple rounding needed for arrays lives in the default stride (Section 3), not in `size`.
+- `mem` `accesswidth` and `size`: not defined by the specification; defined in `memory_component_policy.md`, where the reasoning and its status are recorded.
 
 Other implementations may interpret these differently. In particular, the `regfile` / `addrmap` `accesswidth` is a strong independent interpretation by this implementation, and since `accesswidth` participates in address computation, cross-tool compatibility cannot be expected where it differs.
 
@@ -126,7 +134,7 @@ The `size` of an *arrayed* instance -- used by `fullalign` to align the first el
 occupied_size = stride * (N - 1) + size
 ```
 
-where `stride` is the spacing between consecutive elements, `size` is the size of a single element (2.1 / 2.2), and `N` is the element count.
+where `stride` is the spacing between consecutive elements, `size` is the size of a single element (2.1 / 2.2 / 2.3), and `N` is the element count.
 
 This is the address range actually spanned by the array: the last element `c[N-1]` starts at `stride * (N-1)` and occupies `size`, so the array ends at `stride * (N-1) + size`. Using `stride * N` would overcount by one trailing gap (`stride - size`) that no element occupies.
 
@@ -192,18 +200,20 @@ This is a derivation, not a verbatim rule: the specification does not state "reg
 
 ### 4.3 The Invariant
 
-Every `reg`, `regfile`, and `addrmap` instance shall satisfy the following (the per-case reasons, including why the rule is applied uniformly rather than only to the cases 10.6.1 (f) strictly constrains, are given in 4.4):
+Every `reg`, `regfile`, `addrmap`, and `mem` instance shall satisfy the following (the per-case reasons, including why the rule is applied uniformly rather than only to the cases 10.6.1 (f) strictly constrains, are given in 4.4):
 
 - The instance's resolved absolute address shall be a multiple of `accesswidth` (in bytes).
 - If the instance is an array placed with `+=`, the stride shall also be a multiple of `accesswidth` (in bytes), so that every element -- not just the first -- lands on an `accesswidth` boundary (see also 3.2).
 
 For a `reg`, the `accesswidth` is its own (2.1). For a `regfile` / `addrmap`, the boundary requirement propagates to its base address: because the offsets of the components inside it are relative (5.1.2.2), a misaligned base shifts every contained register's absolute address by the same amount, breaking the requirement for any register inside it. A `regfile` / `addrmap` base address (and array stride, if placed with `+=`) shall therefore be a multiple of its `accesswidth` as defined in Section 2.2 -- which is the maximum of the `accesswidth` values its contents require, exactly the value needed to satisfy every internal register simultaneously.
 
+For a `mem`, the same propagation applies: its virtual registers sit at offsets relative to the `mem` base, so a misaligned base would shift them, and the base shall be a multiple of the `mem`'s `accesswidth` (2.3). When the `mem` has no virtual registers, its `accesswidth` is the entry address width, and the requirement reduces to placing the `mem` on that boundary.
+
 This re-frames the Section 2.2 `regfile` / `addrmap` `accesswidth` definition: it is not merely a value used by `compact` mode, but the boundary that an internal register's 10.6.1 (f) precondition forces onto the `regfile` / `addrmap` as a whole.
 
 ### 4.4 Scope of Application
 
-The invariant is applied uniformly to all `reg`, `regfile`, and `addrmap` instances, but the reasons differ by case, and recording them keeps the justification honest:
+The invariant is applied uniformly to all `reg`, `regfile`, `addrmap`, and `mem` instances, but the reasons differ by case, and recording them keeps the justification honest:
 
 - **Split register with a side-effecting field** (`regwidth > accesswidth`, has a writable or read-side-effecting field): constrained by 10.6.1 (f) as derived above. This is the core case.
 - **Non-split register** (`regwidth == accesswidth`): aligning to `accesswidth` is identical to aligning to the register's own width, which is just the default alignment of 5.1.2.2.1 ("aligned to a multiple of their width"). The invariant coincides with existing behavior; no separate justification is needed.
@@ -213,7 +223,7 @@ The invariant is applied uniformly to all `reg`, `regfile`, and `addrmap` instan
 
 The invariant rests on interpretations of the same kind throughout: each takes a clause of 10.6.1 together with how software actually accesses the address space, and deduces a placement requirement on the absolute address. None is a verbatim placement rule in the specification. They differ in the strength of the premise they start from -- both in whether that clause is a prohibition or a permission, and in how severe a violation is:
 
-- **Strong premise -- side-effecting fields (4.3, 4.4 core case)**: derived from 10.6.1 (f), a prohibition ("shall not span"). A violation breaks the atomicity of a write or read side-effect, so the layout has no faithful hardware realization. The one reconstructed step is reading (f) as presupposing the register's base sits on an `accesswidth` boundary -- not stated outright, but forced by the fact that otherwise (f) would not protect the field it names. The `regfile` / `addrmap` propagation then follows by the relative-address rule of 5.1.2.2 as a clean deduction; it inherits the strength of that premise, so base requirement and propagation are one interpretation, not separate claims.
+- **Strong premise -- side-effecting fields (4.3, 4.4 core case)**: derived from 10.6.1 (f), a prohibition ("shall not span"). A violation breaks the atomicity of a write or read side-effect, so the layout has no faithful hardware realization. The one reconstructed step is reading (f) as presupposing the register's base sits on an `accesswidth` boundary -- not stated outright, but forced by the fact that otherwise (f) would not protect the field it names. The `regfile`, `addrmap`, and `mem` propagation then follows by the relative-address rule of 5.1.2.2 as a clean deduction; it inherits the strength of that premise, so base requirement and propagation are one interpretation, not separate claims.
 - **Weaker premise -- read-only registers (4.4)**: derived from 10.6.1 (e), a permission ("partial reads are valid"). Going from "readable in parts" to "the base should be on a boundary" needs the added premise that the register-relative bit positions and access count should remain predictable on the absolute address line -- which the specification does not state. And a violation only degrades the read shape rather than breaking the register. Both the permission starting point and the milder harm make this weaker than the side-effecting case, though it is the same species of deduction.
 
 Below these sits a non-deductive consideration that does not by itself justify the invariant but reinforces applying it uniformly: exempting any case would cost per-register access-type analysis and yield boundary differences by access type, for no expressiveness gained.
