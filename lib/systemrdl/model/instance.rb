@@ -42,10 +42,12 @@ module SystemRDL
         "#{name} (#{layer})"
       end
 
-      def full_name
-        elements = [self]
-        current = @parent
+      def full_name(exclude_addrmap: false)
+        elements = []
+        current = self
         while current
+          break if exclude_addrmap && current.layer == :addrmap
+
           elements.unshift(current)
           current = current.parent
         end

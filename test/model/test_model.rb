@@ -51,7 +51,6 @@ module SystemRDL
       def test_addrmap_accessors
         addrmap = @addrmaps[0]
         assert_value('my_map', addrmap.name)
-        assert_value('my_map', addrmap.full_name)
         assert_value('Sample', addrmap.display_name)
         assert_value('', addrmap.desc)
         assert_value(nil, addrmap.address)
@@ -67,7 +66,6 @@ module SystemRDL
 
         addrmap = @addrmaps[0].regs[6]
         assert_value('sub0', addrmap.name)
-        assert_value('my_map.sub0', addrmap.full_name)
         assert_value('sub0', addrmap.display_name)
         assert_value('', addrmap.desc)
         assert_value(0x30, addrmap.address)
@@ -117,7 +115,6 @@ module SystemRDL
       def test_mem_accessors
         mem = @addrmaps[0].regs[5]
         assert_value('mem0', mem.name)
-        assert_value('my_map.mem0', mem.full_name)
         assert_value('mem0', mem.display_name)
         assert_value('', mem.desc)
         assert_value(0x20, mem.address)
@@ -141,7 +138,6 @@ module SystemRDL
       def test_regfile_accessors
         regfile = @addrmaps[0].regs[4]
         assert_value('rf0', regfile.name)
-        assert_value('my_map.rf0', regfile.full_name)
         assert_value('rf0', regfile.display_name)
         assert_value('', regfile.desc)
         assert_value(false, regfile.external)
@@ -170,12 +166,6 @@ module SystemRDL
 
         ['r0', 'r1[0]', 'r1[1]', 'r2', 'r0', 'r0'].each_with_index do |name, i|
           assert_value(name, regs[i].name)
-        end
-
-        [
-          'my_map.r0', 'my_map.r1[0]', 'my_map.r1[1]', 'my_map.r2', 'my_map.rf0.r0', 'my_map.sub0.r0'
-        ].each_with_index do |full_name, i|
-          assert_value(full_name, regs[i].full_name)
         end
 
         ['r0', 'r1', 'r1', 'r2', 'r0', 'r0'].each_with_index do |display_name, i|
@@ -253,14 +243,6 @@ module SystemRDL
 
         ['a', 'b', 'a', 'b', 'a', 'b', 'a', 'b', 'a', 'a'].each_with_index do |v, i|
           assert_value(v, fields[i].name)
-        end
-
-        [
-          'my_map.r0.a', 'my_map.r0.b', 'my_map.r1[0].a', 'my_map.r1[0].b',
-          'my_map.r1[1].a', 'my_map.r1[1].b', 'my_map.r2.a', 'my_map.r2.b',
-          'my_map.rf0.r0.a', 'my_map.sub0.r0.a'
-        ].each_with_index do |v, i|
-          assert_value(v, fields[i].full_name)
         end
 
         ['a', 'b', 'a', 'b', 'a', 'b', 'a', 'b', 'a', 'a'].each_with_index do |v, i|
@@ -534,6 +516,60 @@ module SystemRDL
         fields.each do |field|
           refute_property(field, :fieldwidth)
         end
+      end
+
+      def test_full_name
+        addrmap = @addrmaps[0]
+        assert_value('my_map', addrmap.full_name)
+        assert_value('', addrmap.full_name(exclude_addrmap: true))
+
+        addrmap = @addrmaps[0].regs[6]
+        assert_value('my_map.sub0', addrmap.full_name)
+        assert_value('', addrmap.full_name(exclude_addrmap: true))
+
+        mem = @addrmaps[0].regs[5]
+        assert_value('my_map.mem0', mem.full_name)
+        assert_value('mem0', mem.full_name(exclude_addrmap: true))
+
+        regfile = @addrmaps[0].regs[4]
+        assert_value('my_map.rf0', regfile.full_name)
+        assert_value('rf0', regfile.full_name(exclude_addrmap: true))
+
+        regs = collect_regs(@addrmaps[0])
+        [
+          'my_map.r0', 'my_map.r1[0]', 'my_map.r1[1]', 'my_map.r2', 'my_map.rf0.r0', 'my_map.sub0.r0'
+        ].each_with_index do |full_name, i|
+          assert_value(full_name, regs[i].full_name)
+        end
+        [
+          'r0', 'r1[0]', 'r1[1]', 'r2', 'rf0.r0', 'r0'
+        ].each_with_index do |full_name, i|
+          assert_value(full_name, regs[i].full_name(exclude_addrmap: true))
+        end
+
+        fields = collect_fields(@addrmaps[0])
+        [
+          'my_map.r0.a', 'my_map.r0.b', 'my_map.r1[0].a', 'my_map.r1[0].b',
+          'my_map.r1[1].a', 'my_map.r1[1].b', 'my_map.r2.a', 'my_map.r2.b',
+          'my_map.rf0.r0.a', 'my_map.sub0.r0.a'
+        ].each_with_index do |v, i|
+          assert_value(v, fields[i].full_name)
+        end
+        [
+          'r0.a', 'r0.b', 'r1[0].a', 'r1[0].b',
+          'r1[1].a', 'r1[1].b', 'r2.a', 'r2.b',
+          'rf0.r0.a', 'r0.a'
+        ].each_with_index do |v, i|
+          assert_value(v, fields[i].full_name(exclude_addrmap: true))
+        end
+
+        mem = @addrmaps[0].regs[5]
+        assert_value('my_map.mem0', mem.full_name)
+        assert_value('mem0', mem.full_name(exclude_addrmap: true))
+
+        anded = @addrmaps[0].regs[0].fields[0].property(:anded)
+        assert_value('my_map.r0.a.anded', anded.full_name)
+        assert_value('r0.a.anded', anded.full_name(exclude_addrmap: true))
       end
 
       def test_type_identifier
