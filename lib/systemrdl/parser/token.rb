@@ -2,24 +2,18 @@
 
 module SystemRDL
   module Parser
-    class Position
-      def initialize(filename, line, column)
-        @filename = filename
-        @line = line
-        @column = column
-        freeze
-      end
-
-      attr_reader :filename
-      attr_reader :line
-      attr_reader :column
-
+    Position = Data.define(:filename, :line, :column) do
       def to_s
         "filename: #{filename} line: #{line} column: #{column}"
       end
     end
 
     class Token
+      def self.create(kind, text, filename, line, column)
+        pos = Position.new(filename, line, column)
+        new(text, kind, pos)
+      end
+
       def initialize(text, kind, position)
         @text = text
         @kind = kind

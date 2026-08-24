@@ -83,9 +83,9 @@ module SystemRDL
       def evaluate_literal
         match_data, base =
           case text.tr('_', '')
-          when Parser::Scanner::VERILOG_HEX_NUMBER then [Regexp.last_match, 16]
-          when Parser::Scanner::VERILOG_DEC_NUMBER then [Regexp.last_match, 10]
-          when Parser::Scanner::VERILOG_BIN_NUMBER then [Regexp.last_match, 2]
+          when Parser::Pattern::VERILOG_HEX_NUMBER then [Regexp.last_match, 16]
+          when Parser::Pattern::VERILOG_DEC_NUMBER then [Regexp.last_match, 10]
+          when Parser::Pattern::VERILOG_BIN_NUMBER then [Regexp.last_match, 2]
           end
         @width = match_data.captures[0].to_i
         @value = match_data.captures[1].to_i(base)
