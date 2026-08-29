@@ -1,19 +1,19 @@
 class SystemRDL::Parser::GeneratedParser
 token
   # Keywords
-  ABSTRACT ACCESSTYPE ADDRESSINGTYPE ADDRMAP ALIAS
-  ALL BIT BOOLEAN BOTHEDGE COMPACT
-  COMPONENT COMPONENTWIDTH CONSTRAINT DEFAULT ENCODE
-  ENUM EXTERNAL FALSE FIELD FULLALIGN
-  HW INSIDE INTERNAL LEVEL LONGINT
-  MEM NA NEGEDGE NONSTICKY NUMBER
-  ONREADTYPE ONWRITETYPE POSEDGE PROPERTY R
-  RCLR REF REG REGALIGN REGFILE
-  RSET RUSER RW RW1 SIGNAL
-  STRING STRUCT SW THIS TRUE
-  TYPE UNSIGNED W W1 WCLR
-  WOCLR WOSET WOT WR WSET
-  WUSER WZC WZS WZT
+  KW_ABSTRACT KW_ACCESSTYPE KW_ADDRESSINGTYPE KW_ADDRMAP KW_ALIAS
+  KW_ALL KW_BIT KW_BOOLEAN KW_BOTHEDGE KW_COMPACT
+  KW_COMPONENT KW_COMPONENTWIDTH KW_CONSTRAINT KW_DEFAULT KW_ENCODE
+  KW_ENUM KW_EXTERNAL KW_FALSE KW_FIELD KW_FULLALIGN
+  KW_HW KW_INSIDE KW_INTERNAL KW_LEVEL KW_LONGINT
+  KW_MEM KW_NA KW_NEGEDGE KW_NONSTICKY KW_NUMBER
+  KW_ONREADTYPE KW_ONWRITETYPE KW_POSEDGE KW_PROPERTY KW_R
+  KW_RCLR KW_REF KW_REG KW_REGALIGN KW_REGFILE
+  KW_RSET KW_RUSER KW_RW KW_RW1 KW_SIGNAL
+  KW_STRING KW_STRUCT KW_SW KW_THIS KW_TRUE
+  KW_TYPE KW_UNSIGNED KW_W KW_W1 KW_WCLR
+  KW_WOCLR KW_WOSET KW_WOT KW_WR KW_WSET
+  KW_WUSER KW_WZC KW_WZS KW_WZT
   # Literal
   STRING
   NUMBER
@@ -92,7 +92,7 @@ rule
     | property_assignment
     | explicit_component_inst
   component_type
-    : ADDRMAP | REGFILE | REG | FIELD | MEM
+    : KW_ADDRMAP | KW_REGFILE | KW_REG | KW_FIELD | KW_MEM
   explicit_component_inst
     : id component_insts ";" {
         result = node(:explicit_component_inst, val[..1], val)
@@ -126,8 +126,8 @@ rule
         result = node(:address_alignment, [val[1]], val)
       }
   component_inst_type
-    : EXTERNAL
-    | INTERNAL
+    : KW_EXTERNAL
+    | KW_INTERNAL
   component_inst_array_or_range
     : array {
         result = [val[0], nil]
@@ -140,25 +140,25 @@ rule
   # B.8 Property assignment
   #
   property_assignment
-    : DEFAULT prop_mod id ";" {
+    : KW_DEFAULT prop_mod id ";" {
         result = node(:default_prop_modifier, val[1..2], val)
       }
     | prop_mod id ";" {
         result = node(:prop_modifier, val[0..1], val)
       }
-    | DEFAULT prop_assignment_lhs ";" {
+    | KW_DEFAULT prop_assignment_lhs ";" {
         result = node(:default_prop_assignment, [val[1]], val)
       }
     | prop_assignment_lhs ";" {
         result = node(:prop_assignment, [val[0]], val)
       }
-    | DEFAULT prop_assignment_lhs "=" prop_assignment_rhs ";" {
+    | KW_DEFAULT prop_assignment_lhs "=" prop_assignment_rhs ";" {
         result = node(:default_prop_assignment, [val[1], val[3]], val)
       }
     | prop_assignment_lhs "=" prop_assignment_rhs ";" {
         result = node(:prop_assignment, [val[0], val[2]], val)
       }
-    | DEFAULT encode "=" id ";" {
+    | KW_DEFAULT encode "=" id ";" {
         result = node(:default_prop_assignment, [val[1], val[3]], val)
       }
     | encode "=" id ";" {
@@ -174,27 +174,27 @@ rule
         result = node(:post_prop_assignment, [val[0], val[2]], val)
       }
   prop_mod
-    : POSEDGE | NEGEDGE | BOTHEDGE | LEVEL | NONSTICKY
+    : KW_POSEDGE | KW_NEGEDGE | KW_BOTHEDGE | KW_LEVEL | KW_NONSTICKY
   prop_assignment_lhs
     : id
     | prop_keyword
   prop_keyword
-    : SW {
+    : KW_SW {
         result = node(:id, val, val)
       }
-    | HW {
+    | KW_HW {
         result = node(:id, val, val)
       }
-    | RCLR {
+    | KW_RCLR {
         result = node(:id, val, val)
       }
-    | RSET {
+    | KW_RSET {
         result = node(:id, val, val)
       }
-    | WOCLR {
+    | KW_WOCLR {
         result = node(:id, val, val)
       }
-    | WOSET {
+    | KW_WOSET {
         result = node(:id, val, val)
       }
   prop_assignment_rhs
@@ -203,7 +203,7 @@ rule
         result = node(:precedencetype, val, val)
       }
   encode
-    : ENCODE {
+    : KW_ENCODE {
         result = node(:id, val, val)
       }
   encode_ref
@@ -264,10 +264,10 @@ rule
   # B.14 Data types
   #
   simple_type
-    : LONGINT {
+    : KW_LONGINT {
         result = node(:data_type, val, val)
       }
-    | BIT {
+    | KW_BIT {
         result = node(:data_type, val, val)
       }
 
@@ -275,17 +275,17 @@ rule
   # B.15 Literals
   #
   boolean_literal
-    : TRUE | FALSE
+    : KW_TRUE | KW_FALSE
   accesstype_literal
-    : NA | RW | WR | R | W | RW1 | W1
+    : KW_NA | KW_RW | KW_WR | KW_R | KW_W | KW_RW1 | KW_W1
   onreadtype_literal
-    : RCLR | RSET | RUSER
+    : KW_RCLR | KW_RSET | KW_RUSER
   onwritetype_literal
-    : WOSET | WOCLR | WOT | WZS | WZC | WZT | WCLR | WSET | WUSER
+    : KW_WOSET | KW_WOCLR | KW_WOT | KW_WZS | KW_WZC | KW_WZT | KW_WCLR | KW_WSET | KW_WUSER
   addressingtype_literal
-    : COMPACT | REGALIGN | FULLALIGN
+    : KW_COMPACT | KW_REGALIGN | KW_FULLALIGN
   precedencetype_literal
-    : HW | SW
+    : KW_HW | KW_SW
 
   #
   # B.16 Expressions
@@ -425,7 +425,7 @@ rule
     | addressingtype_literal {
         result = node(:addressingtype, val, val)
       }
-    | THIS {
+    | KW_THIS {
         result = node(:this, val, val)
     }
     constant_cast
@@ -435,7 +435,7 @@ rule
     casting_type
       : simple_type
       | constant_primary
-      | BOOLEAN {
+      | KW_BOOLEAN {
           result = node(:data_type, val, val)
         }
 

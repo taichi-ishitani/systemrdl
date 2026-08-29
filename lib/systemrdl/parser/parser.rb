@@ -51,8 +51,8 @@ module SystemRDL
 
       def component_insts_node(type, insts)
         case type&.kind
-        when :EXTERNAL then insts.replace_type(:external_component_insts)
-        when :INTERNAL then insts.replace_type(:internal_component_insts)
+        when :KW_EXTERNAL then insts.replace_type(:external_component_insts)
+        when :KW_INTERNAL then insts.replace_type(:internal_component_insts)
         end
       end
 
