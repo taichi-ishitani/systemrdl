@@ -23,7 +23,7 @@ module SystemRDL
             'type', 'unsigned', 'w', 'w1', 'wclr',
             'woclr', 'woset', 'wot', 'wr', 'wset',
             'wuser', 'wzc', 'wzs', 'wzt'
-          ].to_h { |kw| [kw, kw.upcase.to_sym] }.freeze
+          ].to_h { |kw| [kw, "kw_#{kw}".upcase.to_sym] }.freeze
         end
 
         def symbol_patterns
