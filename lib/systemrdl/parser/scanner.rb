@@ -66,13 +66,12 @@ module SystemRDL
         DEC_NUMBER => :NUMBER
       }.freeze
 
-      def initialize(code, filename, test)
+      def initialize(code, filename)
         @ss = StringScanner.new(code)
         @filename = filename
         @line = 1
         @column = 1
         @control_tokens = []
-        @control_tokens << create_test_token(test) if test
       end
 
       def next_token
@@ -81,13 +80,11 @@ module SystemRDL
           push_eos_tokens if eos?
         end
 
-        token =
-          if @control_tokens.empty?
-            scan_next_token
-          else
-            @control_tokens.shift
-          end
-        token && [token.kind, token]
+        if @control_tokens.empty?
+          scan_next_token
+        else
+          @control_tokens.shift
+        end
       end
 
       private
@@ -174,11 +171,6 @@ module SystemRDL
 
       def create_control_token(kind)
         create_token(kind, '', @line, @column)
-      end
-
-      def create_test_token(test)
-        kind = :"__test_#{test}__".upcase
-        create_control_token(kind)
       end
 
       def current_position
