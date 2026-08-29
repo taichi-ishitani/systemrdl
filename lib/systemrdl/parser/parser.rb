@@ -5,9 +5,10 @@ module SystemRDL
     class Parser < GeneratedParser
       include RaiseParseError
 
-      def initialize(scanner, debug: false)
-        @scanner = scanner
+      def initialize(tokens, debug, test)
+        @tokens = tokens
         @yydebug = debug
+        append_test_token(test)
         super()
       end
 
@@ -17,8 +18,16 @@ module SystemRDL
 
       private
 
+      def append_test_token(test)
+        return unless test
+
+        token = Token.new('', :"__test_#{test}__".upcase, nil)
+        @tokens.unshift(token)
+      end
+
       def next_token
-        @scanner.next_token
+        token = @tokens.shift
+        token && [token.kind, token]
       end
 
       def on_error(_token_id, value, _value_stack)
