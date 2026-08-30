@@ -10,7 +10,7 @@ module SystemRDL
           super()
         end
 
-        def process
+        def parse
           do_parse
         end
 

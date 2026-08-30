@@ -47,8 +47,8 @@ rule
   #
   root
     : description+ EOS {
-      result = node(:root, val[0], val[0])
-    }
+        result = node(:root, val[0], val[0])
+      }
     | __TEST_PROPERTY_ASSIGNMENT__ property_assignment EOS {
         result = val[1]
       }
