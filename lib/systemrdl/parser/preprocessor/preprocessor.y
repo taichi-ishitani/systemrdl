@@ -1,5 +1,8 @@
 class SystemRDL::Parser::Preprocessor::GeneratedPreprocessor
 token
+  # Directives
+  PP_IFDEF PP_ELSIF PP_ELSE PP_ENDIF PP_DEFINE
+  PP_MACRO_ID
   # Keywords
   KW_ABSTRACT KW_ACCESSTYPE KW_ADDRESSINGTYPE KW_ADDRMAP KW_ALIAS
   KW_ALL KW_BIT KW_BOOLEAN KW_BOTHEDGE KW_COMPACT
@@ -24,19 +27,27 @@ token
   EOS
 
 rule
+  root
+    : source_description EOS {
+        result = Root.new(val[0], val[1])
+      }
+
   source_description
-    : source_item+ EOS {
-      result = [*val[..-2].flatten, val[-1]]
-    }
+    : source_item+ {
+        result = SourceDescription.new(val[0])
+      }
 
   source_item
-    : rdl_token+ {
-      result = val
-    }
+    : rdl_tokens
+    | define
+    | ifdef
 
+  rdl_tokens
+    : rdl_token+ {
+        result = RdlTokens.new(val[0])
+      }
   rdl_token
     : rdl_keyword | rdl_literal | rdl_symbol
-
   rdl_keyword
     : KW_ABSTRACT | KW_ACCESSTYPE | KW_ADDRESSINGTYPE | KW_ADDRMAP | KW_ALIAS
     | KW_ALL | KW_BIT | KW_BOOLEAN | KW_BOTHEDGE | KW_COMPACT
@@ -51,12 +62,29 @@ rule
     | KW_TYPE | KW_UNSIGNED | KW_W | KW_W1 | KW_WCLR
     | KW_WOCLR | KW_WOSET | KW_WOT | KW_WR | KW_WSET
     | KW_WUSER | KW_WZC | KW_WZS | KW_WZT
-
   rdl_literal
     : STRING | NUMBER | VERILOG_NUMBER | SIMPLE_ID
-
   rdl_symbol
     : "[" | "]" | "(" | ")" | "{" | "}"
     | "!" | "&&" | "||" | "<" | ">" | "<=" | ">=" | "==" | "!=" | ">>" | "<<"
     | "~" | "&" | "~&" | "|" | "~|" | "^" | "~^" | "^~" | "*" | "/" | "%" | "+" | "-" | "**"
     | "?" | ":" | "->" | "." | "," | "'" | ";" | "=" | "@" | "+=" | "%="
+
+  define
+    : PP_DEFINE SIMPLE_ID {
+        result = Define.new(val[1])
+      }
+
+  ifdef
+    : PP_IFDEF SIMPLE_ID source_description elsif* else? PP_ENDIF {
+        if_branch = [val[1], val[2]]
+        result = Ifdef.new(if_branch, val[3], val[4])
+      }
+  elsif
+    : PP_ELSIF SIMPLE_ID source_description {
+        result = [val[1], val[2]]
+      }
+  else
+    : PP_ELSE source_description {
+        result = val[1]
+      }

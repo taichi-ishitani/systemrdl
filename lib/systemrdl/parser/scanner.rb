@@ -8,6 +8,11 @@ module SystemRDL
       class << self
         private
 
+        def directive_patterns
+          ['ifdef', 'elsif', 'else', 'endif', 'define']
+            .to_h { |directive| ["`#{directive}", "pp_#{directive}".upcase.to_sym] }.freeze
+        end
+
         def keyword_patterns
           [
             'abstract', 'accesstype', 'addressingtype', 'addrmap', 'alias',
@@ -47,8 +52,8 @@ module SystemRDL
       BLOCK_COMMENT = %r{/\*(?:(?!\*/).)*\*/}m
       UNTERMINATED_BLOCK_COMMENT = %r{/\*(?:(?!\*/).)*}m
 
+      DIRECTIVES = directive_patterns
       KEYWORDS = keyword_patterns
-
       SYMBOLS = symbol_patterns
 
       VERILOG_BIN_NUMBER = /(\d+)'[bB]([01][01_]*)/
@@ -179,11 +184,25 @@ module SystemRDL
 
       def scan_next_token
         token =
-          scan_string || scan_number || scan_symbol || scan_word
+          scan_directive || scan_string || scan_number || scan_symbol || scan_word
         return token if token
 
         char = peek_char
         raise_parse_error "illegal character `#{char}`", current_position
+      end
+
+      def scan_directive
+        text, line, column = scan(/`[_a-zA-Z]\w*/)
+        return unless text
+
+        DIRECTIVES.each do |pattern, kind|
+          next if text != pattern
+
+          token = create_token(kind, text, line, column)
+          return token
+        end
+
+        create_token(:PP_MACRO_ID, text, line, column)
       end
 
       def scan_string

@@ -11,7 +11,13 @@ module SystemRDL
     def self.preprocess(code, filename, debug: false)
       scanner = Scanner.new(code, filename)
       preprocessor = Preprocessor::Preprocessor.new(scanner, debug)
-      preprocessor.process
+      root = preprocessor.parse
+
+      context = Preprocessor::Context.new
+      tokens = []
+      root.process(context, tokens)
+
+      tokens
     end
   end
 end

@@ -1816,7 +1816,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 59)
 
 module_eval(<<'.,.,', 'systemrdl.y', 49)
   def _reduce_3(val, _values, result)
-          result = node(:root, val[0], val[0])
+            result = node(:root, val[0], val[0])
 
     result
   end
