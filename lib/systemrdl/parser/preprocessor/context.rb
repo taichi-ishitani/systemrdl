@@ -12,7 +12,7 @@ module SystemRDL
           @macros[id.to_sym] = body
         end
 
-        def macor_defined?(id)
+        def macro_defined?(id)
           @macros.key?(id.to_sym)
         end
       end

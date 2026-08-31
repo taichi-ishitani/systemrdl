@@ -4,8 +4,18 @@ module SystemRDL
   module Parser
     module Preprocessor
       class Preprocessor < GeneratedPreprocessor
-        def initialize(scanner, debug)
-          @scanner = scanner
+        def self.process(source, debug: false)
+          processor = new(source, debug).parse
+
+          context = Context.new
+          tokens = []
+          processor.process(context, tokens)
+
+          tokens
+        end
+
+        def initialize(source, debug)
+          @scanner = Scanner.new(source)
           @yydebug = debug
           super()
         end
