@@ -82,6 +82,86 @@ module SystemRDL
         RDL
         assert_parses_expression(s(:string, '"baz"'), code)
       end
+
+      def test_ifndef
+        code = <<~'RDL'
+          `ifndef FOO
+            "foo"
+          `endif
+        RDL
+        assert_parses_expression(s(:string, '"foo"'), code)
+
+        code = <<~'RDL'
+          `define FOO
+          `ifndef FOO
+            "foo"
+          `endif
+          "bar"
+        RDL
+        assert_parses_expression(s(:string, '"bar"'), code)
+
+        code = <<~'RDL'
+          `ifndef FOO
+            "foo"
+          `else
+            "bar"
+          `endif
+        RDL
+        assert_parses_expression(s(:string, '"foo"'), code)
+
+        code = <<~'RDL'
+          `define FOO
+          `ifndef FOO
+            "foo"
+          `else
+            "bar"
+          `endif
+        RDL
+        assert_parses_expression(s(:string, '"bar"'), code)
+
+        code = <<~'RDL'
+          `ifndef FOO
+            "foo"
+          `elsif BAR
+            "bar"
+          `endif
+        RDL
+        assert_parses_expression(s(:string, '"foo"'), code)
+
+        code = <<~'RDL'
+          `define FOO
+          `define BAR
+          `ifndef FOO
+            "foo"
+          `elsif BAR
+            "bar"
+          `endif
+        RDL
+        assert_parses_expression(s(:string, '"bar"'), code)
+
+        code = <<~'RDL'
+          `define FOO
+          `ifndef FOO
+            "foo"
+          `elsif BAR
+            "bar"
+          `endif
+          "baz"
+        RDL
+        assert_parses_expression(s(:string, '"baz"'), code)
+
+        code = <<~'RDL'
+          `define FOO
+          `ifndef FOO
+            "foo"
+          `elsif BAR
+            "bar"
+          `else
+            "baz"
+          `endif
+        RDL
+        assert_parses_expression(s(:string, '"baz"'), code)
+      end
     end
   end
 end
