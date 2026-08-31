@@ -12,7 +12,7 @@ module SystemRDL
 
         def process(context, tokens)
           if_branches.each do |(condition, body)|
-            next unless context.macor_defined?(condition)
+            next unless context.macro_defined?(condition)
 
             return body.process(context, tokens)
           end
