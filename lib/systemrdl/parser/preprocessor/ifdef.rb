@@ -11,8 +11,8 @@ module SystemRDL
         end
 
         def process(context, tokens)
-          if_branches.each do |(condition, body)|
-            next unless context.macro_defined?(condition)
+          if_branches.each do |(condition, invert, body)|
+            next unless match_condition?(context, condition, invert)
 
             return body.process(context, tokens)
           end
@@ -26,6 +26,14 @@ module SystemRDL
           branches = [@if_branch]
           branches.concat(@elsif_branches) if @elsif_branches
           branches
+        end
+
+        def match_condition?(context, condition, invert)
+          if invert
+            !context.macro_defined?(condition)
+          else
+            context.macro_defined?(condition)
+          end
         end
       end
     end

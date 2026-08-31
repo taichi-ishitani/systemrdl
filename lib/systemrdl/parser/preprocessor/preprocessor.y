@@ -1,7 +1,7 @@
 class SystemRDL::Parser::Preprocessor::GeneratedPreprocessor
 token
   # Directives
-  PP_IFDEF PP_ELSIF PP_ELSE PP_ENDIF PP_DEFINE
+  PP_IFDEF PP_IFNDEF PP_ELSIF PP_ELSE PP_ENDIF PP_DEFINE
   PP_MACRO_ID
   # Keywords
   KW_ABSTRACT KW_ACCESSTYPE KW_ADDRESSINGTYPE KW_ADDRMAP KW_ALIAS
@@ -41,6 +41,7 @@ rule
     : rdl_tokens
     | define
     | ifdef
+    | ifndef
 
   rdl_tokens
     : rdl_token+ {
@@ -77,12 +78,17 @@ rule
 
   ifdef
     : PP_IFDEF SIMPLE_ID source_description elsif* else? PP_ENDIF {
-        if_branch = [val[1], val[2]]
+        if_branch = [val[1], false, val[2]]
         result = Ifdef.new(if_branch, val[3], val[4])
       }
+  ifndef
+    : PP_IFNDEF SIMPLE_ID source_description elsif* else? PP_ENDIF {
+      if_branch = [val[1], true, val[2]]
+      result = Ifdef.new(if_branch, val[3], val[4])
+    }
   elsif
     : PP_ELSIF SIMPLE_ID source_description {
-        result = [val[1], val[2]]
+        result = [val[1], false, val[2]]
       }
   else
     : PP_ELSE source_description {
