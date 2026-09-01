@@ -11,7 +11,8 @@ module SystemRDL
 
       DIRECTIVES =
         [
-          'ifdef', 'ifndef', 'elsif', 'else', 'endif', 'define'
+          'ifdef', 'ifndef', 'elsif', 'else', 'endif', 'define',
+          'include'
         ].to_h { |d| ["`#{d}", :"pp_#{d}".upcase] }.freeze
       KEYWORDS =
         [

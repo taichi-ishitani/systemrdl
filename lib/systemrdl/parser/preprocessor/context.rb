@@ -4,9 +4,14 @@ module SystemRDL
   module Parser
     module Preprocessor
       class Context
-        def initialize
+        def initialize(incdirs, debug)
           @macros = {}
+          @incdirs = incdirs
+          @debug = debug
         end
+
+        attr_reader :incdirs
+        attr_reader :debug
 
         def define_macro(id, body)
           @macros[id.to_sym] = body

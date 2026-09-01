@@ -4,14 +4,14 @@ module SystemRDL
   module Parser
     module Preprocessor
       class Preprocessor < GeneratedPreprocessor
-        def self.process(source, debug: false)
-          processor = new(source, debug).parse
+        def self.process(source, context = nil, remove_eos: false, incdirs: nil, debug: false)
+          context ||= Context.new(incdirs, debug)
 
-          context = Context.new
           tokens = []
+          processor = new(source, context.debug).parse
           processor.process(context, tokens)
 
-          tokens
+          remove_eos ? tokens[..-2] : tokens
         end
 
         def initialize(source, debug)

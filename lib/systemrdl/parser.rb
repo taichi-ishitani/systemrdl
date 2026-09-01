@@ -2,15 +2,15 @@
 
 module SystemRDL
   module Parser
-    def self.parse(code, filename: 'unknown', debug: false, test: nil)
-      tokens = preprocess(code, filename, debug:)
+    def self.parse(code, filename: 'unknown', incdirs: nil, debug: false, test: nil)
+      tokens = preprocess(code, filename, incdirs:, debug:)
       parser = Parser.new(tokens, debug, test)
       parser.parse
     end
 
-    def self.preprocess(code, filename, debug: false)
+    def self.preprocess(code, filename, incdirs: nil, debug: false)
       source = Source.new(code, filename, 1, 1)
-      Preprocessor::Preprocessor.process(source, debug:)
+      Preprocessor::Preprocessor.process(source, incdirs:, debug:)
     end
   end
 end
