@@ -2,7 +2,7 @@ class SystemRDL::Parser::Preprocessor::GeneratedPreprocessor
 token
   # Directives
   PP_IFDEF PP_IFNDEF PP_ELSIF PP_ELSE PP_ENDIF PP_DEFINE
-  PP_MACRO_ID
+  PP_INCLUDE PP_MACRO_ID
   # Keywords
   KW_ABSTRACT KW_ACCESSTYPE KW_ADDRESSINGTYPE KW_ADDRMAP KW_ALIAS
   KW_ALL KW_BIT KW_BOOLEAN KW_BOTHEDGE KW_COMPACT
@@ -42,6 +42,7 @@ rule
     | define
     | ifdef
     | ifndef
+    | include
 
   rdl_tokens
     : rdl_token+ {
@@ -93,4 +94,9 @@ rule
   else
     : PP_ELSE source_description {
         result = val[1]
+      }
+
+  include
+    : PP_INCLUDE STRING {
+        result = Include.new(val[1])
       }

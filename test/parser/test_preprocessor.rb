@@ -162,6 +162,29 @@ module SystemRDL
         RDL
         assert_parses_expression(s(:string, '"baz"'), code)
       end
+
+      def test_include
+        code = <<~'RDL'
+          `include "test/fixtures/include/foo.rdl"
+        RDL
+        assert_parses_expression(s(:string, '"foo"'), code)
+
+        code = <<~'RDL'
+          `include "foo.rdl"
+        RDL
+        assert_parses_expression(
+          s(:string, '"foo"'), code,
+          incdirs: ['test/fixtures/include']
+        )
+
+        code = <<~'RDL'
+          `include "bar.rdl"
+        RDL
+        assert_parses_expression(
+          s(:string, '"bar_1"'), code,
+          incdirs: ['test/fixtures/include/bar_1', 'test/fixtures/include/bar_2']
+        )
+      end
     end
   end
 end

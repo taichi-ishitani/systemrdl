@@ -19,8 +19,9 @@ module SystemRDL
         assert_equal(ast, result)
       end
 
-      def assert_parses_expression(ast, code)
-        assert_parses(ast, code, test: :constant_expression)
+      def assert_parses_expression(ast, code, **optargs)
+        optargs.merge!({ test: :constant_expression })
+        assert_parses(ast, code, **optargs)
       end
 
       def assert_parses_prop_assignment(ast, code)
