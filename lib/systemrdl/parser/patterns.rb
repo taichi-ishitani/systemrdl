@@ -3,11 +3,15 @@
 module SystemRDL
   module Parser
     module Patterns
-      WHITE_SPACES = /[ \t\n\r]+/
+      WHITE_SPACES = /[ \t\r]+/
 
       LINE_COMMENT = %r{//.*$}
+      PP_LINE_COMMENT = %r{//(?:(?!\\\R).)*}
       BLOCK_COMMENT = %r{/\*(?:(?!\*/).)*\*/}m
       UNTERMINATED_BLOCK_COMMENT = %r{/\*(?:(?!\*/).)*}m
+
+      NL = /\R/
+      PP_NL = /\\\R/
 
       DIRECTIVES =
         [

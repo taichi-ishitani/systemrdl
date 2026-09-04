@@ -185,6 +185,89 @@ module SystemRDL
           incdirs: ['test/fixtures/include/bar_1', 'test/fixtures/include/bar_2']
         )
       end
+
+      def test_text_macro
+        code = <<~'RDL'
+          `define add 1 + 2
+          `add
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+', s(:number, '1'), s(:number, '2')),
+          code
+        )
+
+        code = <<~'RDL'
+          `define add \
+          1 + 2
+          `add
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+', s(:number, '1'), s(:number, '2')),
+          code
+        )
+
+        code = <<~'RDL'
+          `define add 1 \
+          + \
+          2
+          `add
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+', s(:number, '1'), s(:number, '2')),
+          code
+        )
+
+        code = <<~'RDL'
+          `define one 1
+          `define add `one + 2
+          `add
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+', s(:number, '1'), s(:number, '2')),
+          code
+        )
+
+        code = <<~'RDL'
+          `define one 1
+          `one + `one
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+', s(:number, '1'), s(:number, '1')),
+          code
+        )
+
+        code = <<~'RDL'
+          `define add 1 + \
+          // comment \
+          2
+          `add
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+', s(:number, '1'), s(:number, '2')),
+          code
+        )
+
+        code = <<~'RDL'
+          `define add 1 + \
+          /*
+           * comment
+           */ 2
+          `add
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+', s(:number, '1'), s(:number, '2')),
+          code
+        )
+
+        code = <<~'RDL'
+          `define empty
+          1 `empty + 2 `empty
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+', s(:number, '1'), s(:number, '2')),
+          code
+        )
+      end
     end
   end
 end

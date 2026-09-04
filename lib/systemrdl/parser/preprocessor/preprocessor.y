@@ -2,7 +2,7 @@ class SystemRDL::Parser::Preprocessor::GeneratedPreprocessor
 token
   # Directives
   PP_IFDEF PP_IFNDEF PP_ELSIF PP_ELSE PP_ENDIF PP_DEFINE
-  PP_INCLUDE PP_MACRO_ID
+  PP_INCLUDE PP_MACRO_ID PP_NL
   # Keywords
   KW_ABSTRACT KW_ACCESSTYPE KW_ADDRESSINGTYPE KW_ADDRMAP KW_ALIAS
   KW_ALL KW_BIT KW_BOOLEAN KW_BOTHEDGE KW_COMPACT
@@ -24,6 +24,7 @@ token
   # Identifier
   SIMPLE_ID
   # Conrol tokens
+  NL
   EOS
 
 rule
@@ -39,7 +40,8 @@ rule
 
   source_item
     : rdl_tokens
-    | define
+    | text_macro_definition
+    | text_macro_call
     | ifdef
     | ifndef
     | include
@@ -72,9 +74,34 @@ rule
     | "~" | "&" | "~&" | "|" | "~|" | "^" | "~^" | "^~" | "*" | "/" | "%" | "+" | "-" | "**"
     | "?" | ":" | "->" | "." | "," | "'" | ";" | "=" | "@" | "+=" | "%="
 
-  define
+  text_macro_definition
+    : text_macro_header text_macro_body {
+        result = Define.new(val[0], val[1])
+      }
+  text_macro_header
     : PP_DEFINE SIMPLE_ID {
-        result = Define.new(val[1])
+        enter_macro_body
+        result = val[1]
+      }
+  text_macro_body
+    : text_macro_token* (PP_NL text_macro_token*)* NL {
+        exit_macro_body
+        result = concat_text_macro_body(val)
+      }
+  text_macro_token
+    : rdl_token
+    | PP_IFDEF
+    | PP_IFNDEF
+    | PP_ELSIF
+    | PP_ELSE
+    | PP_ENDIF
+    | PP_DEFINE
+    | PP_INCLUDE
+    | PP_MACRO_ID
+
+  text_macro_call
+    : PP_MACRO_ID {
+        result = MacroCall.new(val[0])
       }
 
   ifdef

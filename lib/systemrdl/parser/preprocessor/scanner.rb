@@ -11,14 +11,14 @@ module SystemRDL
           @control_tokens = []
         end
 
-        def next_token
+        def next_token(in_macro_body)
           if @control_tokens.empty?
-            skip_blank
+            skip_blank(in_macro_body)
             push_eos_tokens if eos?
           end
 
           if @control_tokens.empty?
-            scan_next_token
+            scan_next_token(in_macro_body)
           else
             @control_tokens.shift
           end
@@ -30,13 +30,22 @@ module SystemRDL
           @source.eos?
         end
 
-        def skip_blank
+        def skip_blank(in_macro_body)
           loop do
             next if scan(Patterns::WHITE_SPACES)
-            next if scan(Patterns::LINE_COMMENT)
+            next if !in_macro_body && scan(Patterns::NL)
+            next if scan_line_comment(in_macro_body)
             next if scan_block_comment
 
             break
+          end
+        end
+
+        def scan_line_comment(in_macro_body)
+          if in_macro_body
+            scan(Patterns::PP_LINE_COMMENT)
+          else
+            scan(Patterns::LINE_COMMENT)
           end
         end
 
@@ -79,9 +88,9 @@ module SystemRDL
           Token.new('', kind, @source.position)
         end
 
-        def scan_next_token
+        def scan_next_token(in_macro_body)
           token =
-            scan_directive || scan_string || scan_number || scan_symbol || scan_word
+            scan_directive || scan_nl(in_macro_body) || scan_string || scan_number || scan_symbol || scan_word
           return token if token
 
           char = peek_char
@@ -99,7 +108,24 @@ module SystemRDL
             return token
           end
 
-          Token.new(text, :PP_MACRO_ID, pos)
+          if RUBY_VERSION >= '4.0'
+            Token.new(text.lstrip('`'), :PP_MACRO_ID, pos)
+          else
+            Token.new(text[1..], :PP_MACRO_ID, pos)
+          end
+        end
+
+        def scan_nl(in_macro_body)
+          return unless in_macro_body
+
+          { PP_NL: Patterns::PP_NL, NL: Patterns::NL }.each do |kind, pattern|
+            text, pos = scan(pattern)
+            next unless text
+
+            return Token.new(text, kind, pos)
+          end
+
+          nil
         end
 
         def scan_string
