@@ -4,19 +4,36 @@ module SystemRDL
   module Parser
     module Preprocessor
       class Preprocessor < GeneratedPreprocessor
-        def self.process(source, context = nil, remove_eos: false, incdirs: nil, debug: false)
-          context ||= Context.new(incdirs, debug)
+        class << self
+          def process(source, context = nil, remove_eos: false, incdirs: nil, debug: false)
+            context ||= Context.new(incdirs, debug)
+            scanner = Scanner.new(source)
 
-          tokens = []
-          processor = new(source, context.debug).parse
-          processor.process(context, tokens)
+            __process(scanner, context, remove_eos)
+          end
 
-          remove_eos ? tokens[..-2] : tokens
+          def process_tokens(tokens, context, remove_eos: false)
+            buffer = TokenBuffer.new(tokens)
+            __process(buffer, context, remove_eos)
+          end
+
+          private
+
+          def __process(scanner, context, remove_eos)
+            processor = new(scanner, context.debug).parse
+
+            tokens = []
+            processor.process(context, tokens)
+
+            tokens.pop if remove_eos
+            tokens
+          end
         end
 
-        def initialize(source, debug)
-          @scanner = Scanner.new(source)
+        def initialize(scanner, debug)
+          @scanner = scanner
           @yydebug = debug
+          @in_macro_body = false
           super()
         end
 
@@ -27,8 +44,26 @@ module SystemRDL
         private
 
         def next_token
-          token = @scanner.next_token
+          token = @scanner.next_token(@in_macro_body)
           token && [token.kind, token]
+        end
+
+        def enter_macro_body
+          @in_macro_body = true
+        end
+
+        def exit_macro_body
+          @in_macro_body = false
+        end
+
+        def concat_text_macro_body(val)
+          body = val[0]
+          val[1].each do |(pp_nl, tokens)|
+            body << pp_nl
+            body.concat(tokens)
+          end
+          body << val[2]
+          body
         end
       end
     end
