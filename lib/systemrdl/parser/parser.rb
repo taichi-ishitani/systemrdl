@@ -27,7 +27,20 @@ module SystemRDL
 
       def next_token
         token = @tokens.shift
+        return unless token
+
+        if (kw_kind = find_kw_kind(token))
+          token = Token.new(token.text, kw_kind, token.position)
+        end
+
         token && [token.kind, token]
+      end
+
+      def find_kw_kind(token)
+        return unless token.kind == :SIMPLE_ID
+
+        _, kind = Patterns::KEYWORDS.find { |pattern, _| token.text == pattern }
+        kind
       end
 
       def on_error(_token_id, value, _value_stack)

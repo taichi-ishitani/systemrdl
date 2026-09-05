@@ -169,13 +169,6 @@ module SystemRDL
           text, pos = scan(/[_a-zA-Z]\w*/)
           return unless text
 
-          Patterns::KEYWORDS.each do |pattern, kind|
-            next if text != pattern
-
-            token = Token.new(text, kind, pos)
-            return token
-          end
-
           Token.new(text, :SIMPLE_ID, pos)
         end
       end
