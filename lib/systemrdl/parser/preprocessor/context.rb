@@ -13,8 +13,8 @@ module SystemRDL
         attr_reader :incdirs
         attr_reader :debug
 
-        def define_macro(id, body)
-          @macros[id.to_sym] = body
+        def define_macro(id, definition)
+          @macros[id.to_sym] = definition
         end
 
         def macro_defined?(id)

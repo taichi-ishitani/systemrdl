@@ -5,6 +5,7 @@ AllCops:
   TargetRubyVersion: 3.2
   Exclude:
     - lib/systemrdl/parser/generated_parser.rb
+    - lib/systemrdl/parser/preprocessor/generated_preprocessor.rb
     - test/**/*
   NewCops: enable
   SuggestExtensions: false

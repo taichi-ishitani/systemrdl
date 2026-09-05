@@ -196,6 +196,15 @@ module SystemRDL
           code
         )
 
+        #ode = <<~'RDL'
+        # `define add 1 + 2
+        # `add()
+        #DL
+        #ssert_parses_expression(
+        # s(:binary_operation, '+', s(:number, '1'), s(:number, '2')),
+        # code
+        #
+
         code = <<~'RDL'
           `define add \
           1 + 2
@@ -265,6 +274,120 @@ module SystemRDL
         RDL
         assert_parses_expression(
           s(:binary_operation, '+', s(:number, '1'), s(:number, '2')),
+          code
+        )
+      end
+
+      def test_text_macro_with_args
+        code = <<~'RDL'
+          `define add(a) a + a
+          `add(1)
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+', s(:number, '1'), s(:number, '1')),
+          code
+        )
+
+        code = <<~'RDL'
+          `define add(a, b) a + b
+          `add(1, 2)
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+', s(:number, '1'), s(:number, '2')),
+          code
+        )
+
+        code = <<~'RDL'
+          `define add(a, b) a + b
+          `add(1 + 2, 3 + 4)
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+',
+            s(:binary_operation, '+',
+              s(:binary_operation, '+',
+                s(:number, '1'),
+                s(:number, '2')
+              ),
+              s(:number, '3')
+            ),
+            s(:number, '4')
+          ),
+          code
+        )
+
+        code = <<~'RDL'
+          `define add(a, b) a + b
+          `add((1 + 2), (3 + 4))
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+',
+            s(:binary_operation, '+', s(:number, '1'), s(:number, '2')),
+            s(:binary_operation, '+', s(:number, '3'), s(:number, '4'))
+          ),
+          code
+        )
+
+        code = <<~'RDL'
+          `define concat(a, b, c) {a, b, c}
+          `concat(8'd1, {8'd2, 8'd3}, {{8'd4, 8'd5}, {8'd6, 8'd7}})
+        RDL
+        assert_parses_expression(
+          s(:concatenation,
+            s(:verilog_number, "8'd1"),
+            s(
+              :concatenation,
+              s(:verilog_number, "8'd2"), s(:verilog_number, "8'd3")
+            ),
+            s(
+              :concatenation,
+              s(
+                :concatenation,
+                s(:verilog_number, "8'd4"), s(:verilog_number, "8'd5")
+              ),
+              s(
+                :concatenation,
+                s(:verilog_number, "8'd6"), s(:verilog_number, "8'd7")
+              )
+            )
+          ),
+          code
+        )
+
+        code = <<~'RDL'
+          `define add(a, b) a + b
+          `add(`add(1, 2), `add(3, 4))
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+',
+            s(:binary_operation, '+',
+              s(:binary_operation, '+',
+                s(:number, '1'),
+                s(:number, '2')
+              ),
+              s(:number, '3')
+            ),
+            s(:number, '4')
+          ),
+          code
+        )
+
+        code = <<~'RDL'
+          `define add_2(a) a + 2
+          `define add_4(a) a + 4
+          `define add(a, b) `add_2(a) + `add_4(b)
+          `add(1, 3)
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+',
+            s(:binary_operation, '+',
+              s(:binary_operation, '+',
+                s(:number, '1'),
+                s(:number, '2')
+              ),
+              s(:number, '3')
+            ),
+            s(:number, '4')
+          ),
           code
         )
       end

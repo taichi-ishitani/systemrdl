@@ -46,20 +46,7 @@ module SystemRDL
       private
 
       def update_state(text)
-        return if text.empty?
-
-        n_newline = text.count("\n")
-        @line += n_newline
-
-        @column =
-          if /\R\z/.match?(text)
-            1
-          elsif n_newline > 0
-            last = text.lines.last
-            last.length
-          else
-            @column + text.length
-          end
+        @line, @column = Utils.calc_next_position(text, @line, @column)
       end
     end
   end

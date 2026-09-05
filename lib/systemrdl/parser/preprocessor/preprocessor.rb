@@ -56,14 +56,10 @@ module SystemRDL
           @in_macro_body = false
         end
 
-        def concat_text_macro_body(val)
-          body = val[0]
-          val[1].each do |(pp_nl, tokens)|
-            body << pp_nl
-            body.concat(tokens)
-          end
-          body << val[2]
-          body
+        def collect_list_items(val)
+          items = [val[0]]
+          val[1].each { |(_comma, item)| items << item }
+          items
         end
       end
     end
