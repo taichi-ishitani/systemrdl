@@ -2,7 +2,7 @@ class SystemRDL::Parser::Preprocessor::GeneratedPreprocessor
 token
   # Directives
   PP_IFDEF PP_IFNDEF PP_ELSIF PP_ELSE PP_ENDIF PP_DEFINE
-  PP_INCLUDE PP_MACRO_ID PP_NL
+  PP_UNDEF PP_INCLUDE PP_MACRO_ID PP_NL
   # Literal
   STRING
   NUMBER
@@ -28,6 +28,7 @@ rule
     : rdl_tokens
     | text_macro_definition
     | text_macro_call
+    | undef
     | ifdef
     | ifndef
     | include
@@ -109,6 +110,14 @@ rule
       }
     | "{" (text_macro_simple_arg_element | text_macro_bracketed_arg_group | ",")* "}" {
         result = val.flatten
+      }
+
+  #
+  # `undef
+  #
+  undef
+    : PP_UNDEF SIMPLE_ID {
+        result = Undef.new(val[1])
       }
 
   #

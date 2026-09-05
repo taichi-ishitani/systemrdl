@@ -17,6 +17,10 @@ module SystemRDL
           @macros[id.to_sym] = definition
         end
 
+        def undef_macro(id)
+          @macros.delete(id.to_sym)
+        end
+
         def macro_defined?(id)
           @macros.key?(id.to_sym)
         end
