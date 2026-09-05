@@ -391,6 +391,48 @@ module SystemRDL
           code
         )
       end
+
+      def test_undef
+        code = <<~'RDL'
+          `define FOO
+          `ifdef FOO
+            1
+          `else
+            2
+          `endif
+          +
+          `undef FOO
+          `ifdef FOO
+            1
+          `else
+            2
+          `endif
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+', s(:number, '1'), s(:number, '2')),
+          code
+        )
+
+        code = <<~'RDL'
+          `define FOO
+          `ifdef FOO
+            1
+          `else
+            2
+          `endif
+          +
+          `undef BAR
+          `ifdef FOO
+            1
+          `else
+            2
+          `endif
+        RDL
+        assert_parses_expression(
+          s(:binary_operation, '+', s(:number, '1'), s(:number, '1')),
+          code
+        )
+      end
     end
   end
 end
