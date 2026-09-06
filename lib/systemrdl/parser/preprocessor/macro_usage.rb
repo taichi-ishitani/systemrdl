@@ -29,6 +29,7 @@ module SystemRDL
           return if definition.body.size == 1 # body contains EOS only
 
           macro_tokens = process_macro_body(definition, args, context)
+          macro_tokens << @l_paren << @r_paren if !args && @l_paren
           tokens.concat(macro_tokens)
         end
 

@@ -543,6 +543,18 @@ module SystemRDL
         )
       end
 
+      def test_parameterless_macro_with_parens
+        code = <<~'RDL'
+          `define FOO 1
+          `FOO()
+        RDL
+        assert_raises_parse_error(
+          code,
+          'syntax error on value \'(\' (()',
+          test: :constant_expression
+        )
+      end
+
       def test_undef
         code = <<~'RDL'
           `define FOO
