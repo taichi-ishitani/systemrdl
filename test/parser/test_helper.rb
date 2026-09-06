@@ -19,8 +19,9 @@ module SystemRDL
         assert_equal(ast, result)
       end
 
-      def assert_parses_expression(ast, code)
-        assert_parses(ast, code, test: :constant_expression)
+      def assert_parses_expression(ast, code, **optargs)
+        optargs.merge!({ test: :constant_expression })
+        assert_parses(ast, code, **optargs)
       end
 
       def assert_parses_prop_assignment(ast, code)
@@ -29,6 +30,15 @@ module SystemRDL
 
       def assert_raises_parse_error(code, message = nil, **optargs)
         error = assert_raises(SystemRDL::ParseError) do
+          SystemRDL::Parser.parse(code, **optargs)
+        end
+        return unless message
+
+        assert_equal(message, error.error_message)
+      end
+
+      def assert_raises_preprocess_error(code, message = nil, **optargs)
+        error = assert_raises(SystemRDL::PreprocessError) do
           SystemRDL::Parser.parse(code, **optargs)
         end
         return unless message

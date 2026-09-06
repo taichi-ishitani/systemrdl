@@ -5,9 +5,10 @@ module SystemRDL
     class Parser < GeneratedParser
       include RaiseParseError
 
-      def initialize(scanner, debug: false)
-        @scanner = scanner
+      def initialize(tokens, debug, test)
+        @tokens = tokens
         @yydebug = debug
+        append_test_token(test)
         super()
       end
 
@@ -17,8 +18,29 @@ module SystemRDL
 
       private
 
+      def append_test_token(test)
+        return unless test
+
+        token = Token.new('', :"__test_#{test}__".upcase, nil)
+        @tokens.unshift(token)
+      end
+
       def next_token
-        @scanner.next_token
+        token = @tokens.shift
+        return unless token
+
+        if (kw_kind = find_kw_kind(token))
+          token = Token.new(token.text, kw_kind, token.position)
+        end
+
+        token && [token.kind, token]
+      end
+
+      def find_kw_kind(token)
+        return unless token.kind == :SIMPLE_ID
+
+        _, kind = Patterns::KEYWORDS.find { |pattern, _| token.text == pattern }
+        kind
       end
 
       def on_error(_token_id, value, _value_stack)
@@ -39,7 +61,7 @@ module SystemRDL
       end
 
       def node(kind, children, values)
-        token_range = to_token_range(values)
+        token_range = Utils.to_token_range(values)
         Node.new(kind, children, { token_range: token_range })
       end
 
@@ -51,8 +73,8 @@ module SystemRDL
 
       def component_insts_node(type, insts)
         case type&.kind
-        when :EXTERNAL then insts.replace_type(:external_component_insts)
-        when :INTERNAL then insts.replace_type(:internal_component_insts)
+        when :KW_EXTERNAL then insts.replace_type(:external_component_insts)
+        when :KW_INTERNAL then insts.replace_type(:internal_component_insts)
         end
       end
 
@@ -67,19 +89,6 @@ module SystemRDL
 
       def bop_node(values)
         node(:binary_operation, [values[1], values[0], values[2]], values)
-      end
-
-      def to_token_range(values)
-        values = values.compact
-        head = values.first
-        tail = values.last
-        if values.size == 1 && head.is_a?(Node)
-          head.token_range
-        else
-          head_token = (head.is_a?(Node) && head.token_range.head) || head
-          tail_token = (tail.is_a?(Node) && tail.token_range.tail) || tail
-          TokenRange.new(head_token, tail_token)
-        end
       end
     end
   end

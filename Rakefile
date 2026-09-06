@@ -27,7 +27,26 @@ unless ENV.key?('CI')
     sh 'bundle exec racc lib/systemrdl/parser/systemrdl.y -v -F -t -o lib/systemrdl/parser/generated_parser.rb'
   end
 
-  task test: ['lib/systemrdl/parser/generated_parser.rb']
+  {
+    parser: ['systemrdl.y', 'generated_parser.rb'],
+    preprocessor: ['preprocessor/preprocessor.y', 'preprocessor/generated_preprocessor.rb']
+  }.each do |kind, (input, result)|
+    input_path = "lib/systemrdl/parser/#{input}"
+    result_path = "lib/systemrdl/parser/#{result}"
+
+    desc "generate SystemRDL #{kind}"
+    file result_path => input_path do
+      sh "bundle exec racc #{input_path} -v -F -t -o #{result_path}"
+    end
+  end
+
+  desc 'Run Racc and generate SystemRDL parser and preprocessor'
+  task racc: [
+    'lib/systemrdl/parser/generated_parser.rb',
+    'lib/systemrdl/parser/preprocessor/generated_preprocessor.rb'
+  ]
+
+  task test: [:racc]
 end
 
 require 'rdoc/task'

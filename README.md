@@ -123,6 +123,15 @@ The following SystemRDL 2.0 language features are supported (parsed and evaluate
 * Property assignment in all three forms: direct assignment, default assignment (`default`), and dynamic assignment (`->`)
 * Property references and instance references as property values
 
+#### Preprocessing
+
+Verilog-style compiler directives are supported:
+
+* Text macros: `` `define ``, `` `undef ``
+  * Token concatenation with ` `` `, string literal wrapped with `` `" ``, and default values for macro arguments are not supported.
+* Conditional compilation: `` `ifdef ``, `` `ifndef ``, `` `elsif ``, `` `else ``, `` `endif ``
+* File inclusion: `` `include ``, with include search directories and a configurable nesting limit
+
 ### Unsupported Features
 
 The following features are not supported. Some of their keywords are recognized by the lexer (reserved), but they are not evaluated.
@@ -136,12 +145,16 @@ The following features are not supported. Some of their keywords are recognized 
 * Counter field properties
 * Interrupt field properties
 * Component parameters
-* Preprocessing, both embedded Perl preprocessing and Verilog-style directives
+* Embedded Perl preprocessing
+* The `` `line `` directive
 
-## Design notes
+## Specification and design notes
 
-The design decisions behind this implementation, along with their rationale, are documented under the [`notes`](notes) directory.
-These notes focus on parts of the SystemRDL specification that are open to interpretation or left unspecified, and explain how this implementation resolves them.
+The design decisions behind this implementation, along with their rationale, are documented under two directories.
+
+The [`spec_notes`](spec_notes) directory focuses on parts of the SystemRDL specification that are open to interpretation or left unspecified, and explains how this implementation resolves them.
+
+The [`design_notes`](design_notes) directory covers implementation design decisions.
 
 ## Contributing
 
