@@ -491,8 +491,7 @@ module SystemRDL
         assert_parses_expression(s(:string, '"foo"'), code)
       end
 
-
-      def test_calling_undefined_macro
+      def test_using_undefined_macro
         code = <<~'RDL'
           `define add(a) a + a
           `sub(1)
@@ -503,7 +502,7 @@ module SystemRDL
         )
       end
 
-      def test_macro_call_with_arity_mismatch
+      def test_macro_usage_with_arity_mismatch
         code = <<~'RDL'
           `define foo(a, b)
           `foo(1)
@@ -520,6 +519,27 @@ module SystemRDL
         assert_raises_preprocess_error(
           code,
           'wrong number of arguments for macro foo: expected 1 actual 2'
+        )
+      end
+
+      def test_recursive_macro_usage
+        code = <<~'RDL'
+          `define FOO `FOO
+          `FOO
+        RDL
+        assert_raises_preprocess_error(
+          code,
+          'recursive macro usage: FOO'
+        )
+
+        code = <<~'RDL'
+          `define FOO `BAR
+          `define BAR `FOO
+          `FOO
+        RDL
+        assert_raises_preprocess_error(
+          code,
+          'recursive macro usage: FOO'
         )
       end
 

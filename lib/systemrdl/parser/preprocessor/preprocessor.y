@@ -29,7 +29,7 @@ rule
   source_item
     : rdl_tokens
     | text_macro_definition
-    | text_macro_call
+    | text_macro_usage
     | undef
     | ifdef
     | ifndef
@@ -84,18 +84,21 @@ rule
   text_macro_token
     : rdl_token | pp_keyword | PP_MACRO_ID
 
-  text_macro_call
+  #
+  # text macro usage
+  #
+  text_macro_usage
     : PP_MACRO_ID {
         token_range = Utils.to_token_range(val)
-        result = MacroCall.new(val[0], nil, nil, nil, token_range)
+        result = MacroUsage.new(val[0], nil, nil, nil, token_range)
       }
     | PP_MACRO_ID "(" ")" {
         token_range = Utils.to_token_range(val)
-        result = MacroCall.new(val[0], nil, val[1], val[2], token_range)
+        result = MacroUsage.new(val[0], nil, val[1], val[2], token_range)
       }
     | PP_MACRO_ID "(" text_macro_args ")" {
         token_range = Utils.to_token_range(val)
-        result = MacroCall.new(val[0], val[2], nil, nil, token_range)
+        result = MacroUsage.new(val[0], val[2], nil, nil, token_range)
       }
   text_macro_args
     : text_macro_arg ("," text_macro_arg)* {

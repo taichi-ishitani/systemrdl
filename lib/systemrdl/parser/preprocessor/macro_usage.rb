@@ -3,7 +3,7 @@
 module SystemRDL
   module Parser
     module Preprocessor
-      class MacroCall
+      class MacroUsage
         include RaisePreprocessError
 
         def initialize(id, args, l_paren, r_paren, token_range)
@@ -15,12 +15,15 @@ module SystemRDL
         end
 
         def process(context, tokens)
-          definition = context.find_macro(@id)
-          unless definition
+          if !context.macro_defined?(@id)
             message = "undefined macro: #{@id}"
+            raise_preprocess_error message, @id.position
+          elsif context.recursive_macro_usage?(@id)
+            message = "recursive macro usage: #{@id}"
             raise_preprocess_error message, @id.position
           end
 
+          definition = context.find_macro(@id)
           args = process_args(definition, context)
 
           return if definition.body.size == 1 # body contains EOS only
@@ -67,7 +70,11 @@ module SystemRDL
 
         def process_macro_body(definition, args, context)
           body = apply_args(definition, args)
-          Preprocessor.process_tokens(body, context, remove_eos: true)
+          context.push_macro_usage(@id)
+          tokens = Preprocessor.process_tokens(body, context, remove_eos: true)
+          context.pop_macro_usage
+
+          tokens
         end
 
         def apply_args(definition, args)
