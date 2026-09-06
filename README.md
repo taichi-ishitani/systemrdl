@@ -123,6 +123,15 @@ The following SystemRDL 2.0 language features are supported (parsed and evaluate
 * Property assignment in all three forms: direct assignment, default assignment (`default`), and dynamic assignment (`->`)
 * Property references and instance references as property values
 
+#### Preprocessing
+
+Verilog-style compiler directives are supported:
+
+* Text macros: `` `define ``, `` `undef ``
+  * Token concatenation with ` `` `, string literal wrapped with `` `" ``, and default values for macro arguments are not supported.
+* Conditional compilation: `` `ifdef ``, `` `ifndef ``, `` `elsif ``, `` `else ``, `` `endif ``
+* File inclusion: `` `include ``, with include search directories and a configurable nesting limit
+
 ### Unsupported Features
 
 The following features are not supported. Some of their keywords are recognized by the lexer (reserved), but they are not evaluated.
@@ -136,7 +145,8 @@ The following features are not supported. Some of their keywords are recognized 
 * Counter field properties
 * Interrupt field properties
 * Component parameters
-* Preprocessing, both embedded Perl preprocessing and Verilog-style directives
+* Embedded Perl preprocessing
+* The `` `line `` directive
 
 ## Design notes
 
