@@ -240,6 +240,34 @@ module SystemRDL
         )
       end
 
+      def test_include_nesting_too_deep
+        code = <<~'RDL'
+          `include "test/fixtures/include/nest/nest_1.rdl"
+        RDL
+        assert_raises_preprocess_error(
+          code,
+          'include nesting too deep: test/fixtures/include/nest/nest_16.rdl limit 15'
+        )
+        assert_raises_preprocess_error(
+          code,
+          'include nesting too deep: test/fixtures/include/nest/nest_9.rdl limit 8',
+          include_limit: 8
+        )
+
+        code = <<~'RDL'
+          `include "test/fixtures/include/nest/recursive.rdl"
+        RDL
+        assert_raises_preprocess_error(
+          code,
+          'include nesting too deep: test/fixtures/include/nest/recursive.rdl limit 15'
+        )
+        assert_raises_preprocess_error(
+          code,
+          'include nesting too deep: test/fixtures/include/nest/recursive.rdl limit 8',
+          include_limit: 8
+        )
+      end
+
       def test_text_macro
         code = <<~'RDL'
           `define add 1 + 2

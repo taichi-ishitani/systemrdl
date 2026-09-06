@@ -28,6 +28,9 @@ Metrics/AbcSize:
 Metrics/CyclomaticComplexity:
   Max: 12
 
+Metrics/ParameterLists:
+  CountKeywordArgs: false
+
 Metrics/PerceivedComplexity:
   Max: 10
 

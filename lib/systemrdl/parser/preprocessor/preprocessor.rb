@@ -5,8 +5,8 @@ module SystemRDL
     module Preprocessor
       class Preprocessor < GeneratedPreprocessor
         class << self
-          def process(source, context = nil, remove_eos: false, incdirs: nil, debug: false)
-            context ||= Context.new(incdirs, debug)
+          def process(source, context = nil, remove_eos: false, incdirs: nil, include_limit: 15, debug: false)
+            context ||= Context.new(incdirs, include_limit, debug)
             scanner = Scanner.new(source)
 
             __process(scanner, context, remove_eos)

@@ -11,21 +11,28 @@ module SystemRDL
         end
 
         def process(context, tokens)
-          path = find_include_file(context)
+          filename = unquoted_filename
+          if context.reach_include_limit?
+            message = "include nesting too deep: #{filename} limit #{context.include_limit}"
+            raise_preprocess_error message, @filename.position
+          end
+
+          path = find_include_file(context, filename)
           include_tokens = load_include_file(context, path)
           tokens.concat(include_tokens)
         end
 
         private
 
-        def find_include_file(context)
-          filename =
-            if RUBY_VERSION >= '4.0'
-              @filename.text.strip('"')
-            else
-              @filename.text[1..-2]
-            end
+        def unquoted_filename
+          if RUBY_VERSION >= '4.0'
+            @filename.text.strip('"')
+          else
+            @filename.text[1..-2]
+          end
+        end
 
+        def find_include_file(context, filename)
           [*context.incdirs, '.'].each do |incdir|
             path = File.join(incdir, filename)
             return path if File.file?(path)
@@ -36,8 +43,12 @@ module SystemRDL
         end
 
         def load_include_file(context, path)
+          context.push_include
           source = Source.new(File.read(path), path, 1, 1)
-          Preprocessor.process(source, context, remove_eos: true)
+          tokens = Preprocessor.process(source, context, remove_eos: true)
+          context.pop_include
+
+          tokens
         end
       end
     end
