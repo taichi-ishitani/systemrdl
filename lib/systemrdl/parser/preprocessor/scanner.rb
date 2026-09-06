@@ -93,8 +93,7 @@ module SystemRDL
             scan_directive || scan_nl(in_macro_body) || scan_string || scan_number || scan_symbol || scan_word
           return token if token
 
-          char = peek_char
-          raise_parse_error "illegal character `#{char}`", @source.position
+          scan_token(:ILLEGAL_CHARACTER, /./m)
         end
 
         def scan_directive

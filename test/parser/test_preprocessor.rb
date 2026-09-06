@@ -163,6 +163,50 @@ module SystemRDL
         assert_parses_expression(s(:string, '"baz"'), code)
       end
 
+      def test_illegal_character_in_true_branch
+        code = <<~'RDL'
+          `define FOO
+          `ifdef FOO
+            $invalid
+          `endif
+          "bar"
+        RDL
+        assert_raises_parse_error(
+          code,
+          'syntax error on value \'$\' (ILLEGAL_CHARACTER)'
+        )
+
+        code = <<~'RDL'
+          `define FOO
+          `ifdef FOO
+            ` invalid
+          `endif
+          "bar"
+        RDL
+        assert_raises_parse_error(
+          code,
+          'syntax error on value \'`\' (ILLEGAL_CHARACTER)'
+        )
+      end
+
+      def test_illegal_character_in_false_branch
+        code = <<~'RDL'
+          `ifdef FOO
+            $invalid
+          `endif
+          "bar"
+        RDL
+        assert_parses_expression(s(:string, '"bar"'), code)
+
+        code = <<~'RDL'
+          `ifdef FOO
+            ` invalid
+          `endif
+          "bar"
+        RDL
+        assert_parses_expression(s(:string, '"bar"'), code)
+      end
+
       def test_include
         code = <<~'RDL'
           `include "test/fixtures/include/foo.rdl"
@@ -401,6 +445,24 @@ module SystemRDL
           code
         )
       end
+
+      def test_illegal_character_in_unused_macro
+        code = <<~'RDL'
+          `define FOO "foo"
+          `define BAR $invalid
+          `FOO
+        RDL
+        assert_parses_expression(s(:string, '"foo"'), code)
+      end
+
+      def test_illegal_character_in_unused_macro_arg
+        code = <<~'RDL'
+          `define FOO(a, b) a
+          `FOO("foo", $invalid)
+        RDL
+        assert_parses_expression(s(:string, '"foo"'), code)
+      end
+
 
       def test_calling_undefined_macro
         code = <<~'RDL'
