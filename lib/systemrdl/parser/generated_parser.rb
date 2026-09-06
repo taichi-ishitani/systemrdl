@@ -2713,7 +2713,8 @@ module_eval(<<'.,.,', 'systemrdl.y', 391)
 
 module_eval(<<'.,.,', 'systemrdl.y', 398)
   def _reduce_162(val, _values, result)
-            result = val[1].replace_token_range(to_token_range(val))
+            token_range = Utils.to_token_range(val)
+        result = val[1].replace_token_range(token_range)
 
     result
   end
@@ -2723,7 +2724,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 398)
 
 # reduce 164 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 404)
+module_eval(<<'.,.,', 'systemrdl.y', 405)
   def _reduce_165(val, _values, result)
             result = node(:boolean, val, val)
 
@@ -2731,7 +2732,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 404)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 407)
+module_eval(<<'.,.,', 'systemrdl.y', 408)
   def _reduce_166(val, _values, result)
             result = node(:string, val, val)
 
@@ -2739,7 +2740,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 407)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 410)
+module_eval(<<'.,.,', 'systemrdl.y', 411)
   def _reduce_167(val, _values, result)
             result = node(:number, val, val)
 
@@ -2747,7 +2748,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 410)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 413)
+module_eval(<<'.,.,', 'systemrdl.y', 414)
   def _reduce_168(val, _values, result)
             result = node(:verilog_number, val, val)
 
@@ -2755,7 +2756,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 413)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 416)
+module_eval(<<'.,.,', 'systemrdl.y', 417)
   def _reduce_169(val, _values, result)
             result = node(:accesstype, val, val)
 
@@ -2763,7 +2764,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 416)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 419)
+module_eval(<<'.,.,', 'systemrdl.y', 420)
   def _reduce_170(val, _values, result)
             result = node(:onreadtype, val, val)
 
@@ -2771,7 +2772,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 419)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 422)
+module_eval(<<'.,.,', 'systemrdl.y', 423)
   def _reduce_171(val, _values, result)
             result = node(:onwritetype, val, val)
 
@@ -2779,7 +2780,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 422)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 425)
+module_eval(<<'.,.,', 'systemrdl.y', 426)
   def _reduce_172(val, _values, result)
             result = node(:addressingtype, val, val)
 
@@ -2787,7 +2788,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 425)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 428)
+module_eval(<<'.,.,', 'systemrdl.y', 429)
   def _reduce_173(val, _values, result)
             result = node(:this, val, val)
 
@@ -2795,7 +2796,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 428)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 432)
+module_eval(<<'.,.,', 'systemrdl.y', 433)
   def _reduce_174(val, _values, result)
               result = node(:cast, [val[0], val[3]], val)
 
@@ -2807,7 +2808,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 432)
 
 # reduce 176 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 438)
+module_eval(<<'.,.,', 'systemrdl.y', 439)
   def _reduce_177(val, _values, result)
               result = node(:data_type, val, val)
 
@@ -2815,7 +2816,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 438)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 446)
+module_eval(<<'.,.,', 'systemrdl.y', 447)
   def _reduce_178(val, _values, result)
             result = node(:id, val, val)
 

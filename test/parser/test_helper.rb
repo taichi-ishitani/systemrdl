@@ -36,6 +36,15 @@ module SystemRDL
 
         assert_equal(message, error.error_message)
       end
+
+      def assert_raises_preprocess_error(code, message = nil, **optargs)
+        error = assert_raises(SystemRDL::PreprocessError) do
+          SystemRDL::Parser.parse(code, **optargs)
+        end
+        return unless message
+
+        assert_equal(message, error.error_message)
+      end
     end
   end
 end

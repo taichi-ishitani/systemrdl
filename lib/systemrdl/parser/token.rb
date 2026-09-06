@@ -31,6 +31,10 @@ module SystemRDL
       attr_reader :kind
       attr_reader :position
 
+      def to_s
+        text.to_s
+      end
+
       def to_sym
         text.to_sym
       end

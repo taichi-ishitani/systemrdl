@@ -61,7 +61,7 @@ module SystemRDL
       end
 
       def node(kind, children, values)
-        token_range = to_token_range(values)
+        token_range = Utils.to_token_range(values)
         Node.new(kind, children, { token_range: token_range })
       end
 
@@ -89,19 +89,6 @@ module SystemRDL
 
       def bop_node(values)
         node(:binary_operation, [values[1], values[0], values[2]], values)
-      end
-
-      def to_token_range(values)
-        values = values.compact
-        head = values.first
-        tail = values.last
-        if values.size == 1 && head.is_a?(Node)
-          head.token_range
-        else
-          head_token = (head.is_a?(Node) && head.token_range.head) || head
-          tail_token = (tail.is_a?(Node) && tail.token_range.tail) || tail
-          TokenRange.new(head_token, tail_token)
-        end
       end
     end
   end

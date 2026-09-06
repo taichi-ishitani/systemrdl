@@ -186,6 +186,16 @@ module SystemRDL
         )
       end
 
+      def test_include_file_not_found
+        code = <<~'RDL'
+          `include "test/fixtures/include/baz.rdl"
+        RDL
+        assert_raises_preprocess_error(
+          code,
+          'include file not found: test/fixtures/include/baz.rdl'
+        )
+      end
+
       def test_text_macro
         code = <<~'RDL'
           `define add 1 + 2
@@ -389,6 +399,37 @@ module SystemRDL
             s(:number, '4')
           ),
           code
+        )
+      end
+
+      def test_calling_undefined_macro
+        code = <<~'RDL'
+          `define add(a) a + a
+          `sub(1)
+        RDL
+        assert_raises_preprocess_error(
+          code,
+          'undefined macro: sub'
+        )
+      end
+
+      def test_macro_call_with_arity_mismatch
+        code = <<~'RDL'
+          `define foo(a, b)
+          `foo(1)
+        RDL
+        assert_raises_preprocess_error(
+          code,
+          'wrong number of arguments for macro foo: expected 2 actual 1'
+        )
+
+        code = <<~'RDL'
+          `define foo(a)
+          `foo(1, 2)
+        RDL
+        assert_raises_preprocess_error(
+          code,
+          'wrong number of arguments for macro foo: expected 1 actual 2'
         )
       end
 

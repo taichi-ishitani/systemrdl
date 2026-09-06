@@ -26,11 +26,6 @@ module SystemRDL
         end
 
         def find_macro(id)
-          unless macro_defined?(id)
-            # todo
-            # report error
-          end
-
           @macros[id.to_sym]
         end
       end

@@ -31,6 +31,17 @@ module SystemRDL
     end
   end
 
+  class PreprocessError < ParseError
+  end
+
+  module RaisePreprocessError
+    private
+
+    def raise_preprocess_error(message, position)
+      raise PreprocessError.new(message, position)
+    end
+  end
+
   class EvaluationError < Error
     def initialize(message, *token_ranges)
       super(message)

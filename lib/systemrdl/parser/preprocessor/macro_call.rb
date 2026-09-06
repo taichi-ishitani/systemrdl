@@ -4,15 +4,23 @@ module SystemRDL
   module Parser
     module Preprocessor
       class MacroCall
-        def initialize(id, args, l_paren, r_paren)
+        include RaisePreprocessError
+
+        def initialize(id, args, l_paren, r_paren, token_range)
           @id = id
           @args = append_eos(args)
           @l_paren = l_paren
           @r_paren = r_paren
+          @token_range = token_range
         end
 
         def process(context, tokens)
           definition = context.find_macro(@id)
+          unless definition
+            message = "undefined macro: #{@id}"
+            raise_preprocess_error message, @id.position
+          end
+
           args = process_args(definition, context)
 
           return if definition.body.size == 1 # body contains EOS only
@@ -40,8 +48,10 @@ module SystemRDL
           n_params = definition.params&.size || 0
           n_args = @args&.size || 0
           if n_args != n_params
-            # TODO
-            # report error
+            message =
+              "wrong number of arguments for macro #{@id}: " \
+              "expected #{n_params} actual #{n_args}"
+            raise_preprocess_error message, @token_range
           elsif n_params == 0
             return
           end

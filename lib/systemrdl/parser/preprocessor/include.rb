@@ -4,6 +4,8 @@ module SystemRDL
   module Parser
     module Preprocessor
       class Include
+        include RaisePreprocessError
+
         def initialize(filename)
           @filename = filename
         end
@@ -29,8 +31,8 @@ module SystemRDL
             return path if File.file?(path)
           end
 
-          # TODO
-          # report error
+          message = "include file not found: #{filename}"
+          raise_preprocess_error message, @filename.position
         end
 
         def load_include_file(context, path)

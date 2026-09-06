@@ -910,50 +910,53 @@ module_eval(<<'.,.,', 'preprocessor.y', 77)
 
 module_eval(<<'.,.,', 'preprocessor.y', 85)
   def _reduce_87(val, _values, result)
-            result = MacroCall.new(val[0], nil, nil, nil)
+            token_range = Utils.to_token_range(val)
+        result = MacroCall.new(val[0], nil, nil, nil, token_range)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 88)
+module_eval(<<'.,.,', 'preprocessor.y', 89)
   def _reduce_88(val, _values, result)
-            result = MacroCall.new(val[0], nil, val[1], val[2])
+            token_range = Utils.to_token_range(val)
+        result = MacroCall.new(val[0], nil, val[1], val[2], token_range)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 91)
+module_eval(<<'.,.,', 'preprocessor.y', 93)
   def _reduce_89(val, _values, result)
-            result = MacroCall.new(val[0], val[2], nil, nil)
+            token_range = Utils.to_token_range(val)
+        result = MacroCall.new(val[0], val[2], nil, nil, token_range)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 99)
+module_eval(<<'.,.,', 'preprocessor.y', 102)
   def _reduce_90(val, _values, result)
     result = val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 99)
+module_eval(<<'.,.,', 'preprocessor.y', 102)
   def _reduce_91(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 99)
+module_eval(<<'.,.,', 'preprocessor.y', 102)
   def _reduce_92(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 95)
+module_eval(<<'.,.,', 'preprocessor.y', 98)
   def _reduce_93(val, _values, result)
             result = collect_list_items(val)
 
@@ -961,35 +964,35 @@ module_eval(<<'.,.,', 'preprocessor.y', 95)
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 103)
+module_eval(<<'.,.,', 'preprocessor.y', 106)
   def _reduce_94(val, _values, result)
     result = val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 103)
+module_eval(<<'.,.,', 'preprocessor.y', 106)
   def _reduce_95(val, _values, result)
     result = val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 103)
+module_eval(<<'.,.,', 'preprocessor.y', 106)
   def _reduce_96(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 103)
+module_eval(<<'.,.,', 'preprocessor.y', 106)
   def _reduce_97(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 99)
+module_eval(<<'.,.,', 'preprocessor.y', 102)
   def _reduce_98(val, _values, result)
             result = val[0].flatten
 
@@ -1005,42 +1008,42 @@ module_eval(<<'.,.,', 'preprocessor.y', 99)
 
 # reduce 102 omitted
 
-module_eval(<<'.,.,', 'preprocessor.y', 119)
+module_eval(<<'.,.,', 'preprocessor.y', 122)
   def _reduce_103(val, _values, result)
     result = val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 119)
+module_eval(<<'.,.,', 'preprocessor.y', 122)
   def _reduce_104(val, _values, result)
     result = val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 119)
+module_eval(<<'.,.,', 'preprocessor.y', 122)
   def _reduce_105(val, _values, result)
     result = val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 119)
+module_eval(<<'.,.,', 'preprocessor.y', 122)
   def _reduce_106(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 119)
+module_eval(<<'.,.,', 'preprocessor.y', 122)
   def _reduce_107(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 105)
+module_eval(<<'.,.,', 'preprocessor.y', 108)
   def _reduce_108(val, _values, result)
             result = val.flatten
 
@@ -1048,7 +1051,7 @@ module_eval(<<'.,.,', 'preprocessor.y', 105)
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 108)
+module_eval(<<'.,.,', 'preprocessor.y', 111)
   def _reduce_109(val, _values, result)
             result = val.flatten
 
@@ -1056,7 +1059,7 @@ module_eval(<<'.,.,', 'preprocessor.y', 108)
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 111)
+module_eval(<<'.,.,', 'preprocessor.y', 114)
   def _reduce_110(val, _values, result)
             result = val.flatten
 
@@ -1064,7 +1067,7 @@ module_eval(<<'.,.,', 'preprocessor.y', 111)
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 119)
+module_eval(<<'.,.,', 'preprocessor.y', 122)
   def _reduce_111(val, _values, result)
             result = Undef.new(val[1])
 
@@ -1072,14 +1075,14 @@ module_eval(<<'.,.,', 'preprocessor.y', 119)
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 132)
+module_eval(<<'.,.,', 'preprocessor.y', 135)
   def _reduce_112(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 132)
+module_eval(<<'.,.,', 'preprocessor.y', 135)
   def _reduce_113(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
@@ -1090,7 +1093,7 @@ module_eval(<<'.,.,', 'preprocessor.y', 132)
 
 # reduce 115 omitted
 
-module_eval(<<'.,.,', 'preprocessor.y', 127)
+module_eval(<<'.,.,', 'preprocessor.y', 130)
   def _reduce_116(val, _values, result)
             if_branch = [val[1], false, val[2]]
         result = Ifdef.new(if_branch, val[3], val[4])
@@ -1099,7 +1102,7 @@ module_eval(<<'.,.,', 'preprocessor.y', 127)
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 132)
+module_eval(<<'.,.,', 'preprocessor.y', 135)
   def _reduce_117(val, _values, result)
           if_branch = [val[1], true, val[2]]
       result = Ifdef.new(if_branch, val[3], val[4])
@@ -1108,7 +1111,7 @@ module_eval(<<'.,.,', 'preprocessor.y', 132)
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 137)
+module_eval(<<'.,.,', 'preprocessor.y', 140)
   def _reduce_118(val, _values, result)
             result = [val[1], false, val[2]]
 
@@ -1116,7 +1119,7 @@ module_eval(<<'.,.,', 'preprocessor.y', 137)
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 141)
+module_eval(<<'.,.,', 'preprocessor.y', 144)
   def _reduce_119(val, _values, result)
             result = val[1]
 
@@ -1124,7 +1127,7 @@ module_eval(<<'.,.,', 'preprocessor.y', 141)
   end
 .,.,
 
-module_eval(<<'.,.,', 'preprocessor.y', 149)
+module_eval(<<'.,.,', 'preprocessor.y', 152)
   def _reduce_120(val, _values, result)
             result = Include.new(val[1])
 

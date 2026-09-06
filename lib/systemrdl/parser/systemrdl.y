@@ -396,7 +396,8 @@ rule
     | constant_concatenation
     | constant_multiple_concatenation
     | "(" constant_expression ")" {
-        result = val[1].replace_token_range(to_token_range(val))
+        token_range = Utils.to_token_range(val)
+        result = val[1].replace_token_range(token_range)
       }
     | constant_cast
     | instance_or_prop_ref
