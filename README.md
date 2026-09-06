@@ -148,10 +148,13 @@ The following features are not supported. Some of their keywords are recognized 
 * Embedded Perl preprocessing
 * The `` `line `` directive
 
-## Design notes
+## Specification and design notes
 
-The design decisions behind this implementation, along with their rationale, are documented under the [`notes`](notes) directory.
-These notes focus on parts of the SystemRDL specification that are open to interpretation or left unspecified, and explain how this implementation resolves them.
+The design decisions behind this implementation, along with their rationale, are documented under two directories.
+
+The [`spec_notes`](spec_notes) directory focuses on parts of the SystemRDL specification that are open to interpretation or left unspecified, and explains how this implementation resolves them.
+
+The [`design_notes`](design_notes) directory covers implementation design decisions.
 
 ## Contributing
 
