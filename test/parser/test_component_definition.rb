@@ -590,6 +590,78 @@ module SystemRDL
         )
       end
 
+      def test_parameterized_component
+        code = <<~'RDL'
+          reg myReg #(string NAME, longint unsigned SIZE = 32, boolean SHARED = true) {
+            name = NAME;
+            regwidth = SIZE;
+            shared = SHARED;
+            field {} data[SIZE];
+          };
+          addrmap myAmap {
+            myReg a;
+            myReg b[8];
+            myReg #(.SIZE(16)) c;
+            myReg #(.SIZE(8), .SHARED(false)) d;
+          };
+        RDL
+        assert_parses(
+          root(
+            reg_named_definition(
+              id(:myReg),
+              param_def(
+                param_def_elem(:NAME, data_type('string')),
+                param_def_elem(:SIZE, data_type('longint', 'unsigned'), number('32')),
+                param_def_elem(:SHARED, data_type('boolean'), boolean(true)),
+              ),
+              prop_assignment(:name, instance_ref(:NAME)),
+              prop_assignment(:regwidth, instance_ref(:SIZE)),
+              prop_assignment(:shared, instance_ref(:SHARED)),
+              field_anonymous_definition(
+                component_insts(
+                  component_inst(:data, array: [instance_ref(:SIZE)])
+                )
+              )
+            ),
+            addrmap_named_definition(
+              id(:myAmap),
+              explicit_component_inst(
+                :myReg,
+                component_insts(
+                  component_inst(:a)
+                )
+              ),
+              explicit_component_inst(
+                :myReg,
+                component_insts(
+                  component_inst(:b, array: [8])
+                )
+              ),
+              explicit_component_inst(
+                :myReg,
+                component_insts(
+                  param_inst(
+                    param_elem(:SIZE, number(16))
+                  ),
+                  component_inst(:c)
+                )
+              ),
+              explicit_component_inst(
+                :myReg,
+                component_insts(
+                  param_inst(
+                    param_elem(:SIZE, number(8)),
+                    param_elem(:SHARED, boolean(false))
+                  ),
+                  component_inst(:d)
+                )
+              )
+            )
+          ),
+          code
+        )
+      end
+
       def root(*children)
         s(:root, *children)
       end
@@ -634,8 +706,28 @@ module SystemRDL
         s(:component_named_def, 'field', *children)
       end
 
+      def param_def(*elements)
+        s(:param_def, *elements)
+      end
+
+      def param_def_elem(id, *children)
+        s(:param_def_elem, id(id), *children)
+      end
+
+      def data_type(type, modifier = nil)
+        s(:data_type, *[type, modifier].compact)
+      end
+
       def component_insts(*children)
         s(:component_insts, *children)
+      end
+
+      def param_inst(*elements)
+        s(:param_inst, *elements)
+      end
+
+      def param_elem(id, *children)
+        s(:param_elem, id(id), *children)
       end
 
       def component_inst(id, **children)
@@ -672,7 +764,7 @@ module SystemRDL
       end
 
       def array(*sizes)
-        s(:array, *sizes.map { |s| number(s) })
+        s(:array, *sizes.map { |s| s.is_a?(AST::Node) && s || number(s) })
       end
 
       def range(head, tail)
@@ -707,6 +799,10 @@ module SystemRDL
         s(:string, s)
       end
 
+      def boolean(b)
+        s(:boolean, b.to_s)
+      end
+
       def accesstype(type)
         s(:accesstype, type.to_s)
       end
@@ -715,12 +811,16 @@ module SystemRDL
         s(:prop_assignment, *[id(prop_name), value].compact)
       end
 
-      def post_prop_assignment(inst_names, prop_name, value)
+      def instance_ref(*inst_names)
         inst_elements =
           inst_names.map { |name| s(:instance_ref_element, id(name)) }
+        s(:instance_ref, *inst_elements)
+      end
+
+      def post_prop_assignment(inst_names, prop_name, value)
         prop_ref = s(
           :prop_ref,
-          s(:instance_ref, *inst_elements),
+          instance_ref(*inst_names),
           id(prop_name)
         )
         s(:post_prop_assignment, prop_ref, value)

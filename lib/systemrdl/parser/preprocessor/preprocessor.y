@@ -41,7 +41,7 @@ rule
       }
   rdl_token
     : rdl_literal | rdl_symbol
-    | "[" | "]" | "(" | ")" | "{" | "}" | ","
+    | "[" | "]" | "(" | ")" | "#(" | "{" | "}" | ","
     | ILLEGAL_CHARACTER
   rdl_literal
     : STRING | NUMBER | VERILOG_NUMBER | SIMPLE_ID
@@ -112,6 +112,9 @@ rule
     : rdl_literal | rdl_symbol | pp_keyword | PP_MACRO_ID | ILLEGAL_CHARACTER
   text_macro_bracketed_arg_group
     : "(" (text_macro_simple_arg_element | text_macro_bracketed_arg_group | ",")* ")" {
+        result = val.flatten
+      }
+    | "#(" (text_macro_simple_arg_element | text_macro_bracketed_arg_group | ",")* ")" {
         result = val.flatten
       }
     | "[" (text_macro_simple_arg_element | text_macro_bracketed_arg_group | ",")* "]" {
