@@ -7,14 +7,16 @@ module SystemRDL
         @definition = definition
         @parent = parent
         @name = name
-        @token_range = token_range
+        @params = []
         @properties = []
         @instances = []
+        @token_range = token_range
       end
 
       attr_reader :definition
       attr_reader :parent
       attr_reader :name
+      attr_reader :params
       attr_reader :array_info
       attr_reader :token_range
       attr_reader :properties
@@ -85,6 +87,10 @@ module SystemRDL
 
       def array?
         false
+      end
+
+      def elements
+        [*@params, *@instances]
       end
 
       def property(name)

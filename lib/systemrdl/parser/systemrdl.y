@@ -307,8 +307,8 @@ rule
     | KW_BOOLEAN {
         result = node(:data_type, val, val)
       }
-    | SIMPLE_ID {
-        result = node(:data_type, val, val)
+    | id {
+        result = val[0]
       }
   data_type
     : basic_data_type

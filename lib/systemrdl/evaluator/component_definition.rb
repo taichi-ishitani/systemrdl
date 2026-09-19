@@ -5,16 +5,18 @@ module SystemRDL
     class ComponentDefinition
       include Common
 
-      def initialize(id, elements, insts, token_range)
+      def initialize(id, param_def, elements, insts, token_range)
         super(token_range)
         @id = id || insts.insts[0].inst_id
         @definitions = {}
+        @param_def = param_def
         @elements = elements
         @insts = insts
         @default_properties = {}
       end
 
       attr_reader :id
+      attr_reader :param_def
       attr_reader :definitions
 
       def connect(parent, component)
@@ -117,6 +119,7 @@ module SystemRDL
 
         instance = instance_class.new(self, parent_instance, inst_args.name, token_range)
 
+        apply_param_values(instance, @param_def, inst_args.param_inst, **optargs)
         init_properties(instance)
         eval_body(instance, **optargs)
         apply_array(instance, array_info)
@@ -141,6 +144,10 @@ module SystemRDL
             true
           end
         end
+      end
+
+      def apply_param_values(instance, param_def, param_inst, **optargs)
+        param_def&.evaluate(instance, param_inst, **optargs)
       end
 
       def init_properties(instance)
