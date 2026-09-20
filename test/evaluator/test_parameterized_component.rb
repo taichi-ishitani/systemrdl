@@ -38,6 +38,32 @@ module SystemRDL
         assert_property_value(fields[3], :onwrite, :wot)
         assert_property_value(fields[3], :fieldwidth, 3)
       end
+
+      def test_parameter_dependency
+        mems = evaluate(<<~'RDL').instances[0].instances
+          addrmap my_map {
+            mem fixed_mem #(
+              longint unsigned word_size   = 32,
+              longint unsigned memory_size = word_size * 4096
+            ) {
+              mementries = memory_size / word_size;
+              memwidth   = word_size;
+            };
+            external fixed_mem a;
+            external fixed_mem #(.word_size(64)) b;
+            external fixed_mem #(.memory_size(1024)) c;
+          };
+        RDL
+
+        assert_property_value(mems[0], :mementries, 4096)
+        assert_property_value(mems[0], :memwidth, 32)
+
+        assert_property_value(mems[1], :mementries, 4096)
+        assert_property_value(mems[1], :memwidth, 64)
+
+        assert_property_value(mems[2], :mementries, 32)
+        assert_property_value(mems[2], :memwidth, 32)
+      end
     end
   end
 end

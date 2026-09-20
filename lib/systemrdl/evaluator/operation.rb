@@ -68,9 +68,9 @@ module SystemRDL
         @operand.connect(self, component)
       end
 
-      def expression_width
+      def expression_width(instance)
         if [:~, :+, :-].include?(@operator)
-          @operand.expression_width
+          @operand.expression_width(instance)
         else
           1
         end
@@ -110,7 +110,7 @@ module SystemRDL
       end
 
       def general_op(instance, width)
-        width ||= @operand.expression_width
+        width ||= @operand.expression_width(instance)
         value, _ = to_int(instance, @operand, width)
 
         op = { '+': :+@, '-': :-@, '~': :~ }[@operator]
@@ -133,21 +133,21 @@ module SystemRDL
         @r_operand.connect(self, component)
       end
 
-      def expression_width
+      def expression_width(instance)
         if [:'&&', :'||', :==, :!=, :<, :>, :<=, :>=].include?(@operator)
           1
         else
-          eval_expression_width
+          eval_expression_width(instance)
         end
       end
 
       private
 
-      def eval_expression_width
-        lhs_width = @l_operand.expression_width
+      def eval_expression_width(instance)
+        lhs_width = @l_operand.expression_width(instance)
         return lhs_width if [:<<, :>>, :**].include?(@operator)
 
-        rhs_width = @r_operand.expression_width
+        rhs_width = @r_operand.expression_width(instance)
 
         if lhs_width && rhs_width
           [lhs_width, rhs_width].max
@@ -183,7 +183,7 @@ module SystemRDL
       end
 
       def eval_eq_operands(instance)
-        width = eval_expression_width
+        width = eval_expression_width(instance)
         l_operand = eval_operand(instance, @l_operand, width, check: false)
         r_operand = eval_operand(instance, @r_operand, width, check: false)
 
@@ -205,7 +205,7 @@ module SystemRDL
       end
 
       def shift_power_op(instance, width)
-        width ||= eval_expression_width
+        width ||= eval_expression_width(instance)
         lhs, _ = to_int(instance, @l_operand, width)
         rhs, _ = to_int(instance, @r_operand)
 
@@ -231,7 +231,7 @@ module SystemRDL
       end
 
       def integral_operands(instance, width)
-        width ||= eval_expression_width
+        width ||= eval_expression_width(instance)
         lhs, _ = to_int(instance, @l_operand, width)
         rhs, _ = to_int(instance, @r_operand, width)
         [lhs, rhs, width]

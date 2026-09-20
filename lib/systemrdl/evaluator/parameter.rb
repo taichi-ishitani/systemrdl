@@ -7,6 +7,10 @@ module SystemRDL
         value
       end
 
+      def expression_width(_instance)
+        value.width
+      end
+
       def array?
         false
       end
@@ -45,7 +49,13 @@ module SystemRDL
 
       def evaluate(instance, param_inst, **optargs)
         value = eval_param_value(instance, param_inst, **optargs)
-        value = value.coerce([@type.value])
+        value =
+          if @type.value == :longint
+            # `longint` type is treated as `bit` type internally
+            value.coerce([:bit])
+          else
+            value.coerce([@type.value])
+          end
         ParameterValue.new(@id.value, value)
       end
 

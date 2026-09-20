@@ -88,6 +88,11 @@ module SystemRDL
         elements.any?(&:array_select?)
       end
 
+      def expression_width(instance)
+        value = find(instance, allow_array_ref: false)[0]
+        value.expression_width(instance)
+      end
+
       private
 
       def process_instance_ref_element(instances, element)
