@@ -65,6 +65,33 @@ module SystemRDL
         assert_property_value(mems[2], :memwidth, 32)
       end
 
+      def test_parameter_namespace
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg my_reg #(longint unsigned WIDTH) {
+                field { sw = rw; hw = r; fieldwidth = WIDTH; } a;
+              };
+              my_reg #(.WIDTH(8)) a;
+            };
+          RDL
+          'unresolvable element: WIDTH'
+        )
+
+        field = evaluate(<<~'RDL').instances[0].instances[0].instances[0]
+          addrmap my_map {
+            reg my_reg #(longint unsigned A, longint unsigned B) {
+              field my_field #(longint unsigned A) {
+                sw = rw; hw = r; fieldwidth = A;
+              };
+              my_field #(.A(B)) a;
+            };
+            my_reg #(.A(8), .B(16)) a;
+          };
+        RDL
+        assert_property_value(field, :fieldwidth, 16)
+      end
+
       def test_missing_mandatory_parameter
         assert_raises_evaluation_error(
           <<~'RDL',
