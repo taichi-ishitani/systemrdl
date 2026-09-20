@@ -133,13 +133,20 @@ module SystemRDL
       end
 
       def unique_instance?(parent_instance, inst_name, array_info)
-        return true unless parent_instance
+        return false if duplicated_inst?(inst_name, array_info, parent_instance&.params)
+        return false if duplicated_inst?(inst_name, array_info, parent_instance&.instances)
 
-        parent_instance.instances.none? do |inst|
-          if inst.name != inst_name
+        true
+      end
+
+      def duplicated_inst?(inst_name, array_info, elements)
+        return false unless elements
+
+        elements.any? do |element|
+          if element.name != inst_name
             false
-          elsif inst.array? && array_info
-            inst.array_info.id != array_info.id
+          elsif element.array? && array_info
+            element.array_info.id != array_info.id
           else
             true
           end

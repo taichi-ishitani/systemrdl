@@ -13,7 +13,7 @@ module SystemRDL
         elsif match_integral_type?(target_types)
           cast_integral_value(target_types)
         else
-          iferror.call
+          iferror.call(target_types, type)
         end
       end
 
