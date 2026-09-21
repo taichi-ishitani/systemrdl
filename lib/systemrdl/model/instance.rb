@@ -9,6 +9,7 @@ module SystemRDL
         @parent = parent
         @instances = build_sub_instances(inst).freeze
         @properties = build_properties(inst).freeze
+        @signature = Signature.generate(inst)
         @token_range = inst.token_range
         freeze
       end
@@ -18,6 +19,7 @@ module SystemRDL
       attr_reader :parent
       attr_reader :instances
       attr_reader :properties
+      attr_reader :signature
       attr_reader :token_range
 
       class << self

@@ -8,6 +8,7 @@ module SystemRDL
       def initialize(id, param_def, elements, insts, token_range)
         super(token_range)
         @id = id || insts.insts[0].inst_id
+        @anonymous_def = id.nil?
         @definitions = {}
         @param_def = param_def
         @elements = elements
@@ -18,6 +19,10 @@ module SystemRDL
       attr_reader :id
       attr_reader :param_def
       attr_reader :definitions
+
+      def anonymous_def?
+        @anonymous_def
+      end
 
       def connect(parent, component)
         super

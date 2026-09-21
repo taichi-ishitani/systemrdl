@@ -2,6 +2,7 @@
 
 require 'strscan'
 require 'ast'
+require 'digest/md5'
 
 require_relative 'systemrdl/version'
 require_relative 'systemrdl/error'
@@ -54,6 +55,7 @@ require_relative 'systemrdl/evaluator/root'
 require_relative 'systemrdl/evaluator/processor'
 require_relative 'systemrdl/evaluator'
 require_relative 'systemrdl/model/value'
+require_relative 'systemrdl/model/signature'
 require_relative 'systemrdl/model/instance'
 require_relative 'systemrdl/model'
 
