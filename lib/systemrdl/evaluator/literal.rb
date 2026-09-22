@@ -17,7 +17,7 @@ module SystemRDL
         @evaluated ||= Value.new(value, type, width, token_range)
       end
 
-      def expression_width
+      def expression_width(_instance)
         width
       end
 

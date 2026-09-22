@@ -5,17 +5,24 @@ module SystemRDL
     class ComponentDefinition
       include Common
 
-      def initialize(id, elements, insts, token_range)
+      def initialize(id, param_def, elements, insts, token_range)
         super(token_range)
         @id = id || insts.insts[0].inst_id
+        @anonymous_def = id.nil?
         @definitions = {}
+        @param_def = param_def
         @elements = elements
         @insts = insts
         @default_properties = {}
       end
 
       attr_reader :id
+      attr_reader :param_def
       attr_reader :definitions
+
+      def anonymous_def?
+        @anonymous_def
+      end
 
       def connect(parent, component)
         super
@@ -117,6 +124,7 @@ module SystemRDL
 
         instance = instance_class.new(self, parent_instance, inst_args.name, token_range)
 
+        apply_param_values(instance, @param_def, inst_args.param_inst, **optargs)
         init_properties(instance)
         eval_body(instance, **optargs)
         apply_array(instance, array_info)
@@ -130,17 +138,28 @@ module SystemRDL
       end
 
       def unique_instance?(parent_instance, inst_name, array_info)
-        return true unless parent_instance
+        return false if duplicated_inst?(inst_name, array_info, parent_instance&.params)
+        return false if duplicated_inst?(inst_name, array_info, parent_instance&.instances)
 
-        parent_instance.instances.none? do |inst|
-          if inst.name != inst_name
+        true
+      end
+
+      def duplicated_inst?(inst_name, array_info, elements)
+        return false unless elements
+
+        elements.any? do |element|
+          if element.name != inst_name
             false
-          elsif inst.array? && array_info
-            inst.array_info.id != array_info.id
+          elsif element.array? && array_info
+            element.array_info.id != array_info.id
           else
             true
           end
         end
+      end
+
+      def apply_param_values(instance, param_def, param_inst, **optargs)
+        param_def&.evaluate(instance, param_inst, **optargs)
       end
 
       def init_properties(instance)

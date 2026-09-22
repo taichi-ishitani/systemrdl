@@ -62,26 +62,26 @@ rule
   # B.3 Component definition
   #
   component_def
-    : component_type id "{" component_body_elem* "}" component_inst_type component_insts ";" {
-        insts = component_insts_node(val[5], val[6])
-        result = node(:component_named_def, [val[0], val[1], *val[3], insts], val)
+    : component_type id param_def? "{" component_body_elem* "}" component_inst_type component_insts ";" {
+        insts = component_insts_node(val[6], val[7])
+        result = node(:component_named_def, [val[0], val[1], val[2], *val[4], insts].compact, val)
       }
     | component_type "{" component_body_elem* "}" component_inst_type component_insts ";" {
         insts = component_insts_node(val[4], val[5])
         result = node(:component_anon_def, [val[0], *val[2], insts], val)
       }
-    | component_type id "{" component_body_elem* "}" component_insts ";" {
-        result = node(:component_named_def, [val[0], val[1], *val[3], val[5]], val)
+    | component_type id param_def? "{" component_body_elem* "}" component_insts ";" {
+        result = node(:component_named_def, [val[0], val[1], val[2], *val[4], val[6]].compact, val)
       }
-    | component_type id "{" component_body_elem* "}" ";" {
-        result = node(:component_named_def, [val[0], val[1], *val[3]], val)
+    | component_type id param_def? "{" component_body_elem* "}" ";" {
+        result = node(:component_named_def, [val[0], val[1], val[2], *val[4]].compact, val)
       }
     | component_type "{" component_body_elem* "}" component_insts ";" {
         result = node(:component_anon_def, [val[0], *val[2], val[4]], val)
       }
-    | component_inst_type component_type id "{" component_body_elem* "}" component_insts ";" {
-        insts = component_insts_node(val[0], val[6])
-        result = node(:component_named_def, [val[1], val[2], *val[4], insts], val)
+    | component_inst_type component_type id param_def? "{" component_body_elem* "}" component_insts ";" {
+        insts = component_insts_node(val[0], val[7])
+        result = node(:component_named_def, [val[1], val[2], val[3], *val[5], insts].compact, val)
       }
     | component_inst_type component_type "{" component_body_elem* "}" component_insts ";" {
         insts = component_insts_node(val[0], val[5])
@@ -102,7 +102,10 @@ rule
         result = node(:explicit_component_inst, [val[1], insts], val)
     }
   component_insts
-    : component_inst ("," component_inst)* {
+    : param_inst component_inst ("," component_inst)* {
+        result = node(:component_insts, [val[0], *to_list(val[1..], include_separator: true)], val)
+      }
+    | component_inst ("," component_inst)* {
         result = node(:component_insts, to_list(val, include_separator: true), val)
       }
   component_inst
@@ -134,6 +137,26 @@ rule
       }
     | range {
         result = [nil, val[0]]
+      }
+
+  #
+  # B.6 Parameters
+  #
+  param_def
+    : "#(" param_def_elem ("," param_def_elem)* ")" {
+        result = node(:param_def, to_list(val[1..-2], include_separator: true), val)
+      }
+  param_def_elem
+    : data_type id ("=" constant_expression)? {
+        result = node(:param_def_elem, [val[1], val[0], val.dig(2, 1)].compact, val)
+      }
+  param_inst
+    : "#(" param_elem ("," param_elem)* ")" {
+        result = node(:param_inst, to_list(val[1..-2], include_separator: true), val)
+      }
+  param_elem
+    : "." id "(" constant_expression ")" {
+        result = node(:param_elem, [val[1], val[3]], val)
       }
 
   #
@@ -268,6 +291,37 @@ rule
         result = node(:data_type, val, val)
       }
     | KW_BIT {
+        result = node(:data_type, val, val)
+      }
+  basic_data_type
+    : simple_type
+    | KW_LONGINT KW_UNSIGNED {
+        result = node(:data_type, val, val)
+      }
+    | KW_BIT KW_UNSIGNED {
+        result = node(:data_type, val, val)
+      }
+    | KW_STRING {
+        result = node(:data_type, val, val)
+      }
+    | KW_BOOLEAN {
+        result = node(:data_type, val, val)
+      }
+    | id {
+        result = val[0]
+      }
+  data_type
+    : basic_data_type
+    | KW_ACCESSTYPE {
+        result = node(:data_type, val, val)
+      }
+    | KW_ADDRESSINGTYPE {
+        result = node(:data_type, val, val)
+      }
+    | KW_ONREADTYPE {
+        result = node(:data_type, val, val)
+      }
+    | KW_ONWRITETYPE {
         result = node(:data_type, val, val)
       }
 

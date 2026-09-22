@@ -5,8 +5,9 @@ module SystemRDL
     class ComponentInsts
       include Common
 
-      def initialize(insts, token_range)
+      def initialize(param_inst, insts, token_range)
         super(token_range)
+        @param_inst = param_inst
         @insts = insts
       end
 
@@ -23,8 +24,9 @@ module SystemRDL
         check_inst_type(component_definition)
         check_instantiable(instance, component_definition)
 
+        param_inst = eval_param_inst(instance, **optargs)
         @insts.each do |inst|
-          inst.evaluate(instance, component_definition, inst_type, **optargs)
+          inst.evaluate(instance, component_definition, inst_type, param_inst, **optargs)
         end
       end
 
@@ -79,6 +81,10 @@ module SystemRDL
         message = "#{component_definition.layer} instance not allowed in #{instance.layer}"
         raise_evaluation_error message, token_range
       end
+
+      def eval_param_inst(instance, **optargs)
+        @param_inst.evaluate(instance, **optargs)
+      end
     end
 
     class InternalComponentInsts < ComponentInsts
@@ -97,7 +103,7 @@ module SystemRDL
       end
     end
 
-    InstArgs = Data.define(:name, :type, :values)
+    InstArgs = Data.define(:name, :type, :param_inst, :values)
 
     class ComponentInst
       include Common
@@ -110,9 +116,9 @@ module SystemRDL
 
       attr_reader :inst_id
 
-      def evaluate(instance, component_definition, inst_type, **optargs)
+      def evaluate(instance, component_definition, inst_type, param_inst, **optargs)
         inst_values = eval_inst_values(instance, **optargs)
-        args = InstArgs.new(@inst_id.value, inst_type, inst_values)
+        args = InstArgs.new(@inst_id.value, inst_type, param_inst, inst_values)
         component_definition.create_instances(instance, args, @token_range, **optargs)
       end
 

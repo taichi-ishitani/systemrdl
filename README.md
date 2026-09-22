@@ -116,6 +116,7 @@ The following SystemRDL 2.0 language features are supported (parsed and evaluate
 * Arrays of instances
 * Address allocation operators (`@`, `+=`, `%=`)
 * `internal` / `external` instance types
+* Component parameters
 
 #### Properties
 
@@ -144,7 +145,6 @@ The following features are not supported. Some of their keywords are recognized 
 * `alias` registers
 * Counter field properties
 * Interrupt field properties
-* Component parameters
 * Embedded Perl preprocessing
 * The `` `line `` directive
 

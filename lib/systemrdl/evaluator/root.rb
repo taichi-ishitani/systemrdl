@@ -8,13 +8,13 @@ module SystemRDL
       end
 
       def initialize(elements, token_range)
-        super(Value.new(:root, nil, nil, nil), elements, nil, token_range)
+        super(Value.new(:root, nil, nil, nil), nil, elements, nil, token_range)
         connect(nil, nil)
       end
 
       def evaluate(instance, **optargs)
         inherit(instance) if instance&.root?
-        root = create_instance(nil, InstArgs.new(:root, nil, nil), nil, nil, **optargs)
+        root = create_instance(nil, InstArgs.new(:root, nil, nil, nil), nil, nil, **optargs)
         root.finalize
         root
       end

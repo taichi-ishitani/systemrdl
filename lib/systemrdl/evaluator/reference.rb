@@ -15,10 +15,10 @@ module SystemRDL
       attr_reader :array
 
       def find(base)
-        result = find_instance(base)
+        result = find_element(base)
         return result unless result.empty?
 
-        inst_name =
+        element_name =
           if array_select?
             array
               .elements
@@ -27,7 +27,7 @@ module SystemRDL
           else
             id.value.to_s
           end
-        raise_evaluation_error "unresolvable instance: #{inst_name}", token_range
+        raise_evaluation_error "unresolvable element: #{element_name}", token_range
       end
 
       def array_select?
@@ -36,23 +36,23 @@ module SystemRDL
 
       private
 
-      def find_instance(base)
-        base.instances.select do |inst|
-          inst.name == id.value && match_array_indices?(inst)
+      def find_element(base)
+        base.elements.select do |element|
+          element.name == id.value && match_array_indices?(element)
         end
       end
 
-      def match_array_indices?(instance)
-        # non array instance && array select
-        return false if !instance.array? && array_select?
+      def match_array_indices?(element)
+        # non array element && array select
+        return false if !element.array? && array_select?
 
-        # non array instance or whole array
+        # non array element or whole array
         return true unless array_select?
 
         # check size
-        return false if instance.array_indices.size != array.size
+        return false if element.array_indices.size != array.size
 
-        instance
+        element
           .array_indices
           .zip(array.elements)
           .all? { |index, select| index == select.value }
@@ -86,6 +86,11 @@ module SystemRDL
 
       def array_select?
         elements.any?(&:array_select?)
+      end
+
+      def expression_width(instance)
+        value = find(instance, allow_array_ref: false)[0]
+        value.expression_width(instance)
       end
 
       private

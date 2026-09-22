@@ -14,7 +14,7 @@ module SystemRDL
               } a;
             };
           RDL
-          'unresolvable instance: foo'
+          'unresolvable element: foo'
         )
 
         assert_raises_evaluation_error(
@@ -26,7 +26,7 @@ module SystemRDL
               } a;
             };
           RDL
-          'unresolvable instance: foo'
+          'unresolvable element: foo'
         )
 
         assert_raises_evaluation_error(
@@ -38,7 +38,7 @@ module SystemRDL
               } a;
             };
           RDL
-          'unresolvable instance: foo'
+          'unresolvable element: foo'
         )
 
         assert_raises_evaluation_error(
@@ -53,7 +53,7 @@ module SystemRDL
               a.a->hwclr = foo.b;
             };
           RDL
-          'unresolvable instance: foo'
+          'unresolvable element: foo'
         )
 
         assert_raises_evaluation_error(
@@ -68,7 +68,7 @@ module SystemRDL
               a.a->hwclr = foo.b->ored;
             };
           RDL
-          'unresolvable instance: foo'
+          'unresolvable element: foo'
         )
 
         assert_raises_evaluation_error(
@@ -83,7 +83,7 @@ module SystemRDL
               a.a->hwclr = b.foo;
             };
           RDL
-          'unresolvable instance: foo'
+          'unresolvable element: foo'
         )
 
         assert_raises_evaluation_error(
@@ -98,7 +98,7 @@ module SystemRDL
               a.a->hwclr = b.foo->ored;
             };
           RDL
-          'unresolvable instance: foo'
+          'unresolvable element: foo'
         )
 
         assert_raises_evaluation_error(
@@ -113,7 +113,7 @@ module SystemRDL
               a.a->hwclr = b[2].b;
             };
           RDL
-          'unresolvable instance: b[2]'
+          'unresolvable element: b[2]'
         )
 
         assert_raises_evaluation_error(
@@ -128,7 +128,7 @@ module SystemRDL
               a.a->hwclr = b[2].b->ored;
             };
           RDL
-          'unresolvable instance: b[2]'
+          'unresolvable element: b[2]'
         )
 
         assert_raises_evaluation_error(
@@ -143,7 +143,7 @@ module SystemRDL
               a.a->hwclr = b[0].b->ored;
             };
           RDL
-          'unresolvable instance: b[0]'
+          'unresolvable element: b[0]'
         )
       end
 
@@ -157,7 +157,7 @@ module SystemRDL
               } a;
             };
           RDL
-          'unresolvable instance: foo'
+          'unresolvable element: foo'
         )
 
         assert_raises_evaluation_error(
@@ -172,7 +172,7 @@ module SystemRDL
               foo.a->hwclr = b.b;
             };
           RDL
-          'unresolvable instance: foo'
+          'unresolvable element: foo'
         )
 
         assert_raises_evaluation_error(
@@ -187,7 +187,7 @@ module SystemRDL
               a.foo->hwclr = b.b;
             };
           RDL
-          'unresolvable instance: foo'
+          'unresolvable element: foo'
         )
 
         assert_raises_evaluation_error(
@@ -202,7 +202,7 @@ module SystemRDL
               a[2].a->hwclr = b.b;
             };
           RDL
-          'unresolvable instance: a[2]'
+          'unresolvable element: a[2]'
         )
 
         assert_raises_evaluation_error(
@@ -217,7 +217,7 @@ module SystemRDL
               a[0].a->hwclr = b.b;
             };
           RDL
-          'unresolvable instance: a[0]'
+          'unresolvable element: a[0]'
         )
       end
 

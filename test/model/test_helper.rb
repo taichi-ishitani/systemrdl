@@ -61,6 +61,14 @@ module SystemRDL
         property = instance.property(name)
         assert_nil(property)
       end
+
+      def assert_signature(lhs, rhs)
+        assert(lhs.signature == rhs.signature)
+      end
+
+      def refute_signature(lhs, rhs)
+        refute(lhs.signature == rhs.signature)
+      end
     end
   end
 end

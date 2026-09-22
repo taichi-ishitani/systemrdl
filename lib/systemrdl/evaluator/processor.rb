@@ -57,6 +57,11 @@ module SystemRDL
         BinaryOperation.new(operator, l_operand, r_operand, node.token_range)
       end
 
+      def on_data_type(node)
+        type = node.children[0].to_sym
+        Value.new(type, nil, nil, node.token_range)
+      end
+
       def on_array(node)
         elements = process_all(node.children)
         List.new(elements, node.token_range)
@@ -82,6 +87,26 @@ module SystemRDL
         instance_ref = process(node.children[0])
         prop = process(node.children[1])
         PropRef.new(instance_ref, prop, node.token_range)
+      end
+
+      def on_param_elem(node)
+        id, value = process_all(node.children)
+        ParameterElement.new(id, value, node.token_range)
+      end
+
+      def on_param_inst(node)
+        elements = process_all(node.children)
+        ParameterInst.new(elements, node.token_range)
+      end
+
+      def on_param_def_elem(node)
+        id, type, default_value = process_all(node.children)
+        ParameterDefElement.new(id, type, default_value, node.token_range)
+      end
+
+      def on_param_def(node)
+        elements = process_all(node.children)
+        ParameterDef.new(elements, node.token_range)
       end
 
       def on_default_prop_assignment(node)
@@ -126,18 +151,18 @@ module SystemRDL
       end
 
       def on_component_insts(node)
-        insts = process_all(node.children)
-        ComponentInsts.new(insts, node.token_range)
+        param_inst, insts = process_component_insts(node)
+        ComponentInsts.new(param_inst, insts, node.token_range)
       end
 
       def on_internal_component_insts(node)
-        insts = process_all(node.children)
-        InternalComponentInsts.new(insts, node.token_range)
+        param_inst, insts = process_component_insts(node)
+        InternalComponentInsts.new(param_inst, insts, node.token_range)
       end
 
       def on_external_component_insts(node)
-        insts = process_all(node.children)
-        ExternalComponentInsts.new(insts, node.token_range)
+        param_inst, insts = process_component_insts(node)
+        ExternalComponentInsts.new(param_inst, insts, node.token_range)
       end
 
       def on_explicit_component_inst(node)
@@ -147,13 +172,13 @@ module SystemRDL
       end
 
       def on_component_named_def(node)
-        id, *elements = process_all(node.children[1..])
-        component_definition(node).new(id, elements, nil, node.token_range)
+        id, param_def, elements = process_component_named_def(node)
+        component_definition(node).new(id, param_def, elements, nil, node.token_range)
       end
 
       def on_component_anon_def(node)
-        *elements, insts = process_all(node.children[1..])
-        component_definition(node).new(nil, elements, insts, node.token_range)
+        param_def, elements, insts = process_component_anon_def(node)
+        component_definition(node).new(nil, param_def, elements, insts, node.token_range)
       end
 
       def on_root(node)
@@ -171,6 +196,29 @@ module SystemRDL
         when :reg then RegDefinition
         when :field then FieldDefinition
         end
+      end
+
+      def process_component_insts(node)
+        children = node.children
+        if children[0].type == :param_inst
+          [process(children[0]), process_all(children[1..])]
+        else
+          [ParameterInst.new(nil, nil), process_all(children)]
+        end
+      end
+
+      def process_component_named_def(node)
+        children = node.children
+        if children[2]&.type == :param_def
+          [process(children[1]), process(children[2]), process_all(children[3..])]
+        else
+          [process(children[1]), ParameterDef.new(nil, nil), process_all(children[2..])]
+        end
+      end
+
+      def process_component_anon_def(node)
+        children = node.children
+        [ParameterDef.new(nil, nil), process_all(children[1..-2]), process(children[-1])]
       end
     end
   end
