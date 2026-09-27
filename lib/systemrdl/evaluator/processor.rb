@@ -89,6 +89,18 @@ module SystemRDL
         PropRef.new(instance_ref, prop, node.token_range)
       end
 
+      def on_enum_entry(node)
+        id = process(node.children[0])
+        default_value = process(node.children[1])
+        EnumMemberDef.new(id, default_value, node.token_range)
+      end
+
+      def on_enum_def(node)
+        id = process(node.children[0])
+        entries = process_all(node.children[1..])
+        EnumDef.new(id, entries, node.token_range)
+      end
+
       def on_param_elem(node)
         id, value = process_all(node.children)
         ParameterElement.new(id, value, node.token_range)
