@@ -3,8 +3,23 @@
 module SystemRDL
   module Evaluator
     Value = Data.define(:value, :type, :width, :token_range) do
+      def update(**udpate_fields)
+        update_values = to_h do |field, value|
+          if udpate_fields.key?(field)
+            [field, udpate_fields[field]]
+          else
+            [field, value]
+          end
+        end
+        Value.new(**update_values)
+      end
+
       def to_s
         value.to_s
+      end
+
+      def to_sym
+        value.to_sym
       end
 
       def coerce(target_types, &iferror)

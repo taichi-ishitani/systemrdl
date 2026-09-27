@@ -50,12 +50,16 @@ module SystemRDL
         evaluator.evaluate(nil)
       end
 
+      def assert_evaluated_value(value, type, expected)
+        actual = [:type, *expected.keys].to_h do |key|
+          [key, value.__send__(key)]
+        end
+        assert_equal({ type:, **expected}, actual)
+      end
+
       def assert_evaluates_value(type, expected, code, **optargs)
         output = evaluate_value(code, **optargs)
-        actual = [:type, *expected.keys].to_h do |key|
-          [key, output.__send__(key)]
-        end
-        assert_equal({ type:, **expected }, actual)
+        assert_evaluated_value(output, type, expected)
       end
 
       def assert_raises_evaluation_error(code, message, **optargs)

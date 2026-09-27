@@ -10,6 +10,7 @@ module SystemRDL
         @params = []
         @properties = []
         @instances = []
+        @types = []
         @token_range = token_range
       end
 
@@ -21,6 +22,7 @@ module SystemRDL
       attr_reader :token_range
       attr_reader :properties
       attr_reader :instances
+      attr_reader :types
 
       def to_value(token_range)
         Value.new(self, :"#{layer}_reference", nil, token_range)

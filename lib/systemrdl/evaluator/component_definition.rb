@@ -10,6 +10,7 @@ module SystemRDL
         @id = id || insts.insts[0].inst_id
         @anonymous_def = id.nil?
         @definitions = {}
+        @types = {}
         @param_def = param_def
         @elements = elements
         @insts = insts
@@ -55,6 +56,12 @@ module SystemRDL
       end
 
       def finalize(_instance)
+      end
+
+      def add_type(type)
+        # TODO
+        # Check duplication
+        @types[type.name] = type
       end
 
       def assign_default_property(name, value, token_range)
@@ -132,6 +139,7 @@ module SystemRDL
         apply_inst_type(instance, inst_args.type)
         post_build(instance)
         instance.validate
+        instance.types.concat(@types.values)
 
         parent_instance.instances << instance if parent_instance
         instance
@@ -173,6 +181,7 @@ module SystemRDL
       end
 
       def eval_body(instance, **optargs)
+        @types.clear
         @default_properties.clear
         @elements.each { |element| element.evaluate(instance, **optargs) }
       end
