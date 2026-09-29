@@ -60,17 +60,51 @@ module SystemRDL
         )
       end
 
+      def test_defining_enum_with_property_assignments
+        enum = evaluate(<<~'RDL').types[0]
+          enum myBitFieldEncoding {
+            first_entry {};
+            second_entry {
+              name = "second entry";
+            };
+            third_entry = 8'hef {
+              name = "third entry, just like others";
+              desc = "this value has a special documentation";
+            };
+          };
+        RDL
+
+        assert_enum(
+          enum, :myBitFieldEncoding,
+          {
+            name: :first_entry, value: 0x00, width: 8,
+            properties: { name: 'first_entry', desc: '' }
+          },
+          {
+            name: :second_entry, value: 0x01, width: 8,
+            properties: { name: 'second entry', desc: '' }
+          },
+          {
+            name: :third_entry, value: 0xef, width: 8,
+            properties: { name: 'third entry, just like others', desc: 'this value has a special documentation' }
+          }
+        )
+      end
+
       def assert_enum(enum, name, *members)
         assert_equal(name, enum.name)
         members.each_with_index do |values, i|
           enum_member = enum.members[i]
-          assert_enum_member(enum_member, values[:name], values[:value], values[:width])
+          assert_enum_member(enum_member, values[:name], values[:value], values[:width], values[:properties])
         end
       end
 
-      def assert_enum_member(enum_member, name, value, width)
+      def assert_enum_member(enum_member, name, value, width, properties)
         assert_equal(name, enum_member.name)
         assert_evaluated_value(enum_member.value, :bit, { value:, width: })
+        properties&.each do |prop_name, prop_value|
+          assert_property_value(enum_member, prop_name, prop_value)
+        end
       end
     end
   end

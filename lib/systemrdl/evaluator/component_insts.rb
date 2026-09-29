@@ -53,7 +53,7 @@ module SystemRDL
       end
 
       def check_recursive_instance(instance, component_definition)
-        components = instance.definition.upper_layers(include_self: true)
+        components = instance.component_def.upper_layers(include_self: true)
         return if components.none? { |component| component.equal?(component_definition) }
 
         message = 'recursive instance not allowed'

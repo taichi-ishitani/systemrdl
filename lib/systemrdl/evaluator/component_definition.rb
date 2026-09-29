@@ -171,13 +171,9 @@ module SystemRDL
       end
 
       def init_properties(instance)
-        prop_defs = BuiltinProperties.properties
-        prop_defs.each do |prop_def|
-          prop = prop_def.create(instance)
-          next unless prop
+        return if instance.root?
 
-          instance.properties << prop
-        end
+        BuiltinProperties.init_properties(instance.layer, instance)
       end
 
       def eval_body(instance, **optargs)

@@ -3,30 +3,40 @@
 module SystemRDL
   module Evaluator
     class Enum
-      def initialize(name, token_range)
+      def initialize(name, component_def, token_range)
         @name = name
         @members = []
+        @component_def = component_def
         @token_range = token_range
       end
 
       attr_reader :name
       attr_reader :members
+      attr_reader :component_def
       attr_reader :token_range
     end
 
     class EnumMember
-      def initialize(name, value, token_range)
+      include PropertyAccessor
+
+      def initialize(name, value, enum, token_range)
         @name = name
         @value = value
+        @enum = enum
         @token_range = token_range
       end
 
       attr_reader :name
       attr_reader :value
+      attr_reader :enum
       attr_reader :token_range
 
       def apply_width(width)
         @value = @value.update(width:)
+      end
+
+      def component_def
+        enum.component_def
       end
     end
 
@@ -45,7 +55,7 @@ module SystemRDL
       end
 
       def evaluate(instance, **optargs)
-        enum = Enum.new(@name.to_sym, token_range)
+        enum = Enum.new(@name.to_sym, @component, token_range)
         @entries.each do |entry|
           entry.evaluate(instance, enum, **optargs)
         end
@@ -65,16 +75,17 @@ module SystemRDL
     class EnumMemberDef
       include Common
 
-      def initialize(name, value, token_range)
+      def initialize(name, default_value, prop_assignments, token_range)
         super(token_range)
         @name = name
-        @value = value
+        @default_value = default_value
+        @prop_assignments = prop_assignments
       end
 
       def evaluate(instance, enum, **optargs)
         value =
-          if @value
-            @value.evaluate(instance, **optargs)
+          if @default_value
+            @default_value.evaluate(instance, **optargs)
           elsif (last_value = enum.members.last&.value)
             Value.new(last_value.value + 1, :bit, nil, token_range)
           else
@@ -84,7 +95,19 @@ module SystemRDL
         # TODO
         # check value type/duplication
 
-        enum.members << EnumMember.new(@name.to_sym, value, token_range)
+        member = EnumMember.new(@name.to_sym, value, enum, token_range)
+        eval_prop(member, **optargs)
+
+        enum.members << member
+      end
+
+      private
+
+      def eval_prop(member, **optargs)
+        BuiltinProperties.init_properties(:enum, member)
+        @prop_assignments&.each do |prop|
+          prop.evaluate(member, **optargs)
+        end
       end
     end
   end
