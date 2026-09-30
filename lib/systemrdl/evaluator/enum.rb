@@ -83,6 +83,9 @@ module SystemRDL
       end
 
       def evaluate(instance, enum, **optargs)
+        name = @name.to_sym
+        check_member_name(enum, name, @name.token_range)
+
         value =
           if @default_value
             @default_value.evaluate(instance, **optargs)
@@ -93,15 +96,22 @@ module SystemRDL
           end
 
         # TODO
-        # check value type/duplication
+        # check value type
 
-        member = EnumMember.new(@name.to_sym, value, enum, token_range)
+        member = EnumMember.new(name, value, enum, token_range)
         eval_prop(member, **optargs)
 
         enum.members << member
       end
 
       private
+
+      def check_member_name(enum, name, token_range)
+        return if enum.members.none? { |m| m.name == name }
+
+        message = "duplicated enum member: #{name}"
+        raise_evaluation_error message, token_range
+      end
 
       def eval_prop(member, **optargs)
         BuiltinProperties.init_properties(:enum, member)
