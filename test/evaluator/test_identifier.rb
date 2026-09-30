@@ -351,7 +351,7 @@ module SystemRDL
         )
       end
 
-      def test_duplicated_component_error
+      def test_duplicated_type_identifier_error
         assert_raises_evaluation_error(
           <<~'RDL',
             addrmap my_map {
@@ -362,7 +362,7 @@ module SystemRDL
               } a;
             };
           RDL
-          'duplicated component: foo'
+          'duplicated type identifier: foo'
         )
 
         assert_raises_evaluation_error(
@@ -377,7 +377,55 @@ module SystemRDL
               foo a;
             };
           RDL
-          'duplicated component: foo'
+          'duplicated type identifier: foo'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            enum foo {
+              A;
+            };
+            enum foo {
+              B;
+            };
+          RDL
+          'duplicated type identifier: foo'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            enum foo {
+              A;
+            };
+            reg foo {
+              field { sw = rw; hw = r; } a;
+            };
+          RDL
+          'duplicated type identifier: foo'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            reg foo {
+              field { sw = rw; hw = r; } a;
+            };
+            enum foo {
+              A;
+            };
+          RDL
+          'duplicated type identifier: foo'
+        )
+      end
+
+      def test_duplicated_enum_member_error
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            enum foo {
+              A;
+              A = 1;
+            };
+          RDL
+          'duplicated enum member: A'
         )
       end
 

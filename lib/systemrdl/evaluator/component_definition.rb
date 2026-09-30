@@ -59,8 +59,7 @@ module SystemRDL
       end
 
       def add_type(type)
-        # TODO
-        # Check duplication
+        check_type_identifier(type.name, type.token_range)
         @types[type.name] = type
       end
 
@@ -116,6 +115,13 @@ module SystemRDL
         return if instance.definable?(self)
 
         message = "#{layer} definition not allowed in #{instance.layer}"
+        raise_evaluation_error message, token_range
+      end
+
+      def check_type_identifier(name, token_range)
+        return unless @definitions.key?(name) || @types.key?(name)
+
+        message = "duplicated type identifier: #{name}"
         raise_evaluation_error message, token_range
       end
 
@@ -198,10 +204,7 @@ module SystemRDL
 
       def add_definition(definition)
         id = definition.id.value
-        if @definitions.key?(id)
-          message = "duplicated component: #{id}"
-          raise_evaluation_error message, definition.token_range
-        end
+        check_type_identifier(id, definition.token_range)
 
         @definitions[id] = definition
       end
