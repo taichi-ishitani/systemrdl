@@ -58,6 +58,19 @@ module SystemRDL
           { name: :e, value: 0x12, width: 8 },
           { name: :f, value: 0x13, width: 8 },
         )
+
+        enum = evaluate(<<~RDL).types[0]
+          enum MyBoolean {
+            T = true;
+            F = false;
+          };
+        RDL
+
+        assert_enum(
+          enum, :MyBoolean,
+          { name: :T, value: 1, width: 1 },
+          { name: :F, value: 0, width: 1 }
+        )
       end
 
       def test_defining_enum_with_property_assignments
@@ -89,6 +102,22 @@ module SystemRDL
             properties: { name: 'third entry, just like others', desc: 'this value has a special documentation' }
           }
         )
+      end
+
+      def test_non_integral_enum_member_value_is_rejected
+        [
+          [:string, '"foo"'], [:accesstype, 'rw'], [:onreadtype, 'rclr'],
+          [:onwritetype, 'woset'], [:addressingtype, 'compact']
+        ].each do |(type, value)|
+          assert_raises_evaluation_error(
+            <<~RDL,
+              enum foo {
+                A = #{value};
+              };
+            RDL
+            "non integral enum member value: A (#{type})"
+          )
+        end
       end
 
       def assert_enum(enum, name, *members)

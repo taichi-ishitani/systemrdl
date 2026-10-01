@@ -88,15 +88,12 @@ module SystemRDL
 
         value =
           if @default_value
-            @default_value.evaluate(instance, **optargs)
+            eval_member_value(name, instance, **optargs)
           elsif (last_value = enum.members.last&.value)
             Value.new(last_value.value + 1, :bit, nil, token_range)
           else
             Value.new(0, :bit, nil, token_range)
           end
-
-        # TODO
-        # check value type
 
         member = EnumMember.new(name, value, enum, token_range)
         eval_prop(member, **optargs)
@@ -111,6 +108,14 @@ module SystemRDL
 
         message = "duplicated enum member: #{name}"
         raise_evaluation_error message, token_range
+      end
+
+      def eval_member_value(name, instance, **optargs)
+        value = @default_value.evaluate(instance, **optargs)
+        value.coerce([:bit]) do |_, type|
+          message = "non integral enum member value: #{name} (#{type})"
+          raise_evaluation_error message, @default_value.token_range
+        end
       end
 
       def eval_prop(member, **optargs)
