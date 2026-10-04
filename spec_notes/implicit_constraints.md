@@ -2,17 +2,15 @@
 
 ## Overview
 
-The SystemRDL 2.0 specification defines numerous rules for combining field properties (Section 9.6.1 and elsewhere), but many semantically contradictory combinations are not explicitly addressed. This document collects such cases where the specification is silent, but treating the combination as an error is justified.
+The SystemRDL 2.0 specification states many of its rules explicitly, but leaves a number of semantically contradictory constructions unaddressed. This document collects such cases, where the specification is silent but treating the construction as an error is justified.
 
 Policy:
 
 - Violations of `shall` rules in the specification are obviously errors (out of scope for this document).
-- Combinations not addressed by the specification but logically contradictory based on property semantics are treated as errors.
+- Constructions not addressed by the specification but logically contradictory based on property semantics are treated as errors.
 - Combinations classified as "Undefined" by the specification are also treated as errors.
 - Combinations where a property's effect is simply nullified by other property settings (i.e., the property acts as a no-op) are not treated as errors, as long as the field itself still behaves correctly according to its other declared properties. Such cases are merely meaningless but cause no observable harm.
 - Combinations where a property's primary purpose is silently defeated (i.e., the field cannot function as declared) are treated as errors. These are silent failures even if no incorrect value is produced.
-
-Items are listed in the order they appear in the specification (9.4 -> 9.6 -> 9.7).
 
 ---
 
@@ -329,19 +327,7 @@ This is recorded here for completeness; no separate check is implemented.
 
 ---
 
-## 9. Address Placement Constraints
-
-Constraints on where instances are placed in the address space -- including stride, alignment, and the operands of the explicit `@` / `%=` / `+=` operators -- are address-wide concerns rather than field-property combinations, and are documented separately in [address_allocation_policy.md](address_allocation_policy.md).
-
----
-
-## 10. Array Property Assignment
-
-Restrictions on dynamically assigning properties to array instances -- which properties may be assigned per element, when a whole-array assignment is allowed, and how the right-hand side is constrained -- are documented separately in [array_property_assignment_policy.md](array_property_assignment_policy.md).
-
----
-
-## 11. `internal` / `external` Keywords on Addrmap
+## 9. `internal` / `external` Keywords on Addrmap
 
 ### Background
 
@@ -378,11 +364,46 @@ So while the addrmap rejection rests on the concept *not applying* to that compo
 
 ---
 
-## 12. Edge Cases (Under Consideration)
+## 10. Property References as Operands of Arithmetic and Comparison Operators
+
+### Background
+
+Annex B admits a property reference wherever a constant expression is allowed:
+
+```
+constant_primary ::= primary_literal | constant_concatenation | ... | instance_or_prop_ref | ...
+instance_or_prop_ref ::= instance_ref -> prop_keyword | instance_ref -> id | instance_ref
+```
+
+Since `constant_primary` is reachable from `constant_expression`, an expression such as `r->regwidth / 8` parses. The specification, however, never states what such an expression evaluates to, and contains no example in which the value of a property is read and then operated on; every occurrence of `->` in the specification's examples is either the left-hand side of a dynamic assignment or the right-hand side of a property whose value *is* a reference (`incr`, `next`, `resetsignal`, `mask`, and so on).
+
+This implementation rejects a property reference used as an operand of an arithmetic or comparison operator.
+
+### Rationale
+
+Three independent considerations lead to the same conclusion.
+
+The presence of `instance_or_prop_ref` in `constant_primary` is a grammatical necessity rather than an endorsement of value reads. The right-hand side of a property assignment is `prop_assignment_rhs ::= constant_expression | precedencetype_literal`, so a reference-valued property such as `resetsignal = my_signal` or `incr = r.f->overflow` can only be written if references are reachable through `constant_expression`.
+
+The value of a property is not stable at the point an expression is evaluated. Section 5.1.3.3 states that dynamic assignments are layered from the innermost to the outermost scope, with outer scopes overriding inner ones, so a property's final value is not fixed until elaboration completes. The specification states only that a *reference to an element* on the right-hand side is resolved statically; it says nothing about when the referenced property's value is read. An expression that reads a property could therefore see either the value present at evaluation time or the final value after all dynamic assignments, and the specification provides no basis for choosing between them. Evaluating eagerly makes the result depend on textual position; evaluating lazily introduces the possibility of circular dependencies and leaves the operand's width undetermined, which conflicts with the self-determined width rule of 7.3.1.
+
+The type of a property reference is not statically determined for every property. Several properties accept either a value or a reference -- `incr`, `incrvalue`, `next`, and `reset` among them -- so the type of `r.f->incrvalue` depends on what was assigned to that property rather than on the property itself. Section 7.3.1 requires that the type of an expression depend only on its operands, which that construction violates. There is also no rule in the specification for converting a reference into an integer, so an arithmetic operator would have no defined behavior when the property holds a reference.
+
+Rejecting the construction is the conservative course: the specification does not define it, no example relies on it, and permitting it later would not contradict anything recorded here.
+
+### Error Condition
+
+An operand of an arithmetic, relational, or shift operator is a property reference.
+
+Note that equality operators (`==`, `!=`) are subject to the same rejection, even though 6.2.4 permits equality comparison on the reserved enumeration types returned by properties such as `sw` and `onread`. The instability of the operand value applies equally there.
+
+---
+
+## 11. Edge Cases (Under Consideration)
 
 The following cases are not yet definitively classified as errors but are noted for future evaluation:
 
-### 12.1 Consistency of `intr`-Related Properties
+### 11.1 Consistency of `intr`-Related Properties
 
 Semantic consistency between aggregation properties (`intr`, `anded`, `ored`, `xored`) and the field declaration.
 
