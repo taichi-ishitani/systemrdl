@@ -75,10 +75,10 @@ module SystemRDL
     class EnumMemberDef
       include Common
 
-      def initialize(name, default_value, prop_assignments, token_range)
+      def initialize(name, value, prop_assignments, token_range)
         super(token_range)
         @name = name
-        @default_value = default_value
+        @value = value
         @prop_assignments = prop_assignments
       end
 
@@ -86,14 +86,8 @@ module SystemRDL
         name = @name.to_sym
         check_member_name(enum, name, @name.token_range)
 
-        value =
-          if @default_value
-            eval_member_value(name, instance, **optargs)
-          elsif (last_value = enum.members.last&.value)
-            Value.new(last_value.value + 1, :bit, nil, token_range)
-          else
-            Value.new(0, :bit, nil, token_range)
-          end
+        value = eval_member_value(enum, name, instance, **optargs)
+        check_member_value(enum, name, value, (@value || @name).token_range)
 
         member = EnumMember.new(name, value, enum, token_range)
         eval_prop(member, **optargs)
@@ -110,12 +104,29 @@ module SystemRDL
         raise_evaluation_error message, token_range
       end
 
-      def eval_member_value(name, instance, **optargs)
-        value = @default_value.evaluate(instance, **optargs)
+      def eval_member_value(enum, name, instance, **optargs)
+        if @value
+          eval_explicit_member_value(name, instance, **optargs)
+        elsif (last_value = enum.members.last&.value)
+          Value.new(last_value.value + 1, :bit, nil, token_range)
+        else
+          Value.new(0, :bit, nil, token_range)
+        end
+      end
+
+      def eval_explicit_member_value(name, instance, **optargs)
+        value = @value.evaluate(instance, **optargs)
         value.coerce([:bit]) do |_, type|
           message = "non integral enum member value: #{name} (#{type})"
-          raise_evaluation_error message, @default_value.token_range
+          raise_evaluation_error message, @value.token_range
         end
+      end
+
+      def check_member_value(enum, name, value, token_range)
+        return if enum.members.none? { |m| m.value.value == value.value }
+
+        message = "duplicated enum member value: #{name} (#{value})"
+        raise_evaluation_error message, token_range
       end
 
       def eval_prop(member, **optargs)
