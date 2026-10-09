@@ -162,6 +162,49 @@ module SystemRDL
         )
       end
 
+      def test_duplicated_enum_member_value_is_rejected
+        assert_raises_evaluation_error(
+          <<~RDL,
+            enum foo {
+              A = 0;
+              B = 0;
+            };
+          RDL
+          'duplicated enum member value: B (0)'
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            enum foo {
+              A = 1'd0;
+              B = 0;
+            };
+          RDL
+          'duplicated enum member value: B (0)'
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            enum foo {
+              A;
+              B = 0;
+            };
+          RDL
+          'duplicated enum member value: B (0)'
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            enum foo {
+              A = 1;
+              B = 0;
+              C;
+            };
+          RDL
+          'duplicated enum member value: C (1)'
+        )
+      end
+
       def assert_enum(enum, name, *members)
         assert_equal(name, enum.name)
         members.each_with_index do |values, i|
