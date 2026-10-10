@@ -67,8 +67,21 @@ module SystemRDL
       private
 
       def apply_member_width(enum)
-        width = enum.members.filter_map { |m| m.value.width }.max || 64
-        enum.members.each { |m| m.apply_width(width) }
+        width = enum.members.filter_map { |member| member.value.width }.max || 64
+        enum.members.each_with_index do |member, i|
+          check_member_value_width(member, width, @entries[i].name.token_range)
+          member.apply_width(width)
+        end
+      end
+
+      def check_member_value_width(member, width, token_range)
+        return if member.value.width
+
+        value = member.value.value
+        return if (0...(2**width)).include?(value)
+
+        message = "enum member value out of range: #{member.name} (value #{value} width #{width})"
+        raise_evaluation_error message, token_range
       end
     end
 
@@ -81,6 +94,8 @@ module SystemRDL
         @value = value
         @prop_assignments = prop_assignments
       end
+
+      attr_reader :name
 
       def evaluate(instance, enum, **optargs)
         name = @name.to_sym
