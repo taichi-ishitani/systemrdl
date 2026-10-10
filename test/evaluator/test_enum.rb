@@ -59,6 +59,21 @@ module SystemRDL
           { name: :f, value: 0x13, width: 8 },
         )
 
+        enum = evaluate(<<~'RDL').types[0]
+          enum myPartiallyAssignedEnum {
+            a = 8'hFF;
+            b ;
+            c = 9'h101;
+          } ;
+        RDL
+
+        assert_enum(
+          enum, :myPartiallyAssignedEnum,
+          { name: :a, value: 0x0FF, width: 9 },
+          { name: :b, value: 0x100, width: 9 },
+          { name: :c, value: 0x101, width: 9 },
+        )
+
         enum = evaluate(<<~RDL).types[0]
           enum MyBoolean {
             T = true;
@@ -202,6 +217,28 @@ module SystemRDL
             };
           RDL
           'duplicated enum member value: C (1)'
+        )
+      end
+
+      def test_enum_member_value_exceeding_bit_width_is_rejected
+        assert_raises_evaluation_error(
+          <<~RDL,
+            enum foo {
+              A = 8'hFF;
+              B ;
+            };
+          RDL
+          'enum member value out of range: B (value 256 width 8)'
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            enum foo {
+              A = true;
+              B ;
+            };
+          RDL
+          'enum member value out of range: B (value 2 width 1)'
         )
       end
 
