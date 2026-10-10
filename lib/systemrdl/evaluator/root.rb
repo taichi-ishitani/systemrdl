@@ -26,7 +26,7 @@ module SystemRDL
       end
 
       def inherit(instance)
-        definitions.merge!(instance.definition.definitions)
+        definitions.merge!(instance.component_def.definitions)
       end
     end
 

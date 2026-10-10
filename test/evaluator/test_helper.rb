@@ -10,21 +10,21 @@ module SystemRDL
         SystemRDL::Evaluator.evaluate(ast)
       end
 
-      def assert_property(instance, name, types, value: nil)
-        property = instance.property(name)
+      def assert_property(element, name, types, value: nil)
+        property = element.property(name)
         refute_nil(property, "no such property found: #{name}")
 
         assert_equal(types, property.types)
         assert_equal(value, property.value.value) unless value.nil?
       end
 
-      def refute_property(instance, name)
-        property = instance.property(name)
+      def refute_property(element, name)
+        property = element.property(name)
         assert_nil(property)
       end
 
-      def assert_property_value(instance, name, value, **opts)
-        property = instance.property(name)
+      def assert_property_value(element, name, value, **opts)
+        property = element.property(name)
         if value.nil?
           assert_nil(property.value)
         else
@@ -35,8 +35,8 @@ module SystemRDL
         end
       end
 
-      def assert_property_reference_value(instance, name, full_name)
-        property = instance.property(name)
+      def assert_property_reference_value(element, name, full_name)
+        property = element.property(name)
         assert_equal(full_name, property.value.value.full_name)
       end
 
@@ -50,12 +50,16 @@ module SystemRDL
         evaluator.evaluate(nil)
       end
 
+      def assert_evaluated_value(value, type, expected)
+        actual = [:type, *expected.keys].to_h do |key|
+          [key, value.__send__(key)]
+        end
+        assert_equal({ type:, **expected}, actual)
+      end
+
       def assert_evaluates_value(type, expected, code, **optargs)
         output = evaluate_value(code, **optargs)
-        actual = [:type, *expected.keys].to_h do |key|
-          [key, output.__send__(key)]
-        end
-        assert_equal({ type:, **expected }, actual)
+        assert_evaluated_value(output, type, expected)
       end
 
       def assert_raises_evaluation_error(code, message, **optargs)
