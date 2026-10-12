@@ -18,6 +18,7 @@ module SystemRDL
       end
 
       attr_reader :id
+      attr_reader :types
       attr_reader :param_def
       attr_reader :definitions
 
@@ -32,10 +33,14 @@ module SystemRDL
         @insts&.connect(self, self)
       end
 
-      def upper_layers(include_self: false)
-        layers = (layer == :root && []) || component.upper_layers(include_self: true)
-        layers << self if include_self
-        layers
+      def upper_layers(include_root: true, include_self: false)
+        if layer == :root
+          (include_root && [self]) || []
+        else
+          layers = component.upper_layers(include_root:, include_self: true)
+          layers << self if include_self
+          layers
+        end
       end
 
       def evaluate(instance, **optargs)

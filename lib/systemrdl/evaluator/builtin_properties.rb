@@ -90,6 +90,13 @@ module SystemRDL
         prop.default_value = proc { '' }
       end
 
+      def_property :encode do |prop|
+        prop.targets = [:field]
+        prop.exist = true
+        prop.types = [:enum_reference]
+        prop.dynamic_assign = true
+      end
+
       def_property :errextbus do |prop|
         prop.targets = [:addrmap, :regfile, :reg]
         prop.exist = true

@@ -56,13 +56,13 @@ module SystemRDL
 
         code = 'encode = myBitFieldEncoding;'
         assert_parses_prop_assignment(
-          assignment(id('encode'), id(:myBitFieldEncoding)),
+          assignment(id('encode'), enum_ref(:myBitFieldEncoding)),
           code
         )
 
         code = 'default encode=color;'
         assert_parses_prop_assignment(
-          default_assignment(id('encode'), id(:color)),
+          default_assignment(id('encode'), enum_ref(:color)),
           code
         )
 
@@ -192,13 +192,13 @@ module SystemRDL
 
         code = 'a->encode = myBitFieldEncoding;'
         assert_parses_prop_assignment(
-          post_assignment(reference('a', 'encode'), id(:myBitFieldEncoding)),
+          post_assignment(reference('a', 'encode'), enum_ref(:myBitFieldEncoding)),
           code
         )
 
         code = 'a->encode=color;'
         assert_parses_prop_assignment(
-          post_assignment(reference('a', 'encode'), id(:color)),
+          post_assignment(reference('a', 'encode'), enum_ref(:color)),
           code
         )
 
@@ -233,6 +233,10 @@ module SystemRDL
 
       def post_assignment(property, value = nil)
         s(:post_prop_assignment, *[property, value].compact)
+      end
+
+      def enum_ref(name)
+        s(:enum_ref, id(name))
       end
 
       def id(name)

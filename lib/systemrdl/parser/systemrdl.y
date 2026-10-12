@@ -197,7 +197,7 @@ rule
     | prop_assignment_lhs ";" {
         result = node(:prop_assignment, [val[0]], val)
       }
-    | encode "=" id ";" {
+    | encode "=" enum_ref ";" {
         result = node(:prop_assignment, [val[0], val[2]], val)
       }
   default_prop_assignment
@@ -207,7 +207,7 @@ rule
     | KW_DEFAULT prop_assignment_lhs ";" {
         result = node(:default_prop_assignment, [val[1]], val)
       }
-    | KW_DEFAULT encode "=" id ";" {
+    | KW_DEFAULT encode "=" enum_ref ";" {
         result = node(:default_prop_assignment, [val[1], val[3]], val)
       }
   post_prop_assignment
@@ -217,7 +217,7 @@ rule
     | prop_ref "=" prop_assignment_rhs ";" {
         result = node(:post_prop_assignment, [val[0], val[2]], val)
       }
-    | encode_ref "=" id ";" {
+    | encode_ref "=" enum_ref ";" {
         result = node(:post_prop_assignment, [val[0], val[2]], val)
       }
   prop_mod
@@ -256,6 +256,10 @@ rule
   encode_ref
     : instance_ref "->" encode {
         result = node(:prop_ref, [val[0], val[2]], val)
+      }
+  enum_ref
+    : id {
+        result = node(:enum_ref, val, val)
       }
 
   #

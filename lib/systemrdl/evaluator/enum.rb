@@ -14,6 +14,18 @@ module SystemRDL
       attr_reader :members
       attr_reader :component_def
       attr_reader :token_range
+
+      def full_name
+        component_def
+          .upper_layers(include_root: false, include_self: true)
+          .map(&:id)
+          .then { |names| names << name }
+          .join('::')
+      end
+
+      def to_value(token_range)
+        Value.new(self, :enum_reference, nil, token_range)
+      end
     end
 
     class EnumMember
