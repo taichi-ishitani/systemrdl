@@ -120,6 +120,11 @@ module SystemRDL
         ParameterDef.new(elements, node.token_range)
       end
 
+      def on_enum_ref(node)
+        id = process(node.children[0])
+        EnumRef.new(id, node.token_range)
+      end
+
       def on_default_prop_assignment(node)
         prop_name, value = process_all(node.children)
         DefaultPropertyAssignment.new(prop_name, value, node.token_range)

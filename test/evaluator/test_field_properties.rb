@@ -59,8 +59,7 @@ module SystemRDL
         # TODO
 
         # Miscellaneous field properties
-        # TODO
-        # assert_property(field, :encode)
+        assert_property(fields[0], :encode, [:enum_reference])
         assert_property(fields[0], :precedence, [:precedencetype], value: :sw)
         assert_property(fields[0], :paritycheck, [:boolean], value: false)
       end
@@ -1070,6 +1069,52 @@ module SystemRDL
         end
       end
 
+      def test_assigning_enum_reference_value_to_supported_property_is_allowed
+        regs = evaluate(<<~RDL).instances[0].instances
+          enum e {
+              A;
+              B;
+          };
+          addrmap my_map {
+            reg {
+              field {
+                enum e {
+                  A;
+                  B;
+                };
+                sw = rw; hw = r;
+                encode = e;
+              } a;
+            } a;
+            reg {
+              enum e {
+                  A;
+                  B;
+              };
+              field {
+                sw = rw; hw = r;
+                encode = e;
+              } b;
+            } b;
+            reg {
+              field {
+                sw = rw; hw = r;
+                encode = e;
+              } c;
+            } c;
+          };
+        RDL
+
+        field = regs[0].instances[0]
+        assert_enum_reference_value(field, :encode, 'my_map::a::a::e')
+
+        field = regs[1].instances[0]
+        assert_enum_reference_value(field, :encode, 'my_map::b::e')
+
+        field = regs[2].instances[0]
+        assert_enum_reference_value(field, :encode, 'e')
+      end
+
       def test_dynamic_assignment_to_supported_property_is_allowed
         {
           name: 'foo', desc: 'bar', sw: :r, next: :a, reset: 0x1,
@@ -1078,7 +1123,7 @@ module SystemRDL
           swwel: true, swmod: true, swacc: true, singlepulse: true,
           we: true, wel: true, anded: true, ored: true, xored: true,
           hwclr: true, hwset: true, hwenable: :a, hwmask: :a,
-          precedence: :hw
+          precedence: :hw, encode: :e
         }.each do |prop_name, prop_value|
           value =
             if prop_value.is_a?(::String)
@@ -1093,6 +1138,10 @@ module SystemRDL
               [:rw, :r]
             end
           field = evaluate(<<~RDL).instances[0].instances[0].instances[1]
+            enum e {
+              A;
+              B;
+            };
             addrmap my_map {
               reg {
               field { sw = rw; hw = r; } a;
@@ -1104,6 +1153,8 @@ module SystemRDL
 
           if prop_name in :next | :resetsignal | :hwenable | :hwmask
             assert_property_reference_value(field, prop_name, 'my_map.a.a')
+          elsif prop_name in :encode
+            assert_enum_reference_value(field, prop_name, 'e')
           else
             assert_property_value(field, prop_name, prop_value)
           end

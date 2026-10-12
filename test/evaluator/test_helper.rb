@@ -40,6 +40,11 @@ module SystemRDL
         assert_equal(full_name, property.value.value.full_name)
       end
 
+      def assert_enum_reference_value(element, name, full_name)
+        property = element.property(name)
+        assert_equal(full_name, property.value.value.full_name)
+      end
+
       def assert_value(exp, act)
         assert_equal(exp, act.value)
       end
