@@ -50,6 +50,10 @@ module SystemRDL
       def component_def
         enum.component_def
       end
+
+      def scoped_name
+        [enum.name, name].join('::')
+      end
     end
 
     class EnumDef

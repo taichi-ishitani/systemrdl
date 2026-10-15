@@ -153,10 +153,8 @@ module SystemRDL
           return enum.to_value(token_range) if enum
         end
 
-        # TODO
-        # report error
-
-        nil
+        message = "undefined enum: #{@id}"
+        raise_evaluation_error message, token_range
       end
     end
   end

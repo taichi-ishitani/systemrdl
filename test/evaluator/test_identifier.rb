@@ -292,6 +292,116 @@ module SystemRDL
         )
       end
 
+      def test_undefined_enum_error
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  encode = my_enum;
+                } a;
+              } a;
+            };
+          RDL
+          'undefined enum: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                enum my_enum {
+                  A;
+                  B;
+                };
+                field {
+                  sw = rw; hw = r;
+                } a;
+              } a;
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  encode = my_enum;
+                } b;
+              } b;
+            };
+          RDL
+          'undefined enum: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                enum my_enum {
+                  A;
+                  B;
+                };
+                field {
+                  sw = rw; hw = r;
+                } a;
+              } a;
+              reg {
+                field {
+                  sw = rw; hw = r;
+                } b;
+                b->encode = my_enum;
+              } b;
+            };
+          RDL
+          'undefined enum: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field {
+                  sw = rw; hw = r;
+                } a;
+                a->encode = my_enum;
+              } a;
+            };
+          RDL
+          'undefined enum: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              field my_field {
+                sw = rw; hw = r;
+              };
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  encode = my_field;
+                } a;
+              } a;
+            };
+          RDL
+          'undefined enum: my_field'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              field my_field {
+                sw = rw; hw = r;
+              };
+              reg {
+                field {
+                  sw = rw; hw = r;
+                } a;
+                a->encode = my_field;
+              } a;
+            };
+          RDL
+          'undefined enum: my_field'
+        )
+      end
+
       def test_duplicated_instance_error
         assert_raises_evaluation_error(
           <<~'RDL',
