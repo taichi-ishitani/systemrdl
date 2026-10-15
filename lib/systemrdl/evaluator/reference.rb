@@ -136,5 +136,26 @@ module SystemRDL
         @instance_ref&.array_select? || false
       end
     end
+
+    class EnumRef
+      include Common
+
+      def initialize(id, token_range)
+        super(token_range)
+        @id = id
+      end
+
+      attr_reader :id
+
+      def evaluate(instance, **_optargs)
+        instance.component_def.upper_layers(include_self: true).reverse_each do |component|
+          enum = component.types[@id.value]
+          return enum.to_value(token_range) if enum
+        end
+
+        message = "undefined enum: #{@id}"
+        raise_evaluation_error message, token_range
+      end
+    end
   end
 end

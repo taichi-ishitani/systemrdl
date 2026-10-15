@@ -89,6 +89,17 @@ module SystemRDL
         PropRef.new(instance_ref, prop, node.token_range)
       end
 
+      def on_enum_entry(node)
+        id, default_value, prop_assignments = process_enum_entry(node)
+        EnumMemberDef.new(id, default_value, prop_assignments, node.token_range)
+      end
+
+      def on_enum_def(node)
+        id = process(node.children[0])
+        entries = process_all(node.children[1..])
+        EnumDef.new(id, entries, node.token_range)
+      end
+
       def on_param_elem(node)
         id, value = process_all(node.children)
         ParameterElement.new(id, value, node.token_range)
@@ -107,6 +118,11 @@ module SystemRDL
       def on_param_def(node)
         elements = process_all(node.children)
         ParameterDef.new(elements, node.token_range)
+      end
+
+      def on_enum_ref(node)
+        id = process(node.children[0])
+        EnumRef.new(id, node.token_range)
       end
 
       def on_default_prop_assignment(node)
@@ -187,6 +203,17 @@ module SystemRDL
       end
 
       private
+
+      def process_enum_entry(node)
+        children = node.children
+        if children.size == 1
+          [process(children[0])]
+        elsif children[1].type == :prop_assignment
+          [process(children[0]), nil, process_all(children[1..])]
+        else
+          [process(children[0]), process(children[1]), process_all(children[2..])]
+        end
+      end
 
       def component_definition(node)
         case node.children[0].to_sym

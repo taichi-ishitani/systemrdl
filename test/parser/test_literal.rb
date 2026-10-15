@@ -74,6 +74,17 @@ module SystemRDL::Parser
       assert_raises_parse_error("1_6'hbeaf", test: :constant_expression)
     end
 
+    def test_enumerator_literal
+      assert_parses_expression(
+        s(
+          :enum_literal,
+          s(:id, 'MyEnumeration'),
+          s(:id, 'MyValue')
+        ),
+        'MyEnumeration::MyValue'
+      )
+    end
+
     def test_accesstype
       assert_parses_expression(s(:accesstype, 'na'), 'na')
       assert_parses_expression(s(:accesstype, 'rw'), 'rw')

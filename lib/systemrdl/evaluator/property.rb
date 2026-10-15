@@ -3,8 +3,8 @@
 module SystemRDL
   module Evaluator
     class Property
-      def initialize(instance, definition, value)
-        @instance = instance
+      def initialize(element, definition, value)
+        @element = element
         @definition = definition
         @value = value
       end
@@ -24,7 +24,7 @@ module SystemRDL
       end
 
       def full_name
-        [@instance.full_name, name].join('.')
+        [@element.full_name, name].join('.')
       end
 
       def ref_target?
@@ -76,36 +76,34 @@ module SystemRDL
       attr_accessor :per_element_assign
       attr_accessor :default_value
 
-      def create(instance)
-        return unless target?(instance) && exist?(instance)
+      def create(element_type, element)
+        return unless target?(element_type) && exist?(element)
 
-        value = eval_value(instance)
-        Property.new(instance, self, value)
+        value = eval_value(element)
+        Property.new(element, self, value)
       end
 
       private
 
-      def target?(instance)
-        return false if instance.root?
-
-        targets.nil? || targets.include?(instance.layer)
+      def target?(element_type)
+        targets.nil? || targets.include?(element_type)
       end
 
-      def exist?(instance)
+      def exist?(element)
         if @exist.is_a?(Proc)
-          @exist.call(instance)
+          @exist.call(element)
         else
           @exist
         end
       end
 
-      def eval_value(instance)
-        value = instance.definition.find_default_property(name)
+      def eval_value(element)
+        value = element.component_def.find_default_property(name)
         return value if value
 
         value =
           if default_value.is_a?(Proc)
-            default_value.call(instance)
+            default_value.call(element)
           else
             default_value
           end

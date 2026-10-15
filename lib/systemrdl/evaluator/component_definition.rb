@@ -10,6 +10,7 @@ module SystemRDL
         @id = id || insts.insts[0].inst_id
         @anonymous_def = id.nil?
         @definitions = {}
+        @types = {}
         @param_def = param_def
         @elements = elements
         @insts = insts
@@ -17,6 +18,7 @@ module SystemRDL
       end
 
       attr_reader :id
+      attr_reader :types
       attr_reader :param_def
       attr_reader :definitions
 
@@ -31,10 +33,14 @@ module SystemRDL
         @insts&.connect(self, self)
       end
 
-      def upper_layers(include_self: false)
-        layers = (layer == :root && []) || component.upper_layers(include_self: true)
-        layers << self if include_self
-        layers
+      def upper_layers(include_root: true, include_self: false)
+        if layer == :root
+          (include_root && [self]) || []
+        else
+          layers = component.upper_layers(include_root:, include_self: true)
+          layers << self if include_self
+          layers
+        end
       end
 
       def evaluate(instance, **optargs)
@@ -55,6 +61,11 @@ module SystemRDL
       end
 
       def finalize(_instance)
+      end
+
+      def add_type(type)
+        check_type_identifier(type.name, type.token_range)
+        @types[type.name] = type
       end
 
       def assign_default_property(name, value, token_range)
@@ -112,6 +123,13 @@ module SystemRDL
         raise_evaluation_error message, token_range
       end
 
+      def check_type_identifier(name, token_range)
+        return unless @definitions.key?(name) || @types.key?(name)
+
+        message = "duplicated type identifier: #{name}"
+        raise_evaluation_error message, token_range
+      end
+
       def eval_array(_inst_values)
         yield(nil, nil)
       end
@@ -132,6 +150,7 @@ module SystemRDL
         apply_inst_type(instance, inst_args.type)
         post_build(instance)
         instance.validate
+        instance.types.concat(@types.values)
 
         parent_instance.instances << instance if parent_instance
         instance
@@ -163,16 +182,13 @@ module SystemRDL
       end
 
       def init_properties(instance)
-        prop_defs = BuiltinProperties.properties
-        prop_defs.each do |prop_def|
-          prop = prop_def.create(instance)
-          next unless prop
+        return if instance.root?
 
-          instance.properties << prop
-        end
+        BuiltinProperties.init_properties(instance.layer, instance)
       end
 
       def eval_body(instance, **optargs)
+        @types.clear
         @default_properties.clear
         @elements.each { |element| element.evaluate(instance, **optargs) }
       end
@@ -193,10 +209,7 @@ module SystemRDL
 
       def add_definition(definition)
         id = definition.id.value
-        if @definitions.key?(id)
-          message = "duplicated component: #{id}"
-          raise_evaluation_error message, definition.token_range
-        end
+        check_type_identifier(id, definition.token_range)
 
         @definitions[id] = definition
       end

@@ -57,6 +57,7 @@ rule
       }
   description
     : component_def
+    | enum_def
 
   #
   # B.3 Component definition
@@ -89,6 +90,7 @@ rule
       }
   component_body_elem
     : component_def
+    | enum_def
     | property_assignment
     | explicit_component_inst
   component_type
@@ -160,40 +162,62 @@ rule
       }
 
   #
+  # B.7 Enums
+  #
+  enum_def
+    : KW_ENUM id "{" enum_entry+ "}" ";" {
+        result = node(:enum_def, [val[1], *val[3]], val)
+      }
+  enum_entry
+    : id ("=" constant_expression)? ("{" explicit_prop_assignment* "}")? ";" {
+        result = node(:enum_entry, [val[0], val.dig(1, 1), val.dig(2, 1)].compact.flatten, val)
+      }
+
+  #
   # B.8 Property assignment
   #
   property_assignment
+    : explicit_prop_modifier
+    | default_prop_modifier
+    | explicit_prop_assignment
+    | default_prop_assignment
+    | post_prop_assignment
+  explicit_prop_modifier
+    : prop_mod id ";" {
+        result = node(:prop_modifier, val[0..1], val)
+      }
+  default_prop_modifier
     : KW_DEFAULT prop_mod id ";" {
         result = node(:default_prop_modifier, val[1..2], val)
       }
-    | prop_mod id ";" {
-        result = node(:prop_modifier, val[0..1], val)
-      }
-    | KW_DEFAULT prop_assignment_lhs ";" {
-        result = node(:default_prop_assignment, [val[1]], val)
+  explicit_prop_assignment
+    : prop_assignment_lhs "=" prop_assignment_rhs ";" {
+        result = node(:prop_assignment, [val[0], val[2]], val)
       }
     | prop_assignment_lhs ";" {
         result = node(:prop_assignment, [val[0]], val)
       }
-    | KW_DEFAULT prop_assignment_lhs "=" prop_assignment_rhs ";" {
-        result = node(:default_prop_assignment, [val[1], val[3]], val)
-      }
-    | prop_assignment_lhs "=" prop_assignment_rhs ";" {
+    | encode "=" enum_ref ";" {
         result = node(:prop_assignment, [val[0], val[2]], val)
       }
-    | KW_DEFAULT encode "=" id ";" {
+  default_prop_assignment
+    : KW_DEFAULT prop_assignment_lhs "=" prop_assignment_rhs ";" {
         result = node(:default_prop_assignment, [val[1], val[3]], val)
       }
-    | encode "=" id ";" {
-        result = node(:prop_assignment, [val[0], val[2]], val)
+    | KW_DEFAULT prop_assignment_lhs ";" {
+        result = node(:default_prop_assignment, [val[1]], val)
       }
-    | prop_ref ";" {
+    | KW_DEFAULT encode "=" enum_ref ";" {
+        result = node(:default_prop_assignment, [val[1], val[3]], val)
+      }
+  post_prop_assignment
+    : prop_ref ";" {
         result = node(:post_prop_assignment, [val[0]], val)
       }
     | prop_ref "=" prop_assignment_rhs ";" {
         result = node(:post_prop_assignment, [val[0], val[2]], val)
       }
-    | encode_ref "=" id ";" {
+    | encode_ref "=" enum_ref ";" {
         result = node(:post_prop_assignment, [val[0], val[2]], val)
       }
   prop_mod
@@ -232,6 +256,10 @@ rule
   encode_ref
     : instance_ref "->" encode {
         result = node(:prop_ref, [val[0], val[2]], val)
+      }
+  enum_ref
+    : id {
+        result = node(:enum_ref, val, val)
       }
 
   #
@@ -461,6 +489,9 @@ rule
       }
     | STRING {
         result = node(:string, val, val)
+      }
+    | id "::" id {
+        result = node(:enum_literal, [val[0], val[2]], val)
       }
     | NUMBER {
         result = node(:number, val, val)

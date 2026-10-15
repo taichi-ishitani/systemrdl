@@ -6,6 +6,15 @@ module SystemRDL
       class << self
         attr_reader :properties
 
+        def init_properties(element_type, element)
+          properties.each do |prop_def|
+            prop = prop_def.create(element_type, element)
+            next unless prop
+
+            element.properties << prop
+          end
+        end
+
         def find(name)
           properties.find { |prop| prop.name == name }
         end
@@ -79,6 +88,13 @@ module SystemRDL
         prop.ref_target = false
         prop.per_element_assign = true
         prop.default_value = proc { '' }
+      end
+
+      def_property :encode do |prop|
+        prop.targets = [:field]
+        prop.exist = true
+        prop.types = [:enum_reference]
+        prop.dynamic_assign = true
       end
 
       def_property :errextbus do |prop|
@@ -203,7 +219,7 @@ module SystemRDL
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = true
-        prop.default_value = proc { |inst| inst.name.to_s }
+        prop.default_value = proc { |element| element.name.to_s }
       end
 
       def_property :next do |prop|
