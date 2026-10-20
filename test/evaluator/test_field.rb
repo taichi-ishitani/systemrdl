@@ -276,7 +276,7 @@ module SystemRDL
               } my_reg;
             };
           RDL
-          'reset value out of range: value 0x4 range 0x0..0x3'
+          'reset value exceeding fieldwidth: value 0x4 fieldwidth 2'
         )
 
         assert_raises_evaluation_error(
@@ -287,7 +287,7 @@ module SystemRDL
               } my_reg;
             };
           RDL
-          'reset value out of range: value 0x4 range 0x0..0x3'
+          'reset value exceeding fieldwidth: value 0x4 fieldwidth 2'
         )
 
         assert_raises_evaluation_error(
@@ -299,7 +299,7 @@ module SystemRDL
               } my_reg;
             };
           RDL
-          'reset value out of range: value 0x4 range 0x0..0x3'
+          'reset value exceeding fieldwidth: value 0x4 fieldwidth 2'
         )
       end
 
@@ -1147,6 +1147,118 @@ module SystemRDL
             "hw write enable required: sw = #{sw} hw = #{hw}"
           )
         end
+      end
+
+      def test_encode_with_enum_value_exceeding_field_width_is_rejected
+        assert_raises_evaluation_error(
+          <<~RDL,
+            enum my_enum {
+              A = 0;
+              B = 4;
+            };
+            addrmap my_map {
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  fieldwidth = 2;
+                  encode = my_enum;
+                } a;
+              } a;
+            };
+          RDL
+          'enum member value exceeding fieldwidth: my_enum::B (value 4 fieldwidth 2)'
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            enum my_enum {
+              A = 0;
+              B = 4;
+            };
+            addrmap my_map {
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  encode = my_enum;
+                } a[2];
+              } a;
+            };
+          RDL
+          'enum member value exceeding fieldwidth: my_enum::B (value 4 fieldwidth 2)'
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            enum my_enum {
+              A = 0;
+              B = 4;
+            };
+            addrmap my_map {
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  encode = my_enum;
+                } a[2:1];
+              } a;
+            };
+          RDL
+          'enum member value exceeding fieldwidth: my_enum::B (value 4 fieldwidth 2)'
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            enum my_enum {
+              A = 0;
+              B = 4;
+            };
+            addrmap my_map {
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  fieldwidth = 2;
+                } a;
+                a->encode = my_enum;
+              } a;
+            };
+          RDL
+          'enum member value exceeding fieldwidth: my_enum::B (value 4 fieldwidth 2)'
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            enum my_enum {
+              A = 0;
+              B = 4;
+            };
+            addrmap my_map {
+              reg {
+                field {
+                  sw = rw; hw = r;
+                } a[2];
+                a->encode = my_enum;
+              } a;
+            };
+          RDL
+          'enum member value exceeding fieldwidth: my_enum::B (value 4 fieldwidth 2)'
+        )
+
+        assert_raises_evaluation_error(
+          <<~RDL,
+            enum my_enum {
+              A = 0;
+              B = 4;
+            };
+            addrmap my_map {
+              reg {
+                field {
+                  sw = rw; hw = r;
+                } a[2:1];
+                a->encode = my_enum;
+              } a;
+            };
+          RDL
+          'enum member value exceeding fieldwidth: my_enum::B (value 4 fieldwidth 2)'
+        )
       end
 
       def test_no_component_instances_are_allowed

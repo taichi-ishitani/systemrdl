@@ -3,24 +3,26 @@
 module SystemRDL
   module Evaluator
     class Instance
-      def initialize(definition, parent, name, token_range)
-        @definition = definition
+      include PropertyAccessor
+
+      def initialize(component_def, parent, name, token_range)
+        @component_def = component_def
         @parent = parent
         @name = name
         @params = []
-        @properties = []
         @instances = []
+        @types = []
         @token_range = token_range
       end
 
-      attr_reader :definition
+      attr_reader :component_def
       attr_reader :parent
       attr_reader :name
       attr_reader :params
       attr_reader :array_info
       attr_reader :token_range
-      attr_reader :properties
       attr_reader :instances
+      attr_reader :types
 
       def to_value(token_range)
         Value.new(self, :"#{layer}_reference", nil, token_range)
@@ -46,7 +48,7 @@ module SystemRDL
       end
 
       def layer
-        definition.layer
+        component_def.layer
       end
 
       def root?
@@ -93,27 +95,19 @@ module SystemRDL
         [*@params, *@instances]
       end
 
-      def property(name)
-        properties.find { |prop| prop.name == name }
-      end
-
-      def property_value(name)
-        property(name)&.value
-      end
-
       def validate
-        @definition.validate(self)
+        @component_def.validate(self)
         @instances.each(&:revalidate)
       end
 
       def revalidate
-        @definition.revalidate(self)
+        @component_def.revalidate(self)
         @instances.each(&:revalidate)
       end
 
       def finalize
         @instances.each(&:finalize)
-        @definition.finalize(self)
+        @component_def.finalize(self)
       end
     end
   end

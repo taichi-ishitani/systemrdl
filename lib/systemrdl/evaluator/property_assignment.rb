@@ -8,25 +8,25 @@ module SystemRDL
         @value = value
       end
 
-      def evaluate(instance, **optargs)
-        properties = find_properties(instance)
-        check_properties(instance, properties)
+      def evaluate(element, **optargs)
+        properties = find_properties(element)
+        check_properties(element, properties)
 
         properties.each do |property|
-          value = eval_value(instance, property, **optargs)
-          assign_property(instance, property, value)
+          value = eval_value(element, property, **optargs)
+          assign_property(element, property, value)
         end
       end
 
       private
 
-      def check_properties(_instance, _properties)
+      def check_properties(_element, _properties)
       end
 
-      def eval_value(instance, property, **optargs)
+      def eval_value(element, property, **optargs)
         value =
           if @value
-            @value.evaluate(instance, **optargs)
+            @value.evaluate(element, **optargs)
           else
             # true value is implicitly applied
             # when the assignment value is omitted.
@@ -72,11 +72,11 @@ module SystemRDL
 
       private
 
-      def find_properties(instance)
-        @prop_ref.find(instance, allow_array_ref: false)
+      def find_properties(element)
+        @prop_ref.find(element, allow_array_ref: false)
       end
 
-      def check_properties(_instance, properties)
+      def check_properties(_element, properties)
         property = properties[0]
         return unless property&.assigned?
 
@@ -84,7 +84,7 @@ module SystemRDL
         raise_evaluation_error message, token_range
       end
 
-      def assign_property(_instance, property, value)
+      def assign_property(_element, property, value)
         property.assign(value)
       end
     end
@@ -114,11 +114,11 @@ module SystemRDL
         raise_evaluation_error message, @token_range
       end
 
-      def find_properties(instance)
-        @prop_ref.find(instance, allow_array_ref: true)
+      def find_properties(element)
+        @prop_ref.find(element, allow_array_ref: true)
       end
 
-      def check_properties(_instance, properties)
+      def check_properties(_element, properties)
         properties.each do |property|
           next unless property
 
@@ -134,7 +134,7 @@ module SystemRDL
         end
       end
 
-      def assign_property(_instance, property, value)
+      def assign_property(_element, property, value)
         property.assign(value)
       end
     end
@@ -150,7 +150,7 @@ module SystemRDL
 
       private
 
-      def find_properties(_instance)
+      def find_properties(_element)
         prop_def = BuiltinProperties.find(@prop_name.value)
         return [prop_def] if prop_def
 
@@ -158,9 +158,9 @@ module SystemRDL
         raise_evaluation_error message, token_range
       end
 
-      def assign_property(instance, _property, value)
-        definition = instance.definition
-        definition.assign_default_property(@prop_name.value, value, token_range)
+      def assign_property(element, _property, value)
+        component_def = element.component_def
+        component_def.assign_default_property(@prop_name.value, value, token_range)
       end
     end
   end
