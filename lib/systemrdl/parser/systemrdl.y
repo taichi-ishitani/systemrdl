@@ -50,10 +50,10 @@ rule
         result = node(:root, val[0], val[0])
       }
     | __TEST_PROPERTY_ASSIGNMENT__ property_assignment EOS {
-        result = val[1]
+        result = node(:__test_property_assignment, [val[1]], val)
       }
-    | __TEST_CONSTANT_EXPRESSION__ constant_expression EOS {
-        result = val[1]
+    | __TEST_CONSTANT_EXPRESSION__ enum_def* constant_expression EOS {
+        result = node(:__test_constant_expression, [*val[1], val[2]], val)
       }
   description
     : component_def
@@ -490,7 +490,7 @@ rule
     | STRING {
         result = node(:string, val, val)
       }
-    | id "::" id {
+    | enum_ref "::" id {
         result = node(:enum_literal, [val[0], val[2]], val)
       }
     | NUMBER {

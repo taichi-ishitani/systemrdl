@@ -157,5 +157,39 @@ module SystemRDL
         raise_evaluation_error message, token_range
       end
     end
+
+    class EnumMemberRef
+      include Common
+
+      def initialize(enum_ref, id, token_range)
+        super(token_range)
+        @enum_ref = enum_ref
+        @id = id
+      end
+
+      def evaluate(instance, **optargs)
+        enum = @enum_ref.evaluate(instance, **optargs)
+        member = find_member(enum.value)
+        member.value
+      end
+
+      def array_select?
+        false
+      end
+
+      def expression_width(instance)
+        evaluate(instance).width
+      end
+
+      private
+
+      def find_member(enum)
+        member = enum.members.find { |m| m.name == @id.value }
+        return member if member
+
+        message = "undefined enum member: #{enum.name}::#{@id}"
+        raise_evaluation_error message, token_range
+      end
+    end
   end
 end

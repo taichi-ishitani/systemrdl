@@ -16,7 +16,11 @@ module SystemRDL
 
       def assert_parses(ast, code, **optargs)
         result = SystemRDL::Parser.parse(code, **optargs)
-        assert_equal(ast, result)
+        if optargs.key?(:test)
+          assert_equal(ast, result.children[0])
+        else
+          assert_equal(ast, result)
+        end
       end
 
       def assert_parses_expression(ast, code, **optargs)

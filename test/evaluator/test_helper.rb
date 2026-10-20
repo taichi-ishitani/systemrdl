@@ -5,9 +5,33 @@ require_relative '../test_helper'
 module SystemRDL
   module Evaluator
     class TestCase < Minitest::Test
+      class ExpressionEvaluator < Root
+        def evaluate(_instance, **optargs)
+          root = RootInstance.new(self, nil, :evaluator, nil)
+          @elements
+            .map { |element| element.evaluate(root, **optargs) }
+            .last
+        end
+      end
+
+      def ifmissing
+        proc do |processor, node|
+          if node.type == :__test_property_assignment
+            processor.process(node.children[0])
+          elsif node.type == :__test_constant_expression
+            elements = processor.process_all(node.children)
+            ExpressionEvaluator.new(elements, node.token_range)
+          end
+        end
+      end
+
       def evaluate(code, **optargs)
         ast = SystemRDL::Parser.parse(code, **optargs)
-        SystemRDL::Evaluator.evaluate(ast)
+        if optargs.key?(:test)
+          SystemRDL::Evaluator.evaluate(ast, ifmissing:)
+        else
+          SystemRDL::Evaluator.evaluate(ast)
+        end
       end
 
       def assert_property(element, name, types, value: nil)
@@ -51,7 +75,12 @@ module SystemRDL
 
       def evaluate_value(code, **optargs)
         ast = SystemRDL::Parser.parse(code, **optargs)
-        evaluator = SystemRDL::Evaluator.build_evaluator(ast)
+        evaluator =
+          if optargs.key?(:test)
+            SystemRDL::Evaluator.build_evaluator(ast, ifmissing:)
+          else
+            SystemRDL::Evaluator.build_evaluator(ast)
+          end
         evaluator.evaluate(nil)
       end
 

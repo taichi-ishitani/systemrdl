@@ -78,7 +78,10 @@ module SystemRDL::Parser
       assert_parses_expression(
         s(
           :enum_literal,
-          s(:id, 'MyEnumeration'),
+          s(
+            :enum_ref,
+            s(:id, 'MyEnumeration')
+          ),
           s(:id, 'MyValue')
         ),
         'MyEnumeration::MyValue'

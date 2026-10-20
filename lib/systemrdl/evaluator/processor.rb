@@ -3,6 +3,15 @@
 module SystemRDL
   module Evaluator
     class Processor < AST::Processor
+      def initialize(ifmissing)
+        super()
+        @ifmissing = ifmissing
+      end
+
+      def handler_missing(node)
+        @ifmissing&.call(self, node)
+      end
+
       def on_id(node)
         id = node.children[0].to_sym
         Value.new(id, nil, nil, node.token_range)
@@ -22,6 +31,11 @@ module SystemRDL
 
       def on_string(node)
         String.new(node)
+      end
+
+      def on_enum_literal(node)
+        enum_ref, id = process_all(node.children)
+        EnumMemberRef.new(enum_ref, id, node.token_range)
       end
 
       def on_accesstype(node)
