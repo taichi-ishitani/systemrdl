@@ -14,7 +14,7 @@ module SystemRDL
 
       def on_id(node)
         id = node.children[0].to_sym
-        Value.new(id, nil, nil, node.token_range)
+        Value.new(id, nil, node.token_range)
       end
 
       def on_boolean(node)
@@ -73,7 +73,7 @@ module SystemRDL
 
       def on_data_type(node)
         type = node.children[0].to_sym
-        Value.new(type, nil, nil, node.token_range)
+        Value.new(type, nil, node.token_range)
       end
 
       def on_array(node)

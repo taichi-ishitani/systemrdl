@@ -24,8 +24,8 @@ module SystemRDL
 
         def concat_params(instance)
           params = instance.params.flat_map do |param|
-            if param.value.type == :bit
-              [param.value.to_s, param.value.width.to_s]
+            if param.value.type.kind == :bit
+              [param.value.to_s, param.value.type.width.to_s]
             else
               param.value.to_s
             end

@@ -25,7 +25,7 @@ module SystemRDL
       attr_reader :types
 
       def to_value(token_range)
-        Value.new(self, :"#{layer}_reference", nil, token_range)
+        Value.new(self, Type.inst_ref(layer), token_range)
       end
 
       def element_name

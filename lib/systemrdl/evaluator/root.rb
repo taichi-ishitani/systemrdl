@@ -8,7 +8,7 @@ module SystemRDL
       end
 
       def initialize(elements, token_range)
-        super(Value.new(:root, nil, nil, nil), nil, elements, nil, token_range)
+        super(Value.new(:root, nil, nil), nil, elements, nil, token_range)
         connect(nil, nil)
       end
 

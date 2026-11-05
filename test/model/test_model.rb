@@ -483,7 +483,7 @@ module SystemRDL
 
         [false, false, false, false, false, false, false, 'my_map.r0.a.anded', false, false].each_with_index do |expected, i|
           if expected
-            assert_property_reference_value(fields[i], :hwset, expected)
+            assert_prop_ref_value(fields[i], :hwset, expected)
           else
             assert_property_value(fields[i], :hwset, expected)
           end
@@ -491,7 +491,7 @@ module SystemRDL
 
         [nil, nil, nil, nil, nil, nil, 'my_map.r0.b', nil, nil, nil].each_with_index do |expected, i|
           if expected
-            assert_property_reference_value(fields[i], :hwenable, expected)
+            assert_prop_ref_value(fields[i], :hwenable, expected)
           else
             assert_property_value(fields[i], :hwenable, expected)
           end
@@ -577,23 +577,23 @@ module SystemRDL
 
         prop = fields[0].property(:hwset)
         assert(prop.value?)
-        refute(prop.instance_ref?)
-        refute(prop.property_ref?)
+        refute(prop.inst_ref?)
+        refute(prop.prop_ref?)
 
         prop = fields[0].property(:reset)
         assert(prop.value?)
-        refute(prop.instance_ref?)
-        refute(prop.property_ref?)
+        refute(prop.inst_ref?)
+        refute(prop.prop_ref?)
 
         prop = fields[6].property(:hwenable)
         refute(prop.value?)
-        assert(prop.instance_ref?)
-        refute(prop.property_ref?)
+        assert(prop.inst_ref?)
+        refute(prop.prop_ref?)
 
         prop = fields[7].property(:hwset)
         refute(prop.value?)
-        refute(prop.instance_ref?)
-        assert(prop.property_ref?)
+        refute(prop.inst_ref?)
+        assert(prop.prop_ref?)
       end
 
       def test_pp

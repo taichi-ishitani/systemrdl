@@ -14,11 +14,11 @@ module SystemRDL
       attr_reader :value
 
       def evaluate(_instance, **_optargs)
-        @evaluated ||= Value.new(value, type, width, token_range)
+        @evaluated ||= Value.new(value, type, token_range)
       end
 
       def expression_width(_instance)
-        width
+        type.width
       end
 
       def token_range
@@ -27,7 +27,7 @@ module SystemRDL
 
       private
 
-      def width
+      def type
       end
 
       def token
@@ -43,11 +43,7 @@ module SystemRDL
       private
 
       def type
-        :boolean
-      end
-
-      def width
-        1
+        Type.boolean
       end
 
       def evaluate_literal
@@ -59,11 +55,7 @@ module SystemRDL
       private
 
       def type
-        :bit
-      end
-
-      def width
-        64
+        Type.longint
       end
 
       def evaluate_literal
@@ -74,11 +66,7 @@ module SystemRDL
     class VerilogNumber < Literal
       private
 
-      attr_reader :width
-
-      def type
-        :bit
-      end
+      attr_reader :type
 
       def evaluate_literal
         match_data, base =
@@ -87,10 +75,13 @@ module SystemRDL
           when Parser::Patterns::VERILOG_DEC_NUMBER then [Regexp.last_match, 10]
           when Parser::Patterns::VERILOG_BIN_NUMBER then [Regexp.last_match, 2]
           end
-        @width = match_data.captures[0].to_i
-        @value = match_data.captures[1].to_i(base)
+        width = match_data.captures[0].to_i
+        value = match_data.captures[1].to_i(base)
 
-        check_bit_width(@value, @width)
+        check_bit_width(value, width)
+
+        @type = Type.bit(width)
+        @value = value
       end
 
       def check_bit_width(value, width)
@@ -105,7 +96,7 @@ module SystemRDL
       private
 
       def type
-        :string
+        Type.string
       end
 
       def evaluate_literal
@@ -125,7 +116,7 @@ module SystemRDL
       private
 
       def type
-        :accesstype
+        Type.builtin_enum(:accesstype)
       end
 
       def evaluate_literal
@@ -142,7 +133,7 @@ module SystemRDL
       private
 
       def type
-        :onreadtype
+        Type.builtin_enum(:onreadtype)
       end
     end
 
@@ -150,7 +141,7 @@ module SystemRDL
       private
 
       def type
-        :onwritetype
+        Type.builtin_enum(:onwritetype)
       end
     end
 
@@ -158,7 +149,7 @@ module SystemRDL
       private
 
       def type
-        :addressingtype
+        Type.builtin_enum(:addressingtype)
       end
     end
 
@@ -166,7 +157,7 @@ module SystemRDL
       private
 
       def type
-        :precedencetype
+        Type.builtin_enum(:precedencetype)
       end
     end
   end

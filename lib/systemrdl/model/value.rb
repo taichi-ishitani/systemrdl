@@ -24,11 +24,11 @@ module SystemRDL
         true
       end
 
-      def instance_ref?
+      def inst_ref?
         false
       end
 
-      def property_ref?
+      def prop_ref?
         false
       end
 
@@ -39,7 +39,7 @@ module SystemRDL
       end
     end
 
-    class ReferenceValue < Value
+    class RefValue < Value
       def to_s
         full_name
       end
@@ -48,11 +48,11 @@ module SystemRDL
         false
       end
 
-      def instance_ref?
+      def inst_ref?
         value.is_a?(Instance)
       end
 
-      def property_ref?
+      def prop_ref?
         value.is_a?(Value)
       end
 

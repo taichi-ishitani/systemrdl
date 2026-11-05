@@ -15,10 +15,10 @@ module SystemRDL
         RDL
 
         assert_enum(
-          enum, :abc,
-          { name: :A, value: 0, width: 64 },
-          { name: :B, value: 1, width: 64 },
-          { name: :C, value: 2, width: 64 },
+          enum, :abc, 64,
+          { name: :A, value: 0 },
+          { name: :B, value: 1 },
+          { name: :C, value: 2 },
         )
       end
 
@@ -32,10 +32,10 @@ module SystemRDL
         RDL
 
         assert_enum(
-          enum, :abc,
-          { name: :A, value: 0, width: 3 },
-          { name: :B, value: 1, width: 3 },
-          { name: :C, value: 2, width: 3 },
+          enum, :abc, 3,
+          { name: :A, value: 0 },
+          { name: :B, value: 1 },
+          { name: :C, value: 2 },
         )
 
         enum = evaluate(<<~'RDL').types[0]
@@ -50,13 +50,13 @@ module SystemRDL
         RDL
 
         assert_enum(
-          enum, :myPartiallyAssignedEnum,
-          { name: :a, value: 0x00, width: 8 },
-          { name: :b, value: 0x01, width: 8 },
-          { name: :c, value: 0x06, width: 8 },
-          { name: :d, value: 0x07, width: 8 },
-          { name: :e, value: 0x12, width: 8 },
-          { name: :f, value: 0x13, width: 8 },
+          enum, :myPartiallyAssignedEnum, 8,
+          { name: :a, value: 0x00 },
+          { name: :b, value: 0x01 },
+          { name: :c, value: 0x06 },
+          { name: :d, value: 0x07 },
+          { name: :e, value: 0x12 },
+          { name: :f, value: 0x13 },
         )
 
         enum = evaluate(<<~'RDL').types[0]
@@ -68,10 +68,10 @@ module SystemRDL
         RDL
 
         assert_enum(
-          enum, :myPartiallyAssignedEnum,
-          { name: :a, value: 0x0FF, width: 9 },
-          { name: :b, value: 0x100, width: 9 },
-          { name: :c, value: 0x101, width: 9 },
+          enum, :myPartiallyAssignedEnum, 9,
+          { name: :a, value: 0x0FF },
+          { name: :b, value: 0x100 },
+          { name: :c, value: 0x101 },
         )
 
         enum = evaluate(<<~RDL).types[0]
@@ -82,9 +82,9 @@ module SystemRDL
         RDL
 
         assert_enum(
-          enum, :MyBoolean,
-          { name: :T, value: 1, width: 1 },
-          { name: :F, value: 0, width: 1 }
+          enum, :MyBoolean, 1,
+          { name: :T, value: 1 },
+          { name: :F, value: 0 }
         )
       end
 
@@ -103,17 +103,17 @@ module SystemRDL
         RDL
 
         assert_enum(
-          enum, :myBitFieldEncoding,
+          enum, :myBitFieldEncoding, 8,
           {
-            name: :first_entry, value: 0x00, width: 8,
+            name: :first_entry, value: 0x00,
             properties: { name: 'first_entry', desc: '' }
           },
           {
-            name: :second_entry, value: 0x01, width: 8,
+            name: :second_entry, value: 0x01,
             properties: { name: 'second entry', desc: '' }
           },
           {
-            name: :third_entry, value: 0xef, width: 8,
+            name: :third_entry, value: 0xef,
             properties: { name: 'third entry, just like others', desc: 'this value has a special documentation' }
           }
         )
@@ -145,7 +145,7 @@ module SystemRDL
               };
             };
           RDL
-          'non integral enum member value: A (reg_reference)'
+          'non integral enum member value: A (reg_ref)'
         )
 
         assert_raises_evaluation_error(
@@ -159,7 +159,7 @@ module SystemRDL
               };
             };
           RDL
-          'non integral enum member value: A (field_reference)'
+          'non integral enum member value: A (field_ref)'
         )
 
         assert_raises_evaluation_error(
@@ -173,7 +173,7 @@ module SystemRDL
               };
             };
           RDL
-          'non integral enum member value: A (property_reference)'
+          'non integral enum member value: A (prop_ref)'
         )
       end
 
@@ -242,82 +242,109 @@ module SystemRDL
         )
       end
 
-      def assert_enum(enum, name, *members)
+      def test_enum_literal
+        assert_evaluates_enum_literal(
+          { kind: :enum, name: :ab, width: 64 }, { name: :A, value: 0 }, 'ab::A'
+        )
+        assert_evaluates_enum_literal(
+          { kind: :enum, name: :ab, width: 64 }, { name: :B, value: 1 }, 'ab::B'
+        )
+
+        assert_evaluates_enum_literal(
+          { kind: :enum, name: :cd, width: 8 }, { name: :C, value: 0x10 }, 'cd::C'
+        )
+        assert_evaluates_enum_literal(
+          { kind: :enum, name: :cd, width: 8 }, { name: :D, value: 0xFF }, 'cd::D'
+        )
+
+        assert_evaluates_enum_literal(
+          { kind: :enum, name: :ef, width: 128 }, { name: :E, value: 0 }, 'ef::E'
+        )
+        assert_evaluates_enum_literal(
+          { kind: :enum, name: :ef, width: 128 }, { name: :F, value: 1 }, 'ef::F'
+        )
+      end
+
+      def test_unary_operation
+        assert_evaluates_enum_expression({ kind: :bit, width: 8 }, 0x10, '+cd::C')
+        assert_evaluates_enum_expression({ kind: :bit, width: 8 }, 0xF0, '-cd::C')
+        assert_evaluates_enum_expression({ kind: :bit, width: 8 }, 0xEF, '~cd::C')
+
+
+        assert_evaluates_enum_expression({ kind: :bit, width: 64 }, 0, '+ab::A')
+        assert_evaluates_enum_expression({ kind: :bit, width: 64 }, 0, '-ab::A')
+        assert_evaluates_enum_expression({ kind: :bit, width: 64 }, 0xFFFF_FFFF_FFFF_FFFF, '~ab::A')
+
+        assert_evaluates_enum_expression({ kind: :bit, width: 1 }, 1, '&cd::D')
+        assert_evaluates_enum_expression({ kind: :bit, width: 1 }, 0, '&cd::C')
+
+        assert_evaluates_enum_expression({ kind: :boolean}, true , '!ab::A')
+        assert_evaluates_enum_expression({ kind: :boolean}, false, '!ab::B')
+      end
+
+      def test_binary_operation_between_enum_literals
+        assert_evaluates_enum_expression({ kind: :bit, width: 64 }, 1   , 'ab::A + ab::B')
+        assert_evaluates_enum_expression({ kind: :bit, width: 8  }, 0x0F, 'cd::C + cd::D')
+        assert_evaluates_enum_expression({ kind: :bit, width: 8  }, 0xEF, 'cd::D - cd::C')
+
+        assert_evaluates_enum_expression({ kind: :bit, width: 64  }, 1    , 'ab::A + ab::B')
+        assert_evaluates_enum_expression({ kind: :bit, width: 128 }, 0x100, 'cd::D + ef::F')
+        assert_evaluates_enum_expression({ kind: :bit, width: 128 }, 0x10 , 'cd::C + ef::E')
+
+        assert_evaluates_enum_expression({ kind: :boolean }, true , 'ab::A == ef::E')
+        assert_evaluates_enum_expression({ kind: :boolean }, false, 'ab::A != ef::E')
+        assert_evaluates_enum_expression({ kind: :boolean }, true , 'ab::B == ef::F')
+        assert_evaluates_enum_expression({ kind: :boolean }, true , 'ab::A < cd::C')
+        assert_evaluates_enum_expression({ kind: :boolean }, false, 'cd::D <= ab::B')
+      end
+
+      def test_binary_operation_between_enum_literal_and_literal
+        assert_evaluates_enum_expression({ kind: :bit, width: 64 }, 1    , 'ab::A + 1')
+        assert_evaluates_enum_expression({ kind: :bit, width: 64 }, 0x100, 'cd::D + 1')
+
+        assert_evaluates_enum_expression({ kind: :bit, width: 8 }, 0x00, "cd::D + 8'd1")
+        assert_evaluates_enum_expression({ kind: :bit, width: 8 }, 0xFE, "cd::D - 8'd1")
+
+        assert_evaluates_enum_expression({ kind: :bit, width: 8 }, 0x10, "cd::C | 8'h00")
+        assert_evaluates_enum_expression({ kind: :bit, width: 8 }, 0x00, "cd::C & 8'h00")
+
+        assert_evaluates_enum_expression({ kind: :boolean }, true , 'cd::C == 0x10')
+        assert_evaluates_enum_expression({ kind: :boolean }, true , 'ab::A == 0')
+        assert_evaluates_enum_expression({ kind: :boolean }, false, 'ab::A == 1')
+      end
+
+      def assert_enum(enum, name, width, *members)
         assert_equal(name, enum.name)
+        assert_equal(width, enum.width)
         members.each_with_index do |values, i|
           enum_member = enum.members[i]
-          assert_enum_member(enum_member, values[:name], values[:value], values[:width], values[:properties])
+          assert_enum_member(enum_member, values[:name], values[:value], values[:properties])
         end
       end
 
-      def assert_enum_member(enum_member, name, value, width, properties)
+      def assert_enum_member(enum_member, name, value, properties)
         assert_equal(name, enum_member.name)
-        assert_evaluated_value(enum_member.value, :bit, { value:, width: })
+        assert_evaluated_value({ kind: :bit }, value, enum_member.value)
         properties&.each do |prop_name, prop_value|
           assert_property_value(enum_member, prop_name, prop_value)
         end
       end
 
-      def test_enum_literal
-        assert_evaluates_enum_expression(:bit, { value: 0, width: 64 }, 'ab::A')
-        assert_evaluates_enum_expression(:bit, { value: 1, width: 64 }, 'ab::B')
-
-        assert_evaluates_enum_expression(:bit, { value: 0x10, width: 8 }, 'cd::C')
-        assert_evaluates_enum_expression(:bit, { value: 0xFF, width: 8 }, 'cd::D')
-
-        assert_evaluates_enum_expression(:bit, { value: 0, width: 128 }, 'ef::E')
-        assert_evaluates_enum_expression(:bit, { value: 1, width: 128 }, 'ef::F')
+      def assert_evaluates_enum_literal(expected_enum, expected_member, literal)
+        value = evaluate_value("#{enum_defs}\n#{literal}", test: :constant_expression)
+        assert_type(expected_enum, value.type)
+        assert_equal(expected_member[:name], value.value.name)
+        assert_value(expected_member[:value], value.value.value)
       end
 
-      def test_unary_operation
-        assert_evaluates_enum_expression(:bit, { value: 0x10, width: 8 }, '+cd::C')
-        assert_evaluates_enum_expression(:bit, { value: 0xF0, width: 8 }, '-cd::C')
-        assert_evaluates_enum_expression(:bit, { value: 0xEF, width: 8 }, '~cd::C')
-
-        assert_evaluates_enum_expression(:bit, { value: 0, width: 64 }, '+ab::A')
-        assert_evaluates_enum_expression(:bit, { value: 0, width: 64 }, '-ab::A')
-        assert_evaluates_enum_expression(:bit, { value: 0xFFFF_FFFF_FFFF_FFFF, width: 64 }, '~ab::A')
-
-        assert_evaluates_enum_expression(:bit, { value: 1, width: 1 }, '&cd::D')
-        assert_evaluates_enum_expression(:bit, { value: 0, width: 1 }, '&cd::C')
-
-        assert_evaluates_enum_expression(:boolean, { value: true  }, '!ab::A')
-        assert_evaluates_enum_expression(:boolean, { value: false }, '!ab::B')
+      def assert_evaluates_enum_expression(expected_type, expected_value, expression)
+        assert_evaluates_value(
+          expected_type, expected_value, "#{enum_defs}\n#{expression}", test: :constant_expression
+        )
       end
 
-      def test_binary_operation_between_enum_literals
-        assert_evaluates_enum_expression(:bit, { value: 1   , width: 64 }, 'ab::A + ab::B')
-        assert_evaluates_enum_expression(:bit, { value: 0x0F, width: 8  }, 'cd::C + cd::D')
-        assert_evaluates_enum_expression(:bit, { value: 0xEF, width: 8  }, 'cd::D - cd::C')
-
-        assert_evaluates_enum_expression(:bit, { value: 1    , width: 64  }, 'ab::A + ab::B')
-        assert_evaluates_enum_expression(:bit, { value: 0x100, width: 128 }, 'cd::D + ef::F')
-        assert_evaluates_enum_expression(:bit, { value: 0x10 , width: 128 }, 'cd::C + ef::E')
-
-        assert_evaluates_enum_expression(:boolean, { value: true  }, 'ab::A == ef::E')
-        assert_evaluates_enum_expression(:boolean, { value: false }, 'ab::A != ef::E')
-        assert_evaluates_enum_expression(:boolean, { value: true  }, 'ab::B == ef::F')
-        assert_evaluates_enum_expression(:boolean, { value: true  }, 'ab::A < cd::C')
-        assert_evaluates_enum_expression(:boolean, { value: false }, 'cd::D <= ab::B')
-      end
-
-      def test_binary_operation_between_enum_literal_and_literal
-        assert_evaluates_enum_expression(:bit, { value: 1    , width: 64 }, 'ab::A + 1')
-        assert_evaluates_enum_expression(:bit, { value: 0x100, width: 64 }, 'cd::D + 1')
-
-        assert_evaluates_enum_expression(:bit, { value: 0x00, width: 8 }, "cd::D + 8'd1")
-        assert_evaluates_enum_expression(:bit, { value: 0xFE, width: 8 }, "cd::D - 8'd1")
-
-        assert_evaluates_enum_expression(:bit, { value: 0x10, width: 8 }, "cd::C | 8'h00")
-        assert_evaluates_enum_expression(:bit, { value: 0x00, width: 8 }, "cd::C & 8'h00")
-
-        assert_evaluates_enum_expression(:boolean, { value: true  }, 'cd::C == 0x10')
-        assert_evaluates_enum_expression(:boolean, { value: true  }, 'ab::A == 0')
-        assert_evaluates_enum_expression(:boolean, { value: false }, 'ab::A == 1')
-      end
-
-      def assert_evaluates_enum_expression(type, expected, expression)
-        enum_defs = <<~RDL
+      def enum_defs
+        <<~RDL
           enum ab {
             A;
             B;
@@ -331,9 +358,6 @@ module SystemRDL
             F = 128'd1;
           };
         RDL
-        assert_evaluates_value(
-          type, expected, "#{enum_defs}\n#{expression}", test: :constant_expression
-        )
       end
     end
   end

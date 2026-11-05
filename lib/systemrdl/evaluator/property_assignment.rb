@@ -30,7 +30,7 @@ module SystemRDL
           else
             # true value is implicitly applied
             # when the assignment value is omitted.
-            Value.new(true, :boolean, 1, @token_range)
+            Value.new(true, Type.boolean, @token_range)
           end
 
         coerce_value(property, value)
@@ -105,7 +105,7 @@ module SystemRDL
       end
 
       def check_ref_target(value)
-        return if value.type != :property_reference
+        return if value.type.kind != :prop_ref
 
         property = value.value
         return if property.ref_target?

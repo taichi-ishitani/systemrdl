@@ -114,8 +114,8 @@ module SystemRDL
       end
 
       def select_value_class(value, default_class)
-        if reference_value?(value)
-          ReferenceValue
+        if ref_value?(value)
+          RefValue
         elsif default_class && value&.value
           default_class
         else
@@ -123,10 +123,10 @@ module SystemRDL
         end
       end
 
-      def reference_value?(value)
+      def ref_value?(value)
         return false unless value.respond_to?(:type)
 
-        value.type in :property_reference | :field_reference
+        value.type.kind in :prop_ref | :field_ref
       end
     end
 

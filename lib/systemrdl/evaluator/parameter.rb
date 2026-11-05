@@ -8,7 +8,7 @@ module SystemRDL
       end
 
       def expression_width(_instance)
-        value.width
+        value.type.width
       end
 
       def array?
@@ -96,12 +96,7 @@ module SystemRDL
       end
 
       def value_type
-        if @type.value == :longint
-          # `longint` type is treated as `bit` type internally
-          :bit
-        else
-          @type.value
-        end
+        Type.get(@type.value)
       end
     end
 

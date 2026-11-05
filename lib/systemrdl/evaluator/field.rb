@@ -66,7 +66,7 @@ module SystemRDL
           if (fieldwidth = instance.property_value(:fieldwidth))
             return fieldwidth
           else
-            return Value.new(1, :bit, 64, nil)
+            return Value.new(1, Type.longint, nil)
           end
         end
 
@@ -122,7 +122,7 @@ module SystemRDL
         reset_value = instance.property_value(:reset)
         return unless reset_value
 
-        if reset_value.type in :field_reference | :property_reference
+        if reset_value.type.kind in :field_ref | :prop_ref
           # TODO
           # check width of the specified instance or property
         else

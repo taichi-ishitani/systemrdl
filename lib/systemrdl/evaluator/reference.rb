@@ -168,9 +168,9 @@ module SystemRDL
       end
 
       def evaluate(instance, **optargs)
-        enum = @enum_ref.evaluate(instance, **optargs)
-        member = find_member(enum.value)
-        member.value
+        enum = find_enum(instance, **optargs)
+        member = find_member(enum)
+        Value.new(member, enum, token_range)
       end
 
       def array_select?
@@ -178,10 +178,14 @@ module SystemRDL
       end
 
       def expression_width(instance)
-        evaluate(instance).width
+        find_enum(instance).width
       end
 
       private
+
+      def find_enum(instance, **optargs)
+        @enum_ref.evaluate(instance, **optargs).value
+      end
 
       def find_member(enum)
         member = enum.members.find { |m| m.name == @id.value }

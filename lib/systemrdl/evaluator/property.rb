@@ -20,7 +20,7 @@ module SystemRDL
       end
 
       def to_value(token_range)
-        Value.new(self, :property_reference, nil, token_range)
+        Value.new(self, Type.prop_ref, token_range)
       end
 
       def full_name
@@ -114,11 +114,7 @@ module SystemRDL
       end
 
       def create_value(value)
-        case types[0]
-        when :longint then Value.new(value, :bit, 64, nil)
-        when :boolean then Value.new(value, :boolean, 1, nil)
-        else Value.new(value, types[0], nil, nil)
-        end
+        Value.new(value, types[0], nil)
       end
     end
   end

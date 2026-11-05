@@ -38,7 +38,8 @@ module SystemRDL
         property = element.property(name)
         refute_nil(property, "no such property found: #{name}")
 
-        assert_equal(types, property.types)
+        expected_types = types.map { |t| Type.get(t) }
+        assert_equal(expected_types, property.types)
         assert_equal(value, property.value.value) unless value.nil?
       end
 
@@ -47,24 +48,22 @@ module SystemRDL
         assert_nil(property)
       end
 
-      def assert_property_value(element, name, value, **opts)
+      def assert_property_value(element, name, value, type = {})
         property = element.property(name)
         if value.nil?
           assert_nil(property.value)
         else
           assert_equal(value, property.value.value)
-          opts.each do |key, optvalue|
-            assert_equal(optvalue, property.value.__send__(key))
-          end
+          assert_type(type, property.value.type)
         end
       end
 
-      def assert_property_reference_value(element, name, full_name)
+      def assert_prop_ref_value(element, name, full_name)
         property = element.property(name)
         assert_equal(full_name, property.value.value.full_name)
       end
 
-      def assert_enum_reference_value(element, name, full_name)
+      def assert_enum_ref_value(element, name, full_name)
         property = element.property(name)
         assert_equal(full_name, property.value.value.full_name)
       end
@@ -84,16 +83,23 @@ module SystemRDL
         evaluator.evaluate(nil)
       end
 
-      def assert_evaluated_value(value, type, expected)
-        actual = [:type, *expected.keys].to_h do |key|
-          [key, value.__send__(key)]
+      def assert_type(expected_type, type)
+        return if expected_type.empty?
+
+        actual = expected_type.keys.to_h do |key|
+          [key, type.__send__(key)]
         end
-        assert_equal({ type:, **expected}, actual)
+        assert_equal(expected_type, actual)
       end
 
-      def assert_evaluates_value(type, expected, code, **optargs)
+      def assert_evaluated_value(expected_type, expected_value, value)
+        assert_type(expected_type, value.type)
+        assert_equal(expected_value, value.value)
+      end
+
+      def assert_evaluates_value(expected_type, expected_value, code, **optargs)
         output = evaluate_value(code, **optargs)
-        assert_evaluated_value(output, type, expected)
+        assert_evaluated_value(expected_type, expected_value, output)
       end
 
       def assert_raises_evaluation_error(code, message, **optargs)
