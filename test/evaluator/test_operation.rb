@@ -8,13 +8,13 @@ module SystemRDL
       def test_unary_operation
         ['true', "2'd1", "2'd2", '1', '2'].each do |value|
           assert_evaluates_value(
-            :boolean, { value: false }, "!#{value}", test: :constant_expression
+            { kind: :boolean }, false, "!#{value}", test: :constant_expression
           )
         end
 
         ['false', "2'd0", '0'].each do |value|
           assert_evaluates_value(
-            :boolean, { value: true }, "!#{value}", test: :constant_expression
+            { kind: :boolean }, true, "!#{value}", test: :constant_expression
           )
         end
 
@@ -22,13 +22,13 @@ module SystemRDL
           ['true', [1, 1, 0]], ['false', [0, 0, 1]], ["1'd1", [1, 1, 0]], ["1'd0", [0, 0, 1]]
         ].each do |value, result|
           assert_evaluates_value(
-            :bit, { value: result[0], width: 1 }, "+#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[0], "+#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[1], width: 1 }, "-#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[1], "-#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[2], width: 1 }, "~#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[2], "~#{value}", test: :constant_expression
           )
         end
 
@@ -36,13 +36,13 @@ module SystemRDL
           ["2'd0", [0, 0, 3]], ["2'd1", [1, 3, 2]], ["2'd2", [2, 2, 1]], ["2'd3", [3, 1, 0]]
         ].each do |value, result|
           assert_evaluates_value(
-            :bit, { value: result[0], width: 2 }, "+#{value}", test: :constant_expression
+            { kind: :bit, width: 2 }, result[0], "+#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[1], width: 2 }, "-#{value}", test: :constant_expression
+            { kind: :bit, width: 2 }, result[1], "-#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[2], width: 2 }, "~#{value}", test: :constant_expression
+            { kind: :bit, width: 2 }, result[2], "~#{value}", test: :constant_expression
           )
         end
 
@@ -55,13 +55,13 @@ module SystemRDL
           ['0xFFFF_FFFF_FFFF_FFFF', [0xFFFF_FFFF_FFFF_FFFF, 0x0000_0000_0000_0001, 0x0000_0000_0000_0000]]
         ].each do |value, result|
           assert_evaluates_value(
-            :bit, { value: result[0], width: 64 }, "+#{value}", test: :constant_expression
+            { kind: :bit, width: 64 }, result[0], "+#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[1], width: 64 }, "-#{value}", test: :constant_expression
+            { kind: :bit, width: 64 }, result[1], "-#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[2], width: 64 }, "~#{value}", test: :constant_expression
+            { kind: :bit, width: 64 }, result[2], "~#{value}", test: :constant_expression
           )
         end
 
@@ -72,25 +72,25 @@ module SystemRDL
           ["1'd0" , [0, 1, 0, 1, 0, 1, 1]]
         ].each do |value, result|
           assert_evaluates_value(
-            :bit, { value: result[0], width: 1 }, "&#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[0], "&#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[1], width: 1 }, "~&#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[1], "~&#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[2], width: 1 }, "|#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[2], "|#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[3], width: 1 }, "~|#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[3], "~|#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[4], width: 1 }, "^#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[4], "^#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[5], width: 1 }, "~^#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[5], "~^#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[6], width: 1 }, "^~#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[6], "^~#{value}", test: :constant_expression
           )
         end
 
@@ -103,25 +103,25 @@ module SystemRDL
           ['0xFFFF_FFFF_FFFF_FFFF', [1, 0, 1, 0, 0, 1, 1]]
         ].each do |value, result|
           assert_evaluates_value(
-            :bit, { value: result[0], width: 1 }, "&#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[0], "&#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[1], width: 1 }, "~&#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[1], "~&#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[2], width: 1 }, "|#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[2], "|#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[3], width: 1 }, "~|#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[3], "~|#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[4], width: 1 }, "^#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[4], "^#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[5], width: 1 }, "~^#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[5], "~^#{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: result[6], width: 1 }, "^~#{value}", test: :constant_expression
+            { kind: :bit, width: 1 }, result[6], "^~#{value}", test: :constant_expression
           )
         end
       end
@@ -143,178 +143,178 @@ module SystemRDL
       def test_binary_operation
         ['true', '1', "1'b1"].product(['true', '1', "1'b1"]).each do |(lhs, rhs)|
           assert_evaluates_value(
-            :boolean, { value: true }, "#{lhs} && #{rhs}", test: :constant_expression
+            { kind: :boolean }, true, "#{lhs} && #{rhs}", test: :constant_expression
           )
         end
 
         ['false', '0', "1'b0"].product(['false', '0', "1'b0", 'true', '1', "1'b1"]).each do |(lhs, rhs)|
           assert_evaluates_value(
-            :boolean, { value: false }, "#{lhs} && #{rhs}", test: :constant_expression
+            { kind: :boolean }, false, "#{lhs} && #{rhs}", test: :constant_expression
           )
         end
 
         ['true', '1', "1'b1"].product(['false', '0', "1'b0", 'true', '1', "1'b1"]).each do |(lhs, rhs)|
           assert_evaluates_value(
-            :boolean, { value: true }, "#{lhs} || #{rhs}", test: :constant_expression
+            { kind: :boolean }, true, "#{lhs} || #{rhs}", test: :constant_expression
           )
         end
 
         ['false', '0', "1'b0"].product(['false', '0', "1'b0"]).each do |(lhs, rhs)|
           assert_evaluates_value(
-            :boolean, { value: false }, "#{lhs} || #{rhs}", test: :constant_expression
+            { kind: :boolean }, false, "#{lhs} || #{rhs}", test: :constant_expression
           )
         end
 
         ['true', "1'd1", "2'd2", '1', '2'].each do |value|
           assert_evaluates_value(
-            :boolean, { value: true }, "#{value} > 1'd0", test: :constant_expression
+            { kind: :boolean }, true, "#{value} > 1'd0", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "#{value} > 0", test: :constant_expression
+            { kind: :boolean }, true, "#{value} > 0", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "#{value} < 1'd0", test: :constant_expression
+            { kind: :boolean }, false, "#{value} < 1'd0", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "#{value} < 0", test: :constant_expression
+            { kind: :boolean }, false, "#{value} < 0", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "1'd0 < #{value}", test: :constant_expression
+            { kind: :boolean }, true, "1'd0 < #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "0 < #{value}", test: :constant_expression
+            { kind: :boolean }, true, "0 < #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "1'd0 > #{value}", test: :constant_expression
+            { kind: :boolean }, false, "1'd0 > #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "0 > #{value}", test: :constant_expression
+            { kind: :boolean }, false, "0 > #{value}", test: :constant_expression
           )
         end
 
         ['false', "1'd0", '0'].each do |value|
           assert_evaluates_value(
-            :boolean, { value: false }, "#{value} > 1'd0", test: :constant_expression
+            { kind: :boolean }, false, "#{value} > 1'd0", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "#{value} > 0", test: :constant_expression
+            { kind: :boolean }, false, "#{value} > 0", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "#{value} < 1'd0", test: :constant_expression
+            { kind: :boolean }, false, "#{value} < 1'd0", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "#{value} < 0", test: :constant_expression
+            { kind: :boolean }, false, "#{value} < 0", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "1'd0> #{value}", test: :constant_expression
+            { kind: :boolean }, false, "1'd0> #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "0 > #{value}", test: :constant_expression
+            { kind: :boolean }, false, "0 > #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "1'd0 < #{value}", test: :constant_expression
+            { kind: :boolean }, false, "1'd0 < #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "0 < #{value}", test: :constant_expression
+            { kind: :boolean }, false, "0 < #{value}", test: :constant_expression
           )
         end
 
         ["2'd2", '2'].each do |value|
           assert_evaluates_value(
-            :boolean, { value: true }, "#{value} >= 1'd1", test: :constant_expression
+            { kind: :boolean }, true, "#{value} >= 1'd1", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "#{value} >= 1", test: :constant_expression
+            { kind: :boolean }, true, "#{value} >= 1", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "#{value} <= 1'd1", test: :constant_expression
+            { kind: :boolean }, false, "#{value} <= 1'd1", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "#{value} <= 1", test: :constant_expression
+            { kind: :boolean }, false, "#{value} <= 1", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "1'd1 <= #{value}", test: :constant_expression
+            { kind: :boolean }, true, "1'd1 <= #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "1 <= #{value}", test: :constant_expression
+            { kind: :boolean }, true, "1 <= #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "1'd1 >= #{value}", test: :constant_expression
+            { kind: :boolean }, false, "1'd1 >= #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "1 >= #{value}", test: :constant_expression
+            { kind: :boolean }, false, "1 >= #{value}", test: :constant_expression
           )
         end
 
         ['true', "1'd1", '1'].each do |value|
           assert_evaluates_value(
-            :boolean, { value: true }, "#{value} >= 1'd1", test: :constant_expression
+            { kind: :boolean }, true, "#{value} >= 1'd1", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "#{value} >= 1", test: :constant_expression
+            { kind: :boolean }, true, "#{value} >= 1", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "#{value} <= 1'd1", test: :constant_expression
+            { kind: :boolean }, true, "#{value} <= 1'd1", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "#{value} <= 1", test: :constant_expression
+            { kind: :boolean }, true, "#{value} <= 1", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "1'd1 <= #{value}", test: :constant_expression
+            { kind: :boolean }, true, "1'd1 <= #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "1 <= #{value}", test: :constant_expression
+            { kind: :boolean }, true, "1 <= #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "1'd1 >= #{value}", test: :constant_expression
+            { kind: :boolean }, true, "1'd1 >= #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "1 >= #{value}", test: :constant_expression
+            { kind: :boolean }, true, "1 >= #{value}", test: :constant_expression
           )
         end
 
         ['false', "1'd0", '0'].each do |value|
           assert_evaluates_value(
-            :boolean, { value: false }, "#{value} >= 1'd1", test: :constant_expression
+            { kind: :boolean }, false, "#{value} >= 1'd1", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "#{value} >= 1", test: :constant_expression
+            { kind: :boolean }, false, "#{value} >= 1", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "#{value} <= 1'd1", test: :constant_expression
+            { kind: :boolean }, true, "#{value} <= 1'd1", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "#{value} <= 1", test: :constant_expression
+            { kind: :boolean }, true, "#{value} <= 1", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "1'd1 <= #{value}", test: :constant_expression
+            { kind: :boolean }, false, "1'd1 <= #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "1 <= #{value}", test: :constant_expression
+            { kind: :boolean }, false, "1 <= #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "1'd1 >= #{value}", test: :constant_expression
+            { kind: :boolean }, true, "1'd1 >= #{value}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "1 >= #{value}", test: :constant_expression
+            { kind: :boolean }, true, "1 >= #{value}", test: :constant_expression
           )
         end
 
         ['true', "1'd1", '1'].product(['true', "1'd1", '1']).each do |(lhs, rhs)|
           assert_evaluates_value(
-            :boolean, { value: true }, "#{lhs} == #{rhs}", test: :constant_expression
+            { kind: :boolean }, true, "#{lhs} == #{rhs}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "#{lhs} != #{rhs}", test: :constant_expression
+            { kind: :boolean }, false, "#{lhs} != #{rhs}", test: :constant_expression
           )
         end
 
         ['false', "1'd0", '0', "2'd2", '2'].product(['true', "1'd1", '1']).each do |(lhs, rhs)|
           assert_evaluates_value(
-            :boolean, { value: false }, "#{lhs} == #{rhs}", test: :constant_expression
+            { kind: :boolean }, false, "#{lhs} == #{rhs}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "#{lhs} != #{rhs}", test: :constant_expression
+            { kind: :boolean }, true, "#{lhs} != #{rhs}", test: :constant_expression
           )
         end
 
@@ -326,16 +326,16 @@ module SystemRDL
           ['"foo"'  , ['"foo"'  , '"bar"'   ]]
         ].each do |lhs, rhs|
           assert_evaluates_value(
-            :boolean, { value: true }, "#{lhs} == #{rhs[0]}", test: :constant_expression
+            { kind: :boolean }, true, "#{lhs} == #{rhs[0]}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "#{lhs} != #{rhs[0]}", test: :constant_expression
+            { kind: :boolean }, false, "#{lhs} != #{rhs[0]}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: false }, "#{lhs} == #{rhs[1]}", test: :constant_expression
+            { kind: :boolean }, false, "#{lhs} == #{rhs[1]}", test: :constant_expression
           )
           assert_evaluates_value(
-            :boolean, { value: true }, "#{lhs} != #{rhs[1]}", test: :constant_expression
+            { kind: :boolean }, true, "#{lhs} != #{rhs[1]}", test: :constant_expression
           )
         end
 
@@ -350,7 +350,7 @@ module SystemRDL
           ['1'   , "65'd3", 8, 64]
         ].each do |(lhs, rhs, result, width)|
           assert_evaluates_value(
-            :bit, { value: result, width: }, "#{lhs} << #{rhs}", test: :constant_expression
+            { kind: :bit, width: }, result, "#{lhs} << #{rhs}", test: :constant_expression
           )
         end
 
@@ -365,7 +365,7 @@ module SystemRDL
           ['4'   , "65'd3", 0, 64]
         ].each do |(lhs, rhs, result, width)|
           assert_evaluates_value(
-            :bit, { value: result, width: }, "#{lhs} >> #{rhs}", test: :constant_expression
+            { kind: :bit, width: }, result, "#{lhs} >> #{rhs}", test: :constant_expression
           )
         end
 
@@ -390,34 +390,34 @@ module SystemRDL
           ['true' , [1, 1, 2, 1                    , 0xFFFF_FFFF_FFFF_FFFD],  2]
         ].each do |rhs, results, width|
           assert_evaluates_value(
-            :bit, { value: results[0], width: }, "2'd3 & #{rhs}", test: :constant_expression
+            { kind: :bit, width: }, results[0], "2'd3 & #{rhs}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: results[0], width: 64 }, "3 & #{rhs}", test: :constant_expression
+            { kind: :bit, width: 64 }, results[0], "3 & #{rhs}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: results[1], width: }, "2'd1 | #{rhs}", test: :constant_expression
+            { kind: :bit, width: }, results[1], "2'd1 | #{rhs}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: results[1], width: 64 }, "1 | #{rhs}", test: :constant_expression
+            { kind: :bit, width: 64 }, results[1], "1 | #{rhs}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: results[2], width: }, "2'd3 ^ #{rhs}", test: :constant_expression
+            { kind: :bit, width: }, results[2], "2'd3 ^ #{rhs}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: results[2], width: 64 }, "3 ^ #{rhs}", test: :constant_expression
+            { kind: :bit, width: 64 }, results[2], "3 ^ #{rhs}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: results[3], width: }, "2'd3 ^~ #{rhs}", test: :constant_expression
+            { kind: :bit, width: }, results[3], "2'd3 ^~ #{rhs}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: results[4], width: 64 }, "3 ^~ #{rhs}", test: :constant_expression
+            { kind: :bit, width: 64 }, results[4], "3 ^~ #{rhs}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: results[3], width: }, "2'd3 ~^ #{rhs}", test: :constant_expression
+            { kind: :bit, width: }, results[3], "2'd3 ~^ #{rhs}", test: :constant_expression
           )
           assert_evaluates_value(
-            :bit, { value: results[4], width: 64 }, "3 ~^ #{rhs}", test: :constant_expression
+            { kind: :bit, width: 64 }, results[4], "3 ~^ #{rhs}", test: :constant_expression
           )
         end
 
@@ -430,7 +430,7 @@ module SystemRDL
           ['128'   , "2'd2", 256, 64],
         ].each do |(lhs, rhs, result, width)|
           assert_evaluates_value(
-            :bit, { value: result, width: }, "#{lhs} * #{rhs}", test: :constant_expression
+            { kind: :bit, width: }, result, "#{lhs} * #{rhs}", test: :constant_expression
           )
         end
 
@@ -451,7 +451,7 @@ module SystemRDL
           ['0'   , "2'd3", 0, 64]
         ].each do |(lhs, rhs, result, width)|
           assert_evaluates_value(
-            :bit, { value: result, width: }, "#{lhs} / #{rhs}", test: :constant_expression
+            { kind: :bit, width: }, result, "#{lhs} / #{rhs}", test: :constant_expression
           )
         end
 
@@ -472,7 +472,7 @@ module SystemRDL
           ['0'   , "2'd3", 0, 64]
         ].each do |(lhs, rhs, result, width)|
           assert_evaluates_value(
-            :bit, { value: result, width: }, "#{lhs} % #{rhs}", test: :constant_expression
+            { kind: :bit, width: }, result, "#{lhs} % #{rhs}", test: :constant_expression
           )
         end
 
@@ -485,7 +485,7 @@ module SystemRDL
           ['254'   , "2'd2", 256, 64]
         ].each do |(lhs, rhs, result, width)|
           assert_evaluates_value(
-            :bit, { value: result, width: }, "#{lhs} + #{rhs}", test: :constant_expression
+            { kind: :bit, width: }, result, "#{lhs} + #{rhs}", test: :constant_expression
           )
         end
 
@@ -498,7 +498,7 @@ module SystemRDL
           ['1'   , "2'd2", 0xFFFF_FFFF_FFFF_FFFF, 64]
         ].each do |(lhs, rhs, result, width)|
           assert_evaluates_value(
-            :bit, { value: result, width: }, "#{lhs} - #{rhs}", test: :constant_expression
+            { kind: :bit, width: }, result, "#{lhs} - #{rhs}", test: :constant_expression
           )
         end
 
@@ -513,7 +513,7 @@ module SystemRDL
           ['4'   , "65'd3", 64, 64]
         ].each do |(lhs, rhs, result, width)|
           assert_evaluates_value(
-            :bit, { value: result, width: }, "#{lhs} ** #{rhs}", test: :constant_expression
+            { kind: :bit, width: }, result, "#{lhs} ** #{rhs}", test: :constant_expression
           )
         end
       end
@@ -521,42 +521,42 @@ module SystemRDL
       def test_expression_width
         code = "(8'hFF + 8'h01) >> 1"
         assert_evaluates_value(
-          :bit, { value: 0x00, width: 8 }, code, test: :constant_expression
+          { kind: :bit, width: 8 }, 0x00, code, test: :constant_expression
         )
 
         code = "(8'hFF + 0x01) >> 1"
         assert_evaluates_value(
-          :bit, { value: 0x80, width: 64 }, code, test: :constant_expression
+          { kind: :bit, width: 64 }, 0x80, code, test: :constant_expression
         )
 
         code = "4'hF * 6'hA"
         assert_evaluates_value(
-          :bit, { value: 0x16, width: 6 }, code, test: :constant_expression
+          { kind: :bit, width: 6 }, 0x16, code, test: :constant_expression
         )
 
         code = "4'hF ** 6'hA"
         assert_evaluates_value(
-          :bit, { value: 0x1, width: 4 }, code, test: :constant_expression
+          { kind: :bit, width: 4 }, 0x1, code, test: :constant_expression
         )
 
         code = "2'd0 - 2'd1"
         assert_evaluates_value(
-          :bit, { value: 3, width: 2 }, code, test: :constant_expression
+          { kind: :bit, width: 2 }, 3, code, test: :constant_expression
         )
 
         code = "2'd0 - 2'd1 + 3'd0"
         assert_evaluates_value(
-          :bit, { value: 7, width: 3 }, code, test: :constant_expression
+          { kind: :bit, width: 3 }, 7, code, test: :constant_expression
         )
 
         code = "(2'd0 - 2'd1) == 3'd7"
         assert_evaluates_value(
-          :boolean, { value: true }, code, test: :constant_expression
+          { kind: :boolean }, true, code, test: :constant_expression
         )
 
         code = "~2'd0 + 3'd0"
         assert_evaluates_value(
-          :bit, { value: 7, width: 3 }, code, test: :constant_expression
+          { kind: :bit, width: 3 }, 7, code, test: :constant_expression
         )
       end
 

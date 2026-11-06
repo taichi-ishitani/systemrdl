@@ -136,5 +136,81 @@ module SystemRDL
         @instance_ref&.array_select? || false
       end
     end
+
+    class BuiltinTypeRef
+      include Common
+
+      def initialize(type, token_range)
+        super(token_range)
+        @type = type
+      end
+
+      def find(_instance)
+        Type.get(@type)
+      end
+    end
+
+    class TypeRef
+      include Common
+
+      def initialize(id, token_range)
+        super(token_range)
+        @id = id
+      end
+
+      attr_reader :id
+
+      def evaluate(instance, **_optargs)
+        find(instance).to_value(token_range)
+      end
+
+      def find(instance)
+        instance.component_def.upper_layers(include_self: true).reverse_each do |component|
+          type = component.types[@id.value]
+          return type if type
+        end
+
+        message = "undefined type: #{@id}"
+        raise_evaluation_error message, token_range
+      end
+    end
+
+    class EnumMemberRef
+      include Common
+
+      def initialize(enum_ref, id, token_range)
+        super(token_range)
+        @enum_ref = enum_ref
+        @id = id
+      end
+
+      def evaluate(instance, **_optargs)
+        enum = find_enum(instance)
+        member = find_member(enum)
+        Value.new(member, enum, token_range)
+      end
+
+      def array_select?
+        false
+      end
+
+      def expression_width(instance)
+        find_enum(instance).width
+      end
+
+      private
+
+      def find_enum(instance)
+        @enum_ref.find(instance)
+      end
+
+      def find_member(enum)
+        member = enum.members.find { |m| m.name == @id.value }
+        return member if member
+
+        message = "undefined enum member: #{enum.name}::#{@id}"
+        raise_evaluation_error message, token_range
+      end
+    end
   end
 end

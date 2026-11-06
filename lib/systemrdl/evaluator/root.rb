@@ -8,7 +8,7 @@ module SystemRDL
       end
 
       def initialize(elements, token_range)
-        super(Value.new(:root, nil, nil, nil), nil, elements, nil, token_range)
+        super(Value.new(:root, nil, nil), nil, elements, nil, token_range)
         connect(nil, nil)
       end
 
@@ -26,7 +26,7 @@ module SystemRDL
       end
 
       def inherit(instance)
-        definitions.merge!(instance.definition.definitions)
+        definitions.merge!(instance.component_def.definitions)
       end
     end
 

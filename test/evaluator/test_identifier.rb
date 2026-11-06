@@ -292,6 +292,279 @@ module SystemRDL
         )
       end
 
+      def test_undefined_type_error
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  encode = my_enum;
+                } a;
+              } a;
+            };
+          RDL
+          'undefined type: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg my_reg #(my_enum P = 0) {
+                field {
+                  sw = rw; hw = r;
+                } a;
+              };
+              my_reg a;
+            };
+          RDL
+          'undefined type: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg my_reg #(longint unsigned P = my_enum::A) {
+                field {
+                  sw = rw; hw = r;
+                } a;
+              };
+              my_reg a;
+            };
+          RDL
+          'undefined type: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  fieldwidth = my_enum::A;
+                } a;
+              } a;
+            };
+          RDL
+          'undefined type: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg my_reg #(longint unsigned P = 0) {
+                field {
+                  sw = rw; hw = r;
+                  fieldwidth = my_enum::A;
+                } a;
+              };
+              my_reg #(.P(my_enum::A)) a;
+            };
+          RDL
+          'undefined type: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                enum my_enum {
+                  A;
+                  B;
+                };
+                field {
+                  sw = rw; hw = r;
+                } a;
+              } a;
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  encode = my_enum;
+                } b;
+              } b;
+            };
+          RDL
+          'undefined type: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                enum my_enum {
+                  A;
+                  B;
+                };
+                field {
+                  sw = rw; hw = r;
+                } a;
+              } a;
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  fieldwidth = my_enum::A;
+                } b;
+              } b;
+            };
+          RDL
+          'undefined type: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                enum my_enum {
+                  A;
+                  B;
+                };
+                field {
+                  sw = rw; hw = r;
+                } a;
+              } a;
+              reg {
+                field {
+                  sw = rw; hw = r;
+                } b;
+                b->encode = my_enum;
+              } b;
+            };
+          RDL
+          'undefined type: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                field {
+                  sw = rw; hw = r;
+                } a;
+                a->encode = my_enum;
+              } a;
+            };
+          RDL
+          'undefined type: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              field my_field {
+                sw = rw; hw = r;
+              };
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  encode = my_field;
+                } a;
+              } a;
+            };
+          RDL
+          'undefined type: my_field'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              field my_field {
+                sw = rw; hw = r;
+              };
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  fieldwidth = my_field::A;
+                } a;
+              } a;
+            };
+          RDL
+          'undefined type: my_field'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              field my_field {
+                sw = rw; hw = r;
+              };
+              reg {
+                field {
+                  sw = rw; hw = r;
+                } a;
+                a->encode = my_field;
+              } a;
+            };
+          RDL
+          'undefined type: my_field'
+        )
+      end
+
+      def test_undefined_enum_member_error
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            enum my_enum {
+              A;
+              B;
+            };
+            addrmap my_map {
+              reg {
+                field {
+                  sw = rw; hw = r;
+                  fieldwidth = my_enum::C;
+                } a;
+              } a;
+            };
+          RDL
+          'undefined enum member: my_enum::C'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                enum my_enum {
+                  A;
+                  B;
+                };
+                field {
+                  sw = rw; hw = r;
+                  fieldwidth = my_enum::C;
+                } a;
+              } a;
+            };
+          RDL
+          'undefined enum member: my_enum::C'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg {
+                enum my_enum {
+                  A;
+                  B;
+                  C;
+                };
+                field {
+                  sw = rw; hw = r;
+                } a;
+              } a;
+              reg {
+                enum my_enum {
+                  A;
+                  B;
+                };
+                field {
+                  sw = rw; hw = r;
+                  fieldwidth = my_enum::C;
+                } b;
+              } b;
+            };
+          RDL
+          'undefined enum member: my_enum::C'
+        )
+      end
+
       def test_duplicated_instance_error
         assert_raises_evaluation_error(
           <<~'RDL',
@@ -351,7 +624,7 @@ module SystemRDL
         )
       end
 
-      def test_duplicated_component_error
+      def test_duplicated_type_identifier_error
         assert_raises_evaluation_error(
           <<~'RDL',
             addrmap my_map {
@@ -362,7 +635,7 @@ module SystemRDL
               } a;
             };
           RDL
-          'duplicated component: foo'
+          'duplicated type identifier: foo'
         )
 
         assert_raises_evaluation_error(
@@ -377,7 +650,55 @@ module SystemRDL
               foo a;
             };
           RDL
-          'duplicated component: foo'
+          'duplicated type identifier: foo'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            enum foo {
+              A;
+            };
+            enum foo {
+              B;
+            };
+          RDL
+          'duplicated type identifier: foo'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            enum foo {
+              A;
+            };
+            reg foo {
+              field { sw = rw; hw = r; } a;
+            };
+          RDL
+          'duplicated type identifier: foo'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            reg foo {
+              field { sw = rw; hw = r; } a;
+            };
+            enum foo {
+              A;
+            };
+          RDL
+          'duplicated type identifier: foo'
+        )
+      end
+
+      def test_duplicated_enum_member_error
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            enum foo {
+              A;
+              A = 1;
+            };
+          RDL
+          'duplicated enum member: A'
         )
       end
 

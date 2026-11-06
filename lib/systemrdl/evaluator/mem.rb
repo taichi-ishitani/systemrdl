@@ -53,7 +53,7 @@ module SystemRDL
         property = instance.property(:memwidth)
         return if property.value
 
-        entrywidth = Value.new(instance.entrywidth, :bit, 64, nil)
+        entrywidth = Value.new(instance.entrywidth, Type.longint, nil)
         property.assign(entrywidth)
       end
 

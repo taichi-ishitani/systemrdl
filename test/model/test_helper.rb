@@ -52,7 +52,7 @@ module SystemRDL
         end
       end
 
-      def assert_property_reference_value(instance, name, full_name)
+      def assert_prop_ref_value(instance, name, full_name)
         property = instance.property(name)
         assert_equal(full_name, property.value.full_name)
       end

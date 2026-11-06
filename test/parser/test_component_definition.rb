@@ -610,9 +610,9 @@ module SystemRDL
             reg_named_definition(
               id(:myReg),
               param_def(
-                param_def_elem(:NAME, data_type('string')),
-                param_def_elem(:SIZE, data_type('longint', 'unsigned'), number('32')),
-                param_def_elem(:SHARED, data_type('boolean'), boolean(true)),
+                param_def_elem(:NAME, builtin_type('string')),
+                param_def_elem(:SIZE, builtin_type('longint', 'unsigned'), number('32')),
+                param_def_elem(:SHARED, builtin_type('boolean'), boolean(true)),
               ),
               prop_assignment(:name, instance_ref(:NAME)),
               prop_assignment(:regwidth, instance_ref(:SIZE)),
@@ -714,8 +714,8 @@ module SystemRDL
         s(:param_def_elem, id(id), *children)
       end
 
-      def data_type(type, modifier = nil)
-        s(:data_type, *[type, modifier].compact)
+      def builtin_type(type, modifier = nil)
+        s(:builtin_type, *[type, modifier].compact)
       end
 
       def component_insts(*children)

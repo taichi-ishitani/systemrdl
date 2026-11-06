@@ -5,7 +5,7 @@ module SystemRDL
     Signature = Data.define(:component_name, :parameter_hash) do
       class << self
         def generate(instance)
-          return if instance.definition.anonymous_def?
+          return if instance.component_def.anonymous_def?
 
           new(component_name(instance), parameter_hash(instance))
         end
@@ -13,7 +13,7 @@ module SystemRDL
         private
 
         def component_name(instance)
-          instance.definition.upper_layers(include_self: true).map(&:id)
+          instance.component_def.upper_layers(include_self: true).map(&:id)
         end
 
         def parameter_hash(instance)
@@ -24,8 +24,8 @@ module SystemRDL
 
         def concat_params(instance)
           params = instance.params.flat_map do |param|
-            if param.value.type == :bit
-              [param.value.to_s, param.value.width.to_s]
+            if param.value.type.kind == :bit
+              [param.value.to_s, param.value.type.width.to_s]
             else
               param.value.to_s
             end

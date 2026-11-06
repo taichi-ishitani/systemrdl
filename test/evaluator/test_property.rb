@@ -239,10 +239,10 @@ module SystemRDL
 
         fields = regs.flat_map(&:instances)
         fields.each do |field|
-          assert_property_reference_value(field, :hwenable, 'my_map.b.a')
-          assert_property_reference_value(field, :swwe, 'my_map.b.a.anded')
-          assert_property_reference_value(field, :hwclr, 'my_map.c[0].a')
-          assert_property_reference_value(field, :hwset, 'my_map.c[0].a.ored')
+          assert_prop_ref_value(field, :hwenable, 'my_map.b.a')
+          assert_prop_ref_value(field, :swwe, 'my_map.b.a.anded')
+          assert_prop_ref_value(field, :hwclr, 'my_map.c[0].a')
+          assert_prop_ref_value(field, :hwset, 'my_map.c[0].a.ored')
         end
       end
 

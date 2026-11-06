@@ -119,7 +119,7 @@ module SystemRDL
           else
             allocate_field_bits_msb0(instance, previous_field, field)
           end
-        [msb, lsb].map { |pos| Value.new(pos, :bit, 64, field.width.token_range) }
+        [msb, lsb].map { |pos| Value.new(pos, Type.longint, field.width.token_range) }
       end
 
       def allocate_field_bits_lsb0(previous_field, field)
