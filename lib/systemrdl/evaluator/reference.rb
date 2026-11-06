@@ -137,7 +137,20 @@ module SystemRDL
       end
     end
 
-    class EnumRef
+    class BuiltinTypeRef
+      include Common
+
+      def initialize(type, token_range)
+        super(token_range)
+        @type = type
+      end
+
+      def find(_instance)
+        Type.get(@type)
+      end
+    end
+
+    class TypeRef
       include Common
 
       def initialize(id, token_range)
@@ -148,12 +161,16 @@ module SystemRDL
       attr_reader :id
 
       def evaluate(instance, **_optargs)
+        find(instance).to_value(token_range)
+      end
+
+      def find(instance)
         instance.component_def.upper_layers(include_self: true).reverse_each do |component|
-          enum = component.types[@id.value]
-          return enum.to_value(token_range) if enum
+          type = component.types[@id.value]
+          return type if type
         end
 
-        message = "undefined enum: #{@id}"
+        message = "undefined type: #{@id}"
         raise_evaluation_error message, token_range
       end
     end
@@ -167,8 +184,8 @@ module SystemRDL
         @id = id
       end
 
-      def evaluate(instance, **optargs)
-        enum = find_enum(instance, **optargs)
+      def evaluate(instance, **_optargs)
+        enum = find_enum(instance)
         member = find_member(enum)
         Value.new(member, enum, token_range)
       end
@@ -183,8 +200,8 @@ module SystemRDL
 
       private
 
-      def find_enum(instance, **optargs)
-        @enum_ref.evaluate(instance, **optargs).value
+      def find_enum(instance)
+        @enum_ref.find(instance)
       end
 
       def find_member(enum)

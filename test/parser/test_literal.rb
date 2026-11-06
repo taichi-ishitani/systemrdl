@@ -79,7 +79,7 @@ module SystemRDL::Parser
         s(
           :enum_literal,
           s(
-            :enum_ref,
+            :type_ref,
             s(:id, 'MyEnumeration')
           ),
           s(:id, 'MyValue')

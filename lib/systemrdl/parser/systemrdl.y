@@ -197,7 +197,7 @@ rule
     | prop_assignment_lhs ";" {
         result = node(:prop_assignment, [val[0]], val)
       }
-    | encode "=" enum_ref ";" {
+    | encode "=" type_ref ";" {
         result = node(:prop_assignment, [val[0], val[2]], val)
       }
   default_prop_assignment
@@ -207,7 +207,7 @@ rule
     | KW_DEFAULT prop_assignment_lhs ";" {
         result = node(:default_prop_assignment, [val[1]], val)
       }
-    | KW_DEFAULT encode "=" enum_ref ";" {
+    | KW_DEFAULT encode "=" type_ref ";" {
         result = node(:default_prop_assignment, [val[1], val[3]], val)
       }
   post_prop_assignment
@@ -217,7 +217,7 @@ rule
     | prop_ref "=" prop_assignment_rhs ";" {
         result = node(:post_prop_assignment, [val[0], val[2]], val)
       }
-    | encode_ref "=" enum_ref ";" {
+    | encode_ref "=" type_ref ";" {
         result = node(:post_prop_assignment, [val[0], val[2]], val)
       }
   prop_mod
@@ -256,10 +256,6 @@ rule
   encode_ref
     : instance_ref "->" encode {
         result = node(:prop_ref, [val[0], val[2]], val)
-      }
-  enum_ref
-    : id {
-        result = node(:enum_ref, val, val)
       }
 
   #
@@ -316,41 +312,43 @@ rule
   #
   simple_type
     : KW_LONGINT {
-        result = node(:data_type, val, val)
+        result = node(:builtin_type, val, val)
       }
     | KW_BIT {
-        result = node(:data_type, val, val)
+        result = node(:builtin_type, val, val)
       }
   basic_data_type
     : simple_type
     | KW_LONGINT KW_UNSIGNED {
-        result = node(:data_type, val, val)
+        result = node(:builtin_type, val, val)
       }
     | KW_BIT KW_UNSIGNED {
-        result = node(:data_type, val, val)
+        result = node(:builtin_type, val, val)
       }
     | KW_STRING {
-        result = node(:data_type, val, val)
+        result = node(:builtin_type, val, val)
       }
     | KW_BOOLEAN {
-        result = node(:data_type, val, val)
+        result = node(:builtin_type, val, val)
       }
-    | id {
-        result = val[0]
-      }
+    | type_ref
   data_type
     : basic_data_type
     | KW_ACCESSTYPE {
-        result = node(:data_type, val, val)
+        result = node(:builtin_type, val, val)
       }
     | KW_ADDRESSINGTYPE {
-        result = node(:data_type, val, val)
+        result = node(:builtin_type, val, val)
       }
     | KW_ONREADTYPE {
-        result = node(:data_type, val, val)
+        result = node(:builtin_type, val, val)
       }
     | KW_ONWRITETYPE {
-        result = node(:data_type, val, val)
+        result = node(:builtin_type, val, val)
+      }
+  type_ref
+    : id {
+        result = node(:type_ref, val, val)
       }
 
   #
@@ -490,7 +488,7 @@ rule
     | STRING {
         result = node(:string, val, val)
       }
-    | enum_ref "::" id {
+    | type_ref "::" id {
         result = node(:enum_literal, [val[0], val[2]], val)
       }
     | NUMBER {
@@ -522,7 +520,7 @@ rule
       : simple_type
       | constant_primary
       | KW_BOOLEAN {
-          result = node(:data_type, val, val)
+          result = node(:builtin_type, val, val)
         }
 
   #

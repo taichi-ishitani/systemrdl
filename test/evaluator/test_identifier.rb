@@ -292,7 +292,7 @@ module SystemRDL
         )
       end
 
-      def test_undefined_enum_error
+      def test_undefined_type_error
         assert_raises_evaluation_error(
           <<~'RDL',
             addrmap my_map {
@@ -304,7 +304,35 @@ module SystemRDL
               } a;
             };
           RDL
-          'undefined enum: my_enum'
+          'undefined type: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg my_reg #(my_enum P = 0) {
+                field {
+                  sw = rw; hw = r;
+                } a;
+              };
+              my_reg a;
+            };
+          RDL
+          'undefined type: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg my_reg #(longint unsigned P = my_enum::A) {
+                field {
+                  sw = rw; hw = r;
+                } a;
+              };
+              my_reg a;
+            };
+          RDL
+          'undefined type: my_enum'
         )
 
         assert_raises_evaluation_error(
@@ -318,7 +346,22 @@ module SystemRDL
               } a;
             };
           RDL
-          'undefined enum: my_enum'
+          'undefined type: my_enum'
+        )
+
+        assert_raises_evaluation_error(
+          <<~'RDL',
+            addrmap my_map {
+              reg my_reg #(longint unsigned P = 0) {
+                field {
+                  sw = rw; hw = r;
+                  fieldwidth = my_enum::A;
+                } a;
+              };
+              my_reg #(.P(my_enum::A)) a;
+            };
+          RDL
+          'undefined type: my_enum'
         )
 
         assert_raises_evaluation_error(
@@ -341,7 +384,7 @@ module SystemRDL
               } b;
             };
           RDL
-          'undefined enum: my_enum'
+          'undefined type: my_enum'
         )
 
         assert_raises_evaluation_error(
@@ -364,7 +407,7 @@ module SystemRDL
               } b;
             };
           RDL
-          'undefined enum: my_enum'
+          'undefined type: my_enum'
         )
 
         assert_raises_evaluation_error(
@@ -387,7 +430,7 @@ module SystemRDL
               } b;
             };
           RDL
-          'undefined enum: my_enum'
+          'undefined type: my_enum'
         )
 
         assert_raises_evaluation_error(
@@ -401,7 +444,7 @@ module SystemRDL
               } a;
             };
           RDL
-          'undefined enum: my_enum'
+          'undefined type: my_enum'
         )
 
         assert_raises_evaluation_error(
@@ -418,7 +461,7 @@ module SystemRDL
               } a;
             };
           RDL
-          'undefined enum: my_field'
+          'undefined type: my_field'
         )
 
         assert_raises_evaluation_error(
@@ -435,7 +478,7 @@ module SystemRDL
               } a;
             };
           RDL
-          'undefined enum: my_field'
+          'undefined type: my_field'
         )
 
         assert_raises_evaluation_error(
@@ -452,7 +495,7 @@ module SystemRDL
               } a;
             };
           RDL
-          'undefined enum: my_field'
+          'undefined type: my_field'
         )
       end
 

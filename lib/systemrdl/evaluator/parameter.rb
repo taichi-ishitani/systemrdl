@@ -73,7 +73,8 @@ module SystemRDL
 
       def evaluate(instance, param_inst, **optargs)
         value, token_range = eval_param_value(instance, param_inst, **optargs)
-        value = value.coerce([value_type]) do |expected, actual|
+        type = @type.find(instance)
+        value = value.coerce([type]) do |expected, actual|
           message =
             "type mismatch for #{@id} parameter: " \
             "expected #{expected[0]} actual #{actual}"
@@ -93,10 +94,6 @@ module SystemRDL
           message = "missing mandatory parameter: #{@id}"
           raise_evaluation_error message, token_range
         end
-      end
-
-      def value_type
-        Type.get(@type.value)
       end
     end
 

@@ -13,7 +13,7 @@ module SystemRDL
 
 racc_action_table = [
     84,   139,    49,   106,    10,    49,    70,    49,    49,    18,
-    20,    86,  -111,   108,    64,    15,    15,    63,    83,    13,
+    20,    86,  -144,   108,    64,    15,    15,    63,    83,    13,
     87,    16,    16,    17,    49,    49,    14,    49,    90,    94,
     56,    57,   107,    53,    95,    96,    88,    92,    12,   236,
     11,    49,   136,    85,   236,   236,    91,    93,   103,    98,
@@ -23,8 +23,8 @@ racc_action_table = [
    114,   118,   119,   120,   116,    66,    73,    74,    67,    82,
    197,   192,   193,   194,   195,   196,    17,   348,   142,    84,
    139,   124,   106,   236,   236,   110,   113,   115,   117,   153,
-    86,   157,   108,   162,   156,   154,   236,    83,  -121,    87,
-  -121,    70,  -121,    49,  -121,    70,   158,    90,    94,    49,
+    86,   157,   108,   162,   156,   154,   236,    83,  -120,    87,
+  -120,    70,  -120,    49,  -120,    70,   158,    90,    94,    49,
     49,   107,    70,    95,    96,    88,    92,    49,    74,   199,
    163,   136,    85,  -223,   213,    91,    93,   103,    98,    97,
     99,    89,   104,   105,   101,   100,   102,   128,   130,   131,
@@ -586,8 +586,8 @@ racc_action_table = [
    185,   179,   181,   180,   182 ]
 
 racc_action_check = [
-    51,    51,   231,    51,   145,     8,    79,   287,   303,     1,
-     3,    51,    79,    51,    29,   230,   318,    29,    51,   145,
+    51,    51,   231,    51,   145,     8,    81,   287,   303,     1,
+     3,    51,    81,    51,    29,   230,   318,    29,    51,   145,
     51,   230,   318,     5,    17,   346,   145,   359,    51,    51,
     18,    21,    51,     8,    51,    51,    51,    51,   145,   231,
    145,    54,    51,    51,   287,   303,    51,    51,    51,    51,
@@ -599,7 +599,7 @@ racc_action_check = [
     63,    51,    63,   230,   318,    51,    51,    51,    51,    55,
     63,    60,    63,    63,    60,    58,   150,    63,   150,    63,
    150,   150,    38,    59,    38,    38,    61,    63,    63,    65,
-    68,    63,    71,    63,    63,    63,    63,    74,    75,    80,
+    68,    63,    71,    63,    63,    63,    63,    74,    75,    79,
     63,    63,    63,   109,   129,    63,    63,    63,    63,    63,
     63,    63,    63,    63,    63,    63,    63,    63,    63,    63,
     63,   252,   252,   252,   252,   252,   252,   252,   252,    63,
@@ -1167,8 +1167,8 @@ racc_action_pointer = [
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   -24,   -21,   nil,
     79,    -8,    -8,  4795,   -28,    12,   nil,   nil,    16,    54,
     12,    24,   nil,    91,   nil,    60,   nil,   190,    61,   nil,
-   281,    21,   nil,  5013,    68,    30,   nil,   nil,  5339,  -105,
-    29,   nil,   372,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   281,    21,   nil,  5013,    68,    30,   nil,   nil,  5339,    29,
+   nil,  -105,   372,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,    25,
    463,   554,   645,   736,   827,   918,  1009,  1100,  1191,  1282,
@@ -1205,11 +1205,11 @@ racc_action_default = [
    -25,   -26,   -27,   -28,   -29,   -52,   -53,  -226,  -226,    -2,
     -5,  -226,   -78,   -79,   -80,   -81,   -82,  -226,  -226,  -226,
   -226,  -226,  -226,   -94,   -95,   -96,   -97,   -98,   -99,  -100,
-  -101,  -102,  -103,  -104,  -105,  -106,  -109,  -226,  -113,  -225,
+  -101,  -102,  -103,  -104,  -105,  -106,  -109,  -226,  -112,  -225,
     -3,  -226,   -10,   -12,  -226,  -226,   384,    -6,  -226,  -226,
-  -226,  -226,   -99,  -226,   -86,  -226,   -91,  -226,  -226,  -120,
-  -226,  -124,  -126,  -226,  -226,  -113,  -115,    -4,  -226,  -121,
-  -119,  -118,  -226,  -132,  -133,  -145,  -146,  -147,  -148,  -149,
+  -226,  -226,   -99,  -226,   -86,  -226,   -91,  -226,  -226,  -119,
+  -226,  -123,  -125,  -226,  -226,  -112,  -114,    -4,  -226,  -118,
+  -117,  -120,  -226,  -131,  -132,  -145,  -146,  -147,  -148,  -149,
   -150,  -151,  -152,  -153,  -154,  -155,  -156,  -157,  -158,  -159,
   -160,  -161,  -162,  -163,  -164,  -165,  -166,  -167,  -168,  -171,
   -226,  -226,  -226,  -226,  -226,  -226,  -226,  -226,  -226,  -226,
@@ -1217,45 +1217,45 @@ racc_action_default = [
   -214,  -215,  -216,  -217,  -218,  -219,  -220,  -226,  -222,  -224,
    -11,  -226,  -226,   -12,  -226,  -226,   -21,   -22,   -23,   -24,
    -99,   -10,   -12,  -226,   -83,  -226,  -226,   -89,  -226,  -226,
-  -107,  -108,  -169,  -170,  -226,  -111,  -226,  -226,  -226,  -125,
-  -110,  -116,  -117,  -112,  -121,  -114,    -7,  -226,  -226,  -226,
+  -107,  -108,  -169,  -170,  -226,  -144,  -226,  -226,  -226,  -124,
+  -110,  -115,  -116,  -111,  -120,  -113,    -7,  -226,  -226,  -226,
   -226,  -226,  -226,  -226,  -226,  -226,  -226,  -226,  -226,  -226,
   -226,  -226,  -226,  -226,  -226,  -226,  -226,  -226,  -226,  -226,
-  -128,  -172,  -173,  -174,  -175,  -176,  -177,  -178,  -179,  -180,
-  -181,  -182,  -226,  -226,  -226,   -12,   -57,  -226,  -132,  -133,
-  -134,  -137,  -138,  -139,  -140,  -141,  -142,  -143,  -144,   -13,
+  -127,  -172,  -173,  -174,  -175,  -176,  -177,  -178,  -179,  -180,
+  -181,  -182,  -226,  -226,  -226,   -12,   -57,  -226,  -131,  -132,
+  -133,  -136,  -137,  -138,  -139,  -140,  -141,  -142,  -143,   -13,
   -226,  -226,  -226,  -226,   -33,   -37,  -226,  -226,  -226,   -69,
-  -226,   -61,   -84,  -226,  -226,   -85,   -87,   -92,   -93,  -123,
+  -226,   -61,   -84,  -226,  -226,   -85,   -87,   -92,   -93,  -122,
   -183,  -184,  -185,  -186,  -187,  -188,  -189,  -190,  -191,  -192,
   -193,  -194,  -195,  -196,  -197,  -198,  -199,  -200,  -201,  -202,
-  -203,  -226,  -226,  -128,  -226,  -226,  -226,  -208,  -213,  -226,
-  -226,  -226,   -57,  -226,   -61,  -135,  -136,  -226,  -226,  -226,
+  -203,  -226,  -226,  -127,  -226,  -226,  -226,  -208,  -213,  -226,
+  -226,  -226,   -57,  -226,   -61,  -134,  -135,  -226,  -226,  -226,
    -30,   -33,  -226,   -33,   -36,   -38,   -39,   -54,   -55,  -226,
    -65,  -226,   -12,  -226,   -70,  -226,  -226,   -62,   -75,   -88,
-   -90,  -226,  -127,  -129,  -128,  -130,  -131,  -226,  -226,   -56,
+   -90,  -226,  -126,  -128,  -127,  -129,  -130,  -226,  -226,   -56,
    -58,   -59,   -63,  -226,   -18,   -31,   -35,   -32,   -34,   -40,
    -41,  -226,  -226,  -226,   -65,  -226,  -226,  -226,  -226,   -71,
    -60,   -72,   -76,  -226,  -204,  -221,  -226,  -226,   -17,   -15,
    -42,   -43,  -226,   -48,  -226,   -64,   -66,   -67,  -226,  -226,
    -20,   -72,  -226,   -77,  -226,   -16,   -44,   -45,  -226,   -49,
   -226,  -226,  -226,   -73,   -74,   -14,   -46,   -47,  -226,   -50,
-  -122,   -68,   -19,   -51 ]
+  -121,   -68,   -19,   -51 ]
 
 racc_goto_table = [
-    38,     9,   240,     9,    52,    31,   216,    54,    47,   172,
-   141,   220,   283,    55,   300,   291,   294,   159,   144,   164,
-    51,   166,   167,    58,    62,   308,     7,    61,     7,    76,
-     1,    50,    78,   335,     3,     6,    19,     6,   361,   362,
-    21,   295,   329,   350,   366,   376,   296,   232,   330,   150,
-   151,   168,   351,   367,    31,   155,   175,    47,   361,   373,
-   377,   165,   297,   200,   165,    77,   298,   356,   322,   171,
-   174,   342,   170,   326,   327,   328,    50,   343,   320,    59,
-    60,   173,   276,   169,   313,   nil,   nil,   nil,   304,   nil,
+    38,     9,   240,     9,    52,    31,   216,    54,    47,   164,
+   172,   220,   167,    55,   141,   300,   159,   283,   144,   291,
+   166,    51,   294,    58,    62,     7,    61,     7,   335,   308,
+    50,    76,    78,   361,     1,     3,   362,    19,     6,    21,
+     6,   295,   329,   350,   366,   376,   296,   232,   330,   150,
+   151,   168,   351,   361,    31,   155,   373,    47,   175,   367,
+   377,   165,   356,   200,   165,   297,    77,   298,   342,   171,
+   174,   170,   322,   343,    59,    50,    60,   173,   327,   326,
+   276,   328,   169,   320,   313,   nil,   223,   nil,   304,   nil,
    nil,   201,   202,   203,   204,   205,   206,   207,   208,   209,
-   210,   211,   nil,   nil,   nil,   212,   nil,   nil,   229,   237,
-   243,   355,   244,   nil,   nil,   nil,   nil,   238,   nil,   nil,
+   210,   211,   244,   nil,   nil,   212,   nil,   nil,   229,   243,
+   nil,   nil,   355,   237,   nil,   nil,   nil,   238,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   288,   289,   nil,
-   nil,   nil,   nil,   nil,   nil,   172,   nil,   nil,   223,   150,
+   nil,   nil,   nil,   nil,   nil,   nil,   172,   nil,   165,   150,
    nil,   231,   nil,    54,    31,   319,   235,    47,   150,   241,
    220,   nil,   nil,    31,   165,   nil,    47,   nil,   250,   251,
    252,   253,   254,   255,   256,   257,   258,   259,   260,   261,
@@ -1264,12 +1264,12 @@ racc_goto_table = [
    nil,   nil,   nil,   nil,   nil,   171,   nil,   nil,   nil,   nil,
    338,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   278,
    nil,   150,   nil,   284,   nil,   347,    31,   nil,   nil,    47,
-   nil,   nil,   nil,   nil,   nil,   nil,   235,   235,   nil,   235,
+   nil,   nil,   nil,   nil,   nil,   223,   235,   235,   nil,   235,
    nil,   287,   nil,   nil,   nil,   241,   nil,   nil,   nil,   nil,
    nil,   nil,   nil,   364,   nil,   nil,   nil,   nil,   nil,   nil,
    nil,   nil,   nil,   312,   nil,   314,   372,   nil,   nil,   nil,
    317,   nil,   nil,   nil,   nil,   nil,   nil,   337,   nil,   nil,
-   nil,   nil,   nil,   nil,   nil,   nil,   nil,   223,   nil,   nil,
+   nil,   nil,   nil,   nil,   nil,   nil,   nil,   165,   nil,   nil,
    332,   nil,   nil,   235,   nil,   nil,   nil,   340,   235,   nil,
    nil,   nil,   344,   nil,   nil,   nil,   nil,   336,   150,   235,
    nil,   nil,   nil,    31,   nil,   nil,    47,   nil,   nil,   nil,
@@ -1280,20 +1280,20 @@ racc_goto_table = [
    nil,   nil,   nil,   nil,   nil,   235,   nil,    62,   nil,   383 ]
 
 racc_goto_check = [
-    10,    13,    44,    13,    10,    58,    34,     9,    62,    60,
-    15,    73,    36,    10,    40,    19,    21,    55,    16,    57,
-     7,    55,    57,    10,    10,    39,     4,    56,     4,    65,
-     1,     4,     5,    42,     6,     8,     6,     8,    45,    46,
-     3,    22,    23,    24,    25,    26,    27,    14,    28,    10,
-    10,     5,    29,    30,    58,    10,    65,    62,    45,    46,
-    31,    10,    32,     5,    10,     7,    33,    42,    39,    10,
-    10,    47,    56,    21,    19,    21,     4,    48,    36,    53,
-    54,    63,    67,    69,    72,   nil,   nil,   nil,    44,   nil,
+    10,    13,    44,    13,    10,    58,    34,     9,    62,    57,
+    60,    73,    57,    10,    15,    40,    55,    36,    16,    19,
+    55,     7,    21,    10,    10,     4,    56,     4,    42,    39,
+     4,    65,     5,    45,     1,     6,    46,     6,     8,     3,
+     8,    22,    23,    24,    25,    26,    27,    14,    28,    10,
+    10,     5,    29,    45,    58,    10,    46,    62,    65,    30,
+    31,    10,    42,     5,    10,    32,     7,    33,    47,    10,
+    10,    56,    39,    48,    53,     4,    54,    63,    19,    21,
+    67,    21,    69,    36,    72,   nil,    57,   nil,    44,   nil,
    nil,     5,     5,     5,     5,     5,     5,     5,     5,     5,
-     5,     5,   nil,   nil,   nil,     5,   nil,   nil,    16,    15,
-    55,    40,    57,   nil,   nil,   nil,   nil,    16,   nil,   nil,
+     5,     5,    57,   nil,   nil,     5,   nil,   nil,    16,    55,
+   nil,   nil,    40,    15,   nil,   nil,   nil,    16,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,    14,    14,   nil,
-   nil,   nil,   nil,   nil,   nil,    60,   nil,   nil,    10,    10,
+   nil,   nil,   nil,   nil,   nil,   nil,    60,   nil,    10,    10,
    nil,    10,   nil,     9,    58,    34,    10,    62,    10,    10,
     73,   nil,   nil,    58,    10,   nil,    62,   nil,     5,     5,
      5,     5,     5,     5,     5,     5,     5,     5,     5,     5,
@@ -1302,7 +1302,7 @@ racc_goto_check = [
    nil,   nil,   nil,   nil,   nil,    10,   nil,   nil,   nil,   nil,
     14,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,    10,
    nil,    10,   nil,    10,   nil,    14,    58,   nil,   nil,    62,
-   nil,   nil,   nil,   nil,   nil,   nil,    10,    10,   nil,    10,
+   nil,   nil,   nil,   nil,   nil,    57,    10,    10,   nil,    10,
    nil,    13,   nil,   nil,   nil,    10,   nil,   nil,   nil,   nil,
    nil,   nil,   nil,    14,   nil,   nil,   nil,   nil,   nil,   nil,
    nil,   nil,   nil,     5,   nil,     5,    14,   nil,   nil,   nil,
@@ -1318,24 +1318,24 @@ racc_goto_check = [
    nil,   nil,   nil,   nil,   nil,    10,   nil,    10,   nil,     5 ]
 
 racc_goto_pointer = [
-   nil,    30,   nil,    36,    26,   -19,    34,    15,    35,    -2,
-    -4,   nil,   nil,     1,  -103,   -42,   -35,   nil,   nil,  -218,
-   nil,  -218,  -194,  -254,  -287,  -307,  -322,  -189,  -248,  -278,
-  -298,  -307,  -173,  -169,  -136,   nil,  -204,   nil,   nil,  -216,
-  -222,   nil,  -267,   nil,  -151,  -303,  -302,  -237,  -231,   nil,
-   nil,   nil,   nil,    51,    52,   -46,    -1,   -46,     1,   nil,
-   -64,   nil,     4,     7,   nil,   -19,   nil,  -118,   nil,    12,
+   nil,    34,   nil,    35,    25,   -19,    35,    16,    38,    -2,
+    -4,   nil,   nil,     1,  -103,   -38,   -35,   nil,   nil,  -214,
+   nil,  -212,  -194,  -254,  -287,  -307,  -322,  -189,  -248,  -278,
+  -292,  -307,  -170,  -168,  -136,   nil,  -199,   nil,   nil,  -212,
+  -221,   nil,  -272,   nil,  -151,  -308,  -305,  -240,  -235,   nil,
+   nil,   nil,   nil,    46,    48,   -47,    -2,   -56,     1,   nil,
+   -63,   nil,     4,     3,   nil,   -17,   nil,  -120,   nil,    11,
    nil,   nil,  -189,  -131,   nil,   nil,   nil,   nil,   nil,   nil,
    nil,   nil,   nil,   nil ]
 
 racc_goto_default = [
    nil,   nil,     2,   148,   147,   160,   nil,   nil,   146,     8,
-    79,   140,   143,   145,   nil,   nil,   nil,   149,   233,   234,
+    81,   140,   143,   145,   nil,   nil,   nil,   149,   233,   234,
    293,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
    nil,   nil,    69,   nil,   nil,   282,   nil,   217,   307,   nil,
    nil,   334,   nil,   239,   nil,    24,   nil,   nil,   nil,    22,
-    23,    25,    26,    27,    29,   nil,    30,   129,    81,    32,
-    39,   161,    80,    48,    75,   nil,   126,   122,    71,    72,
+    23,    25,    26,    27,    29,   nil,    30,   129,    80,    32,
+    39,   161,    79,    48,    75,   nil,   126,   122,    71,    72,
    123,   273,   275,   138,   224,   127,   132,   133,   134,   135,
    109,   121,   125,   137 ]
 
@@ -1451,40 +1451,40 @@ racc_reduce_table = [
   1, 174, :_reduce_108,
   1, 175, :_reduce_109,
   3, 178, :_reduce_110,
-  1, 176, :_reduce_111,
-  2, 183, :_reduce_112,
-  0, 184, :_reduce_113,
-  2, 184, :_reduce_114,
-  2, 181, :_reduce_115,
+  2, 183, :_reduce_111,
+  0, 184, :_reduce_112,
+  2, 184, :_reduce_113,
+  2, 181, :_reduce_114,
+  3, 177, :_reduce_115,
   3, 177, :_reduce_116,
-  3, 177, :_reduce_117,
   1, 185, :_reduce_none,
   1, 185, :_reduce_none,
-  2, 182, :_reduce_120,
-  1, 182, :_reduce_121,
-  5, 152, :_reduce_122,
-  3, 187, :_reduce_123,
-  1, 188, :_reduce_124,
-  2, 188, :_reduce_125,
-  1, 151, :_reduce_126,
-  2, 190, :_reduce_127,
-  0, 191, :_reduce_128,
-  2, 191, :_reduce_129,
-  4, 186, :_reduce_130,
-  4, 189, :_reduce_131,
+  2, 182, :_reduce_119,
+  1, 182, :_reduce_120,
+  5, 152, :_reduce_121,
+  3, 187, :_reduce_122,
+  1, 188, :_reduce_123,
+  2, 188, :_reduce_124,
+  1, 151, :_reduce_125,
+  2, 190, :_reduce_126,
+  0, 191, :_reduce_127,
+  2, 191, :_reduce_128,
+  4, 186, :_reduce_129,
+  4, 189, :_reduce_130,
+  1, 192, :_reduce_131,
   1, 192, :_reduce_132,
-  1, 192, :_reduce_133,
   1, 193, :_reduce_none,
+  2, 193, :_reduce_134,
   2, 193, :_reduce_135,
-  2, 193, :_reduce_136,
+  1, 193, :_reduce_136,
   1, 193, :_reduce_137,
-  1, 193, :_reduce_138,
-  1, 193, :_reduce_139,
+  1, 193, :_reduce_none,
   1, 156, :_reduce_none,
+  1, 156, :_reduce_140,
   1, 156, :_reduce_141,
   1, 156, :_reduce_142,
   1, 156, :_reduce_143,
-  1, 156, :_reduce_144,
+  1, 176, :_reduce_144,
   1, 194, :_reduce_none,
   1, 194, :_reduce_none,
   1, 195, :_reduce_none,
@@ -1890,7 +1890,7 @@ Racc_token_to_s_table = [
   "prop_assignment_lhs",
   "prop_assignment_rhs",
   "encode",
-  "enum_ref",
+  "type_ref",
   "prop_ref",
   "encode_ref",
   "prop_keyword",
@@ -2537,44 +2537,44 @@ module_eval(<<'.,.,', 'systemrdl.y', 257)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 261)
+module_eval(<<'.,.,', 'systemrdl.y', 269)
   def _reduce_111(val, _values, result)
-            result = node(:enum_ref, val, val)
-
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'systemrdl.y', 273)
-  def _reduce_112(val, _values, result)
     result = val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 273)
-  def _reduce_113(val, _values, result)
-    result = val[1] ? val[1].unshift(val[0]) : val
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'systemrdl.y', 273)
-  def _reduce_114(val, _values, result)
+module_eval(<<'.,.,', 'systemrdl.y', 269)
+  def _reduce_112(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'systemrdl.y', 269)
-  def _reduce_115(val, _values, result)
+  def _reduce_113(val, _values, result)
+    result = val[1] ? val[1].unshift(val[0]) : val
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 265)
+  def _reduce_114(val, _values, result)
             result = node(:instance_ref, to_list(val, include_separator: true), val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 273)
+module_eval(<<'.,.,', 'systemrdl.y', 269)
+  def _reduce_115(val, _values, result)
+            result = node(:prop_ref, [val[0], val[2]], val)
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 272)
   def _reduce_116(val, _values, result)
             result = node(:prop_ref, [val[0], val[2]], val)
 
@@ -2582,19 +2582,19 @@ module_eval(<<'.,.,', 'systemrdl.y', 273)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 276)
-  def _reduce_117(val, _values, result)
-            result = node(:prop_ref, [val[0], val[2]], val)
+# reduce 117 omitted
+
+# reduce 118 omitted
+
+module_eval(<<'.,.,', 'systemrdl.y', 279)
+  def _reduce_119(val, _values, result)
+          result = node(:instance_ref_element, val, val)
 
     result
   end
 .,.,
 
-# reduce 118 omitted
-
-# reduce 119 omitted
-
-module_eval(<<'.,.,', 'systemrdl.y', 283)
+module_eval(<<'.,.,', 'systemrdl.y', 282)
   def _reduce_120(val, _values, result)
           result = node(:instance_ref_element, val, val)
 
@@ -2602,175 +2602,169 @@ module_eval(<<'.,.,', 'systemrdl.y', 283)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 286)
+module_eval(<<'.,.,', 'systemrdl.y', 290)
   def _reduce_121(val, _values, result)
-          result = node(:instance_ref_element, val, val)
-
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'systemrdl.y', 294)
-  def _reduce_122(val, _values, result)
             result = node(:range, [val[1], val[3]], val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 306)
-  def _reduce_123(val, _values, result)
+module_eval(<<'.,.,', 'systemrdl.y', 302)
+  def _reduce_122(val, _values, result)
     result = val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 306)
+module_eval(<<'.,.,', 'systemrdl.y', 302)
+  def _reduce_123(val, _values, result)
+    result = val[1] ? val[1].unshift(val[0]) : val
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 302)
   def _reduce_124(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 306)
+module_eval(<<'.,.,', 'systemrdl.y', 294)
   def _reduce_125(val, _values, result)
-    result = val[1] ? val[1].unshift(val[0]) : val
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'systemrdl.y', 298)
-  def _reduce_126(val, _values, result)
             result = array_node(val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 310)
-  def _reduce_127(val, _values, result)
+module_eval(<<'.,.,', 'systemrdl.y', 306)
+  def _reduce_126(val, _values, result)
     result = val
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 310)
-  def _reduce_128(val, _values, result)
-    result = val[1] ? val[1].unshift(val[0]) : val
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'systemrdl.y', 310)
-  def _reduce_129(val, _values, result)
+module_eval(<<'.,.,', 'systemrdl.y', 306)
+  def _reduce_127(val, _values, result)
     result = val[1] ? val[1].unshift(val[0]) : val
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'systemrdl.y', 306)
-  def _reduce_130(val, _values, result)
+  def _reduce_128(val, _values, result)
+    result = val[1] ? val[1].unshift(val[0]) : val
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 302)
+  def _reduce_129(val, _values, result)
             result = node(:concatenation, to_list(val[1..-2], include_separator: true), val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 310)
-  def _reduce_131(val, _values, result)
+module_eval(<<'.,.,', 'systemrdl.y', 306)
+  def _reduce_130(val, _values, result)
           result = node(:replication, val[1..2], val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 318)
+module_eval(<<'.,.,', 'systemrdl.y', 314)
+  def _reduce_131(val, _values, result)
+            result = node(:builtin_type, val, val)
+
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'systemrdl.y', 317)
   def _reduce_132(val, _values, result)
-            result = node(:data_type, val, val)
+            result = node(:builtin_type, val, val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 321)
-  def _reduce_133(val, _values, result)
-            result = node(:data_type, val, val)
+# reduce 133 omitted
+
+module_eval(<<'.,.,', 'systemrdl.y', 322)
+  def _reduce_134(val, _values, result)
+            result = node(:builtin_type, val, val)
 
     result
   end
 .,.,
 
-# reduce 134 omitted
-
-module_eval(<<'.,.,', 'systemrdl.y', 326)
+module_eval(<<'.,.,', 'systemrdl.y', 325)
   def _reduce_135(val, _values, result)
-            result = node(:data_type, val, val)
+            result = node(:builtin_type, val, val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 329)
+module_eval(<<'.,.,', 'systemrdl.y', 328)
   def _reduce_136(val, _values, result)
-            result = node(:data_type, val, val)
+            result = node(:builtin_type, val, val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 332)
+module_eval(<<'.,.,', 'systemrdl.y', 331)
   def _reduce_137(val, _values, result)
-            result = node(:data_type, val, val)
+            result = node(:builtin_type, val, val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 335)
-  def _reduce_138(val, _values, result)
-            result = node(:data_type, val, val)
+# reduce 138 omitted
+
+# reduce 139 omitted
+
+module_eval(<<'.,.,', 'systemrdl.y', 337)
+  def _reduce_140(val, _values, result)
+            result = node(:builtin_type, val, val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 338)
-  def _reduce_139(val, _values, result)
-            result = val[0]
+module_eval(<<'.,.,', 'systemrdl.y', 340)
+  def _reduce_141(val, _values, result)
+            result = node(:builtin_type, val, val)
 
     result
   end
 .,.,
-
-# reduce 140 omitted
 
 module_eval(<<'.,.,', 'systemrdl.y', 343)
-  def _reduce_141(val, _values, result)
-            result = node(:data_type, val, val)
+  def _reduce_142(val, _values, result)
+            result = node(:builtin_type, val, val)
 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'systemrdl.y', 346)
-  def _reduce_142(val, _values, result)
-            result = node(:data_type, val, val)
-
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'systemrdl.y', 349)
   def _reduce_143(val, _values, result)
-            result = node(:data_type, val, val)
+            result = node(:builtin_type, val, val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 352)
+module_eval(<<'.,.,', 'systemrdl.y', 350)
   def _reduce_144(val, _values, result)
-            result = node(:data_type, val, val)
+            result = node(:type_ref, val, val)
 
     result
   end
@@ -2830,7 +2824,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 352)
 
 # reduce 171 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 377)
+module_eval(<<'.,.,', 'systemrdl.y', 375)
   def _reduce_172(val, _values, result)
             result = uop_node(val)
 
@@ -2838,7 +2832,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 377)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 380)
+module_eval(<<'.,.,', 'systemrdl.y', 378)
   def _reduce_173(val, _values, result)
             result = uop_node(val)
 
@@ -2846,7 +2840,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 380)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 383)
+module_eval(<<'.,.,', 'systemrdl.y', 381)
   def _reduce_174(val, _values, result)
             result = uop_node(val)
 
@@ -2854,7 +2848,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 383)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 386)
+module_eval(<<'.,.,', 'systemrdl.y', 384)
   def _reduce_175(val, _values, result)
             result = uop_node(val)
 
@@ -2862,7 +2856,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 386)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 389)
+module_eval(<<'.,.,', 'systemrdl.y', 387)
   def _reduce_176(val, _values, result)
             result = uop_node(val)
 
@@ -2870,7 +2864,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 389)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 392)
+module_eval(<<'.,.,', 'systemrdl.y', 390)
   def _reduce_177(val, _values, result)
             result = uop_node(val)
 
@@ -2878,7 +2872,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 392)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 395)
+module_eval(<<'.,.,', 'systemrdl.y', 393)
   def _reduce_178(val, _values, result)
             result = uop_node(val)
 
@@ -2886,7 +2880,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 395)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 398)
+module_eval(<<'.,.,', 'systemrdl.y', 396)
   def _reduce_179(val, _values, result)
             result = uop_node(val)
 
@@ -2894,7 +2888,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 398)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 401)
+module_eval(<<'.,.,', 'systemrdl.y', 399)
   def _reduce_180(val, _values, result)
             result = uop_node(val)
 
@@ -2902,7 +2896,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 401)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 404)
+module_eval(<<'.,.,', 'systemrdl.y', 402)
   def _reduce_181(val, _values, result)
             result = uop_node(val)
 
@@ -2910,7 +2904,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 404)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 407)
+module_eval(<<'.,.,', 'systemrdl.y', 405)
   def _reduce_182(val, _values, result)
             result = uop_node(val)
 
@@ -2918,7 +2912,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 407)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 410)
+module_eval(<<'.,.,', 'systemrdl.y', 408)
   def _reduce_183(val, _values, result)
             result = bop_node(val)
 
@@ -2926,7 +2920,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 410)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 413)
+module_eval(<<'.,.,', 'systemrdl.y', 411)
   def _reduce_184(val, _values, result)
             result = bop_node(val)
 
@@ -2934,7 +2928,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 413)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 416)
+module_eval(<<'.,.,', 'systemrdl.y', 414)
   def _reduce_185(val, _values, result)
             result = bop_node(val)
 
@@ -2942,7 +2936,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 416)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 419)
+module_eval(<<'.,.,', 'systemrdl.y', 417)
   def _reduce_186(val, _values, result)
             result = bop_node(val)
 
@@ -2950,7 +2944,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 419)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 422)
+module_eval(<<'.,.,', 'systemrdl.y', 420)
   def _reduce_187(val, _values, result)
             result = bop_node(val)
 
@@ -2958,7 +2952,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 422)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 425)
+module_eval(<<'.,.,', 'systemrdl.y', 423)
   def _reduce_188(val, _values, result)
             result = bop_node(val)
 
@@ -2966,7 +2960,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 425)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 428)
+module_eval(<<'.,.,', 'systemrdl.y', 426)
   def _reduce_189(val, _values, result)
             result = bop_node(val)
 
@@ -2974,7 +2968,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 428)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 431)
+module_eval(<<'.,.,', 'systemrdl.y', 429)
   def _reduce_190(val, _values, result)
             result = bop_node(val)
 
@@ -2982,7 +2976,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 431)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 434)
+module_eval(<<'.,.,', 'systemrdl.y', 432)
   def _reduce_191(val, _values, result)
             result = bop_node(val)
 
@@ -2990,7 +2984,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 434)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 437)
+module_eval(<<'.,.,', 'systemrdl.y', 435)
   def _reduce_192(val, _values, result)
             result = bop_node(val)
 
@@ -2998,7 +2992,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 437)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 440)
+module_eval(<<'.,.,', 'systemrdl.y', 438)
   def _reduce_193(val, _values, result)
             result = bop_node(val)
 
@@ -3006,7 +3000,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 440)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 443)
+module_eval(<<'.,.,', 'systemrdl.y', 441)
   def _reduce_194(val, _values, result)
             result = bop_node(val)
 
@@ -3014,7 +3008,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 443)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 446)
+module_eval(<<'.,.,', 'systemrdl.y', 444)
   def _reduce_195(val, _values, result)
             result = bop_node(val)
 
@@ -3022,7 +3016,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 446)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 449)
+module_eval(<<'.,.,', 'systemrdl.y', 447)
   def _reduce_196(val, _values, result)
             result = bop_node(val)
 
@@ -3030,7 +3024,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 449)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 452)
+module_eval(<<'.,.,', 'systemrdl.y', 450)
   def _reduce_197(val, _values, result)
             result = bop_node(val)
 
@@ -3038,7 +3032,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 452)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 455)
+module_eval(<<'.,.,', 'systemrdl.y', 453)
   def _reduce_198(val, _values, result)
             result = bop_node(val)
 
@@ -3046,7 +3040,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 455)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 458)
+module_eval(<<'.,.,', 'systemrdl.y', 456)
   def _reduce_199(val, _values, result)
             result = bop_node(val)
 
@@ -3054,7 +3048,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 458)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 461)
+module_eval(<<'.,.,', 'systemrdl.y', 459)
   def _reduce_200(val, _values, result)
             result = bop_node(val)
 
@@ -3062,7 +3056,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 461)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 464)
+module_eval(<<'.,.,', 'systemrdl.y', 462)
   def _reduce_201(val, _values, result)
             result = bop_node(val)
 
@@ -3070,7 +3064,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 464)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 467)
+module_eval(<<'.,.,', 'systemrdl.y', 465)
   def _reduce_202(val, _values, result)
             result = bop_node(val)
 
@@ -3078,7 +3072,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 467)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 470)
+module_eval(<<'.,.,', 'systemrdl.y', 468)
   def _reduce_203(val, _values, result)
             result = bop_node(val)
 
@@ -3086,7 +3080,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 470)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 473)
+module_eval(<<'.,.,', 'systemrdl.y', 471)
   def _reduce_204(val, _values, result)
             result = node(:conditional_operation, [val[0], val[2], val[4]], val)
 
@@ -3100,7 +3094,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 473)
 
 # reduce 207 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 480)
+module_eval(<<'.,.,', 'systemrdl.y', 478)
   def _reduce_208(val, _values, result)
             token_range = Utils.to_token_range(val)
         result = val[1].replace_token_range(token_range)
@@ -3113,7 +3107,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 480)
 
 # reduce 210 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 487)
+module_eval(<<'.,.,', 'systemrdl.y', 485)
   def _reduce_211(val, _values, result)
             result = node(:boolean, val, val)
 
@@ -3121,7 +3115,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 487)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 490)
+module_eval(<<'.,.,', 'systemrdl.y', 488)
   def _reduce_212(val, _values, result)
             result = node(:string, val, val)
 
@@ -3129,7 +3123,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 490)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 493)
+module_eval(<<'.,.,', 'systemrdl.y', 491)
   def _reduce_213(val, _values, result)
             result = node(:enum_literal, [val[0], val[2]], val)
 
@@ -3137,7 +3131,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 493)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 496)
+module_eval(<<'.,.,', 'systemrdl.y', 494)
   def _reduce_214(val, _values, result)
             result = node(:number, val, val)
 
@@ -3145,7 +3139,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 496)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 499)
+module_eval(<<'.,.,', 'systemrdl.y', 497)
   def _reduce_215(val, _values, result)
             result = node(:verilog_number, val, val)
 
@@ -3153,7 +3147,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 499)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 502)
+module_eval(<<'.,.,', 'systemrdl.y', 500)
   def _reduce_216(val, _values, result)
             result = node(:accesstype, val, val)
 
@@ -3161,7 +3155,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 502)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 505)
+module_eval(<<'.,.,', 'systemrdl.y', 503)
   def _reduce_217(val, _values, result)
             result = node(:onreadtype, val, val)
 
@@ -3169,7 +3163,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 505)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 508)
+module_eval(<<'.,.,', 'systemrdl.y', 506)
   def _reduce_218(val, _values, result)
             result = node(:onwritetype, val, val)
 
@@ -3177,7 +3171,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 508)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 511)
+module_eval(<<'.,.,', 'systemrdl.y', 509)
   def _reduce_219(val, _values, result)
             result = node(:addressingtype, val, val)
 
@@ -3185,7 +3179,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 511)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 514)
+module_eval(<<'.,.,', 'systemrdl.y', 512)
   def _reduce_220(val, _values, result)
             result = node(:this, val, val)
 
@@ -3193,7 +3187,7 @@ module_eval(<<'.,.,', 'systemrdl.y', 514)
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 518)
+module_eval(<<'.,.,', 'systemrdl.y', 516)
   def _reduce_221(val, _values, result)
               result = node(:cast, [val[0], val[3]], val)
 
@@ -3205,15 +3199,15 @@ module_eval(<<'.,.,', 'systemrdl.y', 518)
 
 # reduce 223 omitted
 
-module_eval(<<'.,.,', 'systemrdl.y', 524)
+module_eval(<<'.,.,', 'systemrdl.y', 522)
   def _reduce_224(val, _values, result)
-              result = node(:data_type, val, val)
+              result = node(:builtin_type, val, val)
 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'systemrdl.y', 532)
+module_eval(<<'.,.,', 'systemrdl.y', 530)
   def _reduce_225(val, _values, result)
             result = node(:id, val, val)
 

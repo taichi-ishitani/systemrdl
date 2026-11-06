@@ -71,9 +71,14 @@ module SystemRDL
         BinaryOperation.new(operator, l_operand, r_operand, node.token_range)
       end
 
-      def on_data_type(node)
+      def on_builtin_type(node)
         type = node.children[0].to_sym
-        Value.new(type, nil, node.token_range)
+        BuiltinTypeRef.new(type, node.token_range)
+      end
+
+      def on_type_ref(node)
+        type = process(node.children[0])
+        TypeRef.new(type, node.token_range)
       end
 
       def on_array(node)
@@ -132,11 +137,6 @@ module SystemRDL
       def on_param_def(node)
         elements = process_all(node.children)
         ParameterDef.new(elements, node.token_range)
-      end
-
-      def on_enum_ref(node)
-        id = process(node.children[0])
-        EnumRef.new(id, node.token_range)
       end
 
       def on_default_prop_assignment(node)

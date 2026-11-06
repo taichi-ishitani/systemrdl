@@ -23,6 +23,10 @@ module SystemRDL
         :enum
       end
 
+      def to_s
+        full_name
+      end
+
       def cast(value, target, token_range)
         if target.kind in :bit | :boolean
           value.value.value.cast(target, token_range || value.token_range)
