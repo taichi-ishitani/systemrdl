@@ -8,6 +8,8 @@ module SystemRDL
       class ExpressionEvaluator < Root
         def evaluate(_instance, **optargs)
           root = RootInstance.new(self, nil, :evaluator, nil)
+          @current_inst = root
+
           @elements
             .map { |element| element.evaluate(root, **optargs) }
             .last

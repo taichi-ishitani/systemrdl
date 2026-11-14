@@ -21,6 +21,7 @@ module SystemRDL
       attr_reader :types
       attr_reader :param_def
       attr_reader :definitions
+      attr_reader :current_inst
 
       def anonymous_def?
         @anonymous_def
@@ -43,6 +44,10 @@ module SystemRDL
         end
       end
 
+      def component_name?(name)
+        @definitions.key?(name)
+      end
+
       def evaluate(instance, **optargs)
         check_definable(instance)
         @insts&.evaluate(instance, @parent, @id, **optargs)
@@ -61,30 +66,6 @@ module SystemRDL
       end
 
       def finalize(_instance)
-      end
-
-      def add_type(type)
-        check_type_identifier(type.name, type.token_range)
-        @types[type.name] = type
-      end
-
-      def assign_default_property(name, value, token_range)
-        if @default_properties.key?(name)
-          message = "#{name} already assigned in this scope"
-          raise_evaluation_error message, token_range
-        end
-
-        @default_properties[name] = value
-      end
-
-      def find_default_property(name)
-        upper_layers.reverse_each do |component|
-          if (prop = component.default_properties[name])
-            return prop
-          end
-        end
-
-        nil
       end
 
       private
@@ -123,13 +104,6 @@ module SystemRDL
         raise_evaluation_error message, token_range
       end
 
-      def check_type_identifier(name, token_range)
-        return unless @definitions.key?(name) || @types.key?(name)
-
-        message = "duplicated type identifier: #{name}"
-        raise_evaluation_error message, token_range
-      end
-
       def eval_array(_inst_values)
         yield(nil, nil)
       end
@@ -140,19 +114,10 @@ module SystemRDL
           raise_evaluation_error message, token_range
         end
 
-        instance = instance_class.new(self, parent_instance, inst_args.name, token_range)
+        instance = new_instance(parent_instance, inst_args, token_range)
+        build_instance(instance, inst_args, array_info, **optargs)
 
-        apply_param_values(instance, @param_def, inst_args.param_inst, **optargs)
-        init_properties(instance)
-        eval_body(instance, **optargs)
-        apply_array(instance, array_info)
-        apply_inst_values(instance, inst_args.values)
-        apply_inst_type(instance, inst_args.type)
-        post_build(instance)
-        instance.validate
-        instance.types.concat(@types.values)
-
-        parent_instance.instances << instance if parent_instance
+        parent_instance&.add_instance(instance)
         instance
       end
 
@@ -175,6 +140,28 @@ module SystemRDL
             true
           end
         end
+      end
+
+      def new_instance(parent_instance, inst_args, token_range)
+        instance_class.new(self, parent_instance, inst_args.name, token_range)
+      end
+
+      def build_instance(instance, inst_args, array_info, **optargs)
+        @current_inst = instance
+
+        apply_param_values(instance, @param_def, inst_args.param_inst, **optargs)
+        init_properties(instance)
+        eval_body(instance, **optargs)
+        apply_array(instance, array_info)
+        apply_inst_values(instance, inst_args.values)
+        apply_inst_type(instance, inst_args.type)
+        post_build(instance)
+        instance.validate
+
+        @current_inst = nil unless instance.root?
+        instance.clear_default_properties
+
+        instance
       end
 
       def apply_param_values(instance, param_def, param_inst, **optargs)
@@ -209,7 +196,10 @@ module SystemRDL
 
       def add_definition(definition)
         id = definition.id.value
-        check_type_identifier(id, definition.token_range)
+        if component_name?(id)
+          message = "duplicated component identifier: #{id}"
+          raise_evaluation_error message, definition.token_range
+        end
 
         @definitions[id] = definition
       end

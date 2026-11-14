@@ -635,7 +635,7 @@ module SystemRDL
               } a;
             };
           RDL
-          'duplicated type identifier: foo'
+          'duplicated component identifier: foo'
         )
 
         assert_raises_evaluation_error(
@@ -650,7 +650,7 @@ module SystemRDL
               foo a;
             };
           RDL
-          'duplicated type identifier: foo'
+          'duplicated component identifier: foo'
         )
 
         assert_raises_evaluation_error(

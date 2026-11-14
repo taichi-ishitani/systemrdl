@@ -12,11 +12,11 @@ module SystemRDL
       2.times do |i|
         gpio, pwm =
           if i == 0
-            SystemRDL.compile(*examples)
+            SystemRDL.compile(*examples).addrmaps
           else
             examples.flat_map do |example|
               rdl = File.read(example)
-              SystemRDL.compile_source(rdl, filename: example)
+              SystemRDL.compile_source(rdl, filename: example).addrmaps
             end
           end
 
@@ -116,17 +116,17 @@ module SystemRDL
         };
       RDL
 
-      models = SystemRDL.compile_streams({
+      root = SystemRDL.compile_streams({
         'rdl_a.rdl' => StringIO.new(rdl_a),
         'rdl_b.rdl' => StringIO.new(rdl_b),
       })
 
-      field = models[0].regs[0].fields[0]
+      field = root.addrmaps[0].regs[0].fields[0]
       assert_value('field defined in rdl a', field.desc)
       assert_value(:rw, field.sw)
       assert_value(:r, field.hw)
 
-      field = models[1].regs[0].fields[0]
+      field = root.addrmaps[1].regs[0].fields[0]
       assert_value('field defined in rdl a', field.desc)
       assert_value(:rw, field.sw)
       assert_value(:r, field.hw)

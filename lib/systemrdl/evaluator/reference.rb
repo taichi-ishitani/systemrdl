@@ -166,7 +166,7 @@ module SystemRDL
 
       def find(instance)
         instance.component_def.upper_layers(include_self: true).reverse_each do |component|
-          type = component.types[@id.value]
+          type = component.current_inst.type(@id.value)
           return type if type
         end
 

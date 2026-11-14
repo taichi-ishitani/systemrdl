@@ -75,8 +75,7 @@ module SystemRDL
     end
 
     def compile_source(rdl, filename: 'unknown')
-      _, models = __compile(rdl, filename, nil, nil)
-      models
+      __compile_single(rdl, filename)
     end
 
     private
@@ -91,26 +90,24 @@ module SystemRDL
     end
 
     def __compile_multiple(inputs, reader)
-      _, models = inputs.inject([nil, nil]) do |(root, results), input|
+      evaluated = inputs.each_with_index.inject(nil) do |root, (input, i)|
         __send__(reader, *input) do |rdl, filename|
-          __compile(rdl, filename, root, results)
+          finalize = (i + 1) == inputs.size
+          __compile(rdl, filename, root, finalize)
         end
       end
 
-      models
+      Model.build(evaluated)
     end
 
-    def __compile(rdl, filename, root, results)
-      ast = Parser.parse(rdl, filename:)
-      evaluated = Evaluator.evaluate(ast, root)
-      models = Model.build(evaluated)
+    def __compile_single(rdl, filename)
+      evaluated = __compile(rdl, filename, nil, true)
+      Model.build(evaluated)
+    end
 
-      if results
-        results.concat(models)
-        [evaluated, results]
-      else
-        [evaluated, models]
-      end
+    def __compile(rdl, filename, root, finalize)
+      ast = Parser.parse(rdl, filename:)
+      Evaluator.evaluate(ast, root, finalize:)
     end
   end
 end

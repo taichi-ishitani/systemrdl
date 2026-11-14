@@ -110,7 +110,7 @@ module SystemRDL
         end
 
         enum.apply_width
-        @component.add_type(enum)
+        instance.add_type(enum)
       end
     end
 

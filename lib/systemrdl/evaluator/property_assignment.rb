@@ -159,8 +159,7 @@ module SystemRDL
       end
 
       def assign_property(element, _property, value)
-        component_def = element.component_def
-        component_def.assign_default_property(@prop_name.value, value, token_range)
+        element.add_default_property(@prop_name.value, value, token_range)
       end
     end
   end

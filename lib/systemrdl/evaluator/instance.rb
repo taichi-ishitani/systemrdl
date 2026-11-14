@@ -3,6 +3,7 @@
 module SystemRDL
   module Evaluator
     class Instance
+      include RaiseEvaluationError
       include PropertyAccessor
 
       def initialize(component_def, parent, name, token_range)
@@ -11,7 +12,8 @@ module SystemRDL
         @name = name
         @params = []
         @instances = []
-        @types = []
+        @types = {}
+        @default_properties = {}
         @token_range = token_range
       end
 
@@ -22,7 +24,6 @@ module SystemRDL
       attr_reader :array_info
       attr_reader :token_range
       attr_reader :instances
-      attr_reader :types
 
       def to_value(token_range)
         Value.new(self, Type.inst_ref(layer), token_range)
@@ -95,6 +96,41 @@ module SystemRDL
         [*@params, *@instances]
       end
 
+      def add_instance(instance)
+        @instances << instance
+      end
+
+      def add_type(type)
+        check_type_identifier(type)
+
+        @types[type.name] = type
+      end
+
+      def type(name)
+        @types[name]
+      end
+
+      def types
+        @types.values
+      end
+
+      def add_default_property(name, value, token_range)
+        if @default_properties.key?(name)
+          message = "#{name} already assigned in this scope"
+          raise_evaluation_error message, token_range
+        end
+
+        @default_properties[name] = value
+      end
+
+      def clear_default_properties
+        @default_properties.clear
+      end
+
+      def default_property(name)
+        @default_properties[name]
+      end
+
       def validate
         @component_def.validate(self)
         @instances.each(&:revalidate)
@@ -108,6 +144,15 @@ module SystemRDL
       def finalize
         @instances.each(&:finalize)
         @component_def.finalize(self)
+      end
+
+      private
+
+      def check_type_identifier(type)
+        return unless @types.key?(type.name) || component_def.component_name?(type.name)
+
+        message = "duplicated type identifier: #{type.name}"
+        raise_evaluation_error message, type.token_range
       end
     end
   end

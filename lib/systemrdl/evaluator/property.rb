@@ -98,7 +98,7 @@ module SystemRDL
       end
 
       def eval_value(element)
-        value = element.component_def.find_default_property(name)
+        value = find_default_property(element)
         return value if value
 
         value =
@@ -111,6 +111,15 @@ module SystemRDL
         return if value.nil?
 
         value.is_a?(Value) ? value : create_value(value)
+      end
+
+      def find_default_property(element)
+        element.component_def.upper_layers.reverse_each do |component|
+          prop = component.current_inst.default_property(name)
+          return prop if prop
+        end
+
+        nil
       end
 
       def create_value(value)

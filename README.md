@@ -47,10 +47,10 @@ Note that this sharing is one-directional; an earlier input cannot refer to a co
 require 'systemrdl'
 
 # Compile files
-address_maps = SystemRDL.compile('gpio.rdl', 'pwm.rdl')
+address_maps = SystemRDL.compile('gpio.rdl', 'pwm.rdl').addrmaps
 
 # Compile a source string
-address_maps = SystemRDL.compile_source(<<~'RDL')
+address_maps = SystemRDL.compile_source(<<~'RDL').addrmaps
   addrmap my_map {
     reg {
       field { sw = rw; hw = r; reset = 0x0; } value[32];
@@ -67,7 +67,7 @@ Each element carries the properties assigned to it in the source.
 ```ruby
 require 'systemrdl'
 
-address_map = SystemRDL.compile_source(<<~'RDL').first
+address_map = SystemRDL.compile_source(<<~'RDL').addrmaps[0]
   addrmap gpio {
     name = "GPIO";
     desc = "Simple general purpose I/O controller";
