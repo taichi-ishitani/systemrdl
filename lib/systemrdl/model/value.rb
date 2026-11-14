@@ -32,6 +32,10 @@ module SystemRDL
         false
       end
 
+      def enum_ref?
+        false
+      end
+
       private
 
       def pp_value(pp)
@@ -54,6 +58,10 @@ module SystemRDL
 
       def prop_ref?
         value.is_a?(Value)
+      end
+
+      def enum_ref?
+        value.is_a?(Enum)
       end
 
       private

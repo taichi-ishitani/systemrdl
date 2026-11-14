@@ -31,6 +31,13 @@ module SystemRDL
         end
       end
 
+      def collect_enums(model)
+        [
+          *model.types,
+          *model.instances.flat_map { |inst| collect_enums(inst) }
+        ]
+      end
+
       def assert_value(expected, value)
         if !expected.nil?
           assert_equal(expected, value)

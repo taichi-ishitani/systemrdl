@@ -4,18 +4,15 @@ module SystemRDL
   module Model
     class << self
       def build(root)
-        models = root.instances.map do |addrmap|
-          AddrMap.new(addrmap, nil)
-        end
-
-        finalize(models)
-        models
+        model = Root.new(root, nil)
+        finalize(model)
+        model
       end
 
       private
 
-      def finalize(models)
-        instances = models.flat_map { |model| collect_instances(model) }
+      def finalize(model)
+        instances = collect_instances(model)
         properties = instances.flat_map { |inst| inst.properties.values }
 
         properties.each do |property|
@@ -40,7 +37,24 @@ module SystemRDL
 
         if (ref = properties.find { |prop| prop.full_name == path })
           property.value = ref
+          return
         end
+
+        if (ref = resolve_type_ref(property))
+          property.value = ref
+        end
+      end
+
+      def resolve_type_ref(property)
+        return unless property.value.kind == :enum
+
+        type_name = property.value.name.to_s
+        property.instance.hierarchy.reverse_each do |inst|
+          type = inst.types.find { |t| t.name == type_name }
+          return type if type
+        end
+
+        nil
       end
     end
   end
