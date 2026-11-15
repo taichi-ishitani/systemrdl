@@ -116,13 +116,15 @@ The following SystemRDL 2.0 language features are supported (parsed and evaluate
 * Arrays of instances
 * Address allocation operators (`@`, `+=`, `%=`)
 * `internal` / `external` instance types
-* Component parameters
+* Component parameters, including parameters of a user-defined enumeration type
+* Enumerations (`enum`), with explicit and automatically assigned enumerator values, and enumerator references (`EnumType::Enumerator`) in expressions
 
 #### Properties
 
 * Most built-in properties of the supported components, except the `counter` and `interrupt` property groups (see below)
 * Property assignment in all three forms: direct assignment, default assignment (`default`), and dynamic assignment (`->`)
 * Property references and instance references as property values
+* `encode`, referring to an enumeration visible from the assignment's scope
 
 #### Preprocessing
 
@@ -139,7 +141,6 @@ The following features are not supported. Some of their keywords are recognized 
 
 * `signal` component
 * User-defined properties (`property` definitions)
-* Enumerations (`enum`) and `encode`
 * `struct` types
 * `constraint`
 * `alias` registers
