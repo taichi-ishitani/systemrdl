@@ -440,6 +440,7 @@ module SystemRDL
             <<~RDL
               addrmap my_map {
                 external mem {
+                  sw = r;
                   reg {
                     field { sw = r; hw = r; } a;
                   } a;
@@ -468,7 +469,7 @@ module SystemRDL
           end
         end
 
-        [:addrmap, :regfile, :reg, :field].each do |layer|
+        [:addrmap, :regfile, :mem, :reg, :field].each do |layer|
           [:name, :desc].each do |prop_name|
             assert_raises_evaluation_error(
               template[layer, prop_name],

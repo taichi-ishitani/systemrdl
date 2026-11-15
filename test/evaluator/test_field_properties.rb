@@ -978,6 +978,7 @@ module SystemRDL
             <<~RDL
               addrmap my_map {
                 external mem {
+                  sw = r;
                   reg {
                     field { sw = r; hw = r; } a;
                   } a;
@@ -997,7 +998,7 @@ module SystemRDL
           end
         end
 
-        [:addrmap, :regfile, :reg].each do |layer|
+        [:addrmap, :regfile, :mem, :reg].each do |layer|
           [:name, :desc].each do |prop_name|
             assert_raises_evaluation_error(
               template[layer, prop_name],
@@ -1009,6 +1010,8 @@ module SystemRDL
             :rclr, :rset, :woset, :woclr, :swmod, :swacc, :singlepulse,
             :anded, :ored, :xored
           ].each do |prop_name|
+            next if layer == :mem && !(prop_name in :anded | :ored | :xored)
+
             assert_raises_evaluation_error(
               template[layer, prop_name],
               "#{layer}_ref type not supported by #{prop_name} property: expected boolean"
@@ -1016,6 +1019,8 @@ module SystemRDL
           end
 
           [:swwe, :swwel, :we, :wel, :hwclr, :hwset].each do |prop_name|
+            next if layer == :mem && (prop_name in :swwe | :swwel)
+
             assert_raises_evaluation_error(
               template[layer, prop_name],
               "#{layer}_ref type not supported by #{prop_name} property: expected boolean, field_ref or prop_ref"
@@ -1044,6 +1049,8 @@ module SystemRDL
           end
 
           [:onread].each do |prop_name|
+            next if layer == :mem
+
             assert_raises_evaluation_error(
               template[layer, prop_name],
               "#{layer}_ref type not supported by #{prop_name} property: expected onreadtype"
@@ -1051,6 +1058,8 @@ module SystemRDL
           end
 
           [:onwrite].each do |prop_name|
+            next if layer == :mem
+
             assert_raises_evaluation_error(
               template[layer, prop_name],
               "#{layer}_ref type not supported by #{prop_name} property: expected onwritetype"

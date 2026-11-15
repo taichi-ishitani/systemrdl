@@ -558,6 +558,16 @@ module SystemRDL
         assert_evaluates_value(
           { kind: :bit, width: 3 }, 7, code, test: :constant_expression
         )
+
+        code = "|2'b01 + 1'b1"
+        assert_evaluates_value(
+          { kind: :bit, width: 1 }, 0, code, test: :constant_expression
+        )
+
+        code = "(2'b01 || 2'b00) + 1'b1"
+        assert_evaluates_value(
+          { kind: :bit, width: 1 }, 0, code, test: :constant_expression
+        )
       end
 
       def test_zero_divisor
