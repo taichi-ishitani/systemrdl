@@ -373,6 +373,7 @@ module SystemRDL
             <<~RDL
               addrmap my_map {
                 external mem {
+                  sw = r;
                   reg {
                     field { sw = r; hw = r; } a;
                   } a;
@@ -416,7 +417,7 @@ module SystemRDL
           end
         end
 
-        [:addrmap, :regfile, :reg, :field].each do |layer|
+        [:addrmap, :regfile, :mem, :reg, :field].each do |layer|
           [:name, :desc].each do |prop_name|
             assert_raises_evaluation_error(
               template[layer, prop_name],
@@ -431,12 +432,7 @@ module SystemRDL
 
       def test_dynamic_assignment_to_supported_property_is_allowed
         { name: 'foo', desc: 'bar' }.each do |prop_name, prop_value|
-          value =
-            if prop_value.is_a?(::String)
-              "\"#{prop_value}\""
-            else
-              prop_value
-            end
+          value = "\"#{prop_value}\""
           regfile = evaluate(<<~RDL).instances[0].instances[0]
             addrmap my_map {
               regfile {

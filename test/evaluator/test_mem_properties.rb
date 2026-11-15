@@ -244,7 +244,7 @@ module SystemRDL
         run_property_assignment_test_with_unsupported_type(:precedencetype, [:hw, :sw])
       end
 
-      def def test_assigning_addressingtype_value_to_unsupported_property_is_rejected
+      def test_assigning_addressingtype_value_to_unsupported_property_is_rejected
         run_property_assignment_test_with_unsupported_type(:addressingtype, [:compact, :regalign, :fullalign])
       end
 
@@ -371,12 +371,7 @@ module SystemRDL
 
       def test_dynamic_assignment_to_supported_property_is_allowed
         { name: 'foo', desc: 'bar' }.each do |prop_name, prop_value|
-          value =
-            if prop_value.is_a?(::String)
-              "\"#{prop_value}\""
-            else
-              prop_value
-            end
+          value = "\"#{prop_value}\""
           mem = evaluate(<<~RDL).instances[0].instances[0]
             addrmap my_map {
               external mem {
