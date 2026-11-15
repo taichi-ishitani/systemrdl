@@ -10,15 +10,12 @@ module SystemRDL
         @id = id || insts.insts[0].inst_id
         @anonymous_def = id.nil?
         @definitions = {}
-        @types = {}
         @param_def = param_def
         @elements = elements
         @insts = insts
-        @default_properties = {}
       end
 
       attr_reader :id
-      attr_reader :types
       attr_reader :param_def
       attr_reader :definitions
       attr_reader :current_inst
@@ -175,8 +172,6 @@ module SystemRDL
       end
 
       def eval_body(instance, **optargs)
-        @types.clear
-        @default_properties.clear
         @elements.each { |element| element.evaluate(instance, **optargs) }
       end
 
@@ -203,8 +198,6 @@ module SystemRDL
 
         @definitions[id] = definition
       end
-
-      attr_reader :default_properties
     end
   end
 end

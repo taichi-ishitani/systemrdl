@@ -3,17 +3,6 @@
 module SystemRDL
   module Evaluator
     Value = Data.define(:value, :type, :token_range) do
-      def update(**update_fields)
-        update_values = to_h do |field, value|
-          if update_fields.key?(field)
-            [field, update_fields[field]]
-          else
-            [field, value]
-          end
-        end
-        Value.new(**update_values)
-      end
-
       def to_s
         value.to_s
       end
