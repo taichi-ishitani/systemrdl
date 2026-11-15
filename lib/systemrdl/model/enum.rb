@@ -5,9 +5,9 @@ module SystemRDL
     class Enum
       include Common
 
-      def initialize(enum, parent)
-        super(enum, enum.name.to_s, parent, enum.token_range)
-        @members = build_members(enum).freeze
+      def initialize(enum, parent, model_map)
+        super(enum, enum.name.to_s, parent, enum.token_range, model_map)
+        @members = build_members(enum, model_map).freeze
         freeze
       end
 
@@ -32,16 +32,17 @@ module SystemRDL
 
       private
 
-      def build_members(enum)
-        enum.members.map { |member| EnumMember.new(member, self) }
+      def build_members(enum, model_map)
+        enum.members.map { |member| EnumMember.new(member, self, model_map) }
       end
     end
 
     class EnumMember
       include Common
 
-      def initialize(member, parent)
-        super(member, member.name.to_s, parent, member.token_range)
+      def initialize(member, parent, model_map)
+        super(member, member.name.to_s, parent, member.token_range, model_map)
+        @properties = build_properties(member, model_map).freeze
         @value = member.value.value
         freeze
       end

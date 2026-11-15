@@ -5,11 +5,12 @@ module SystemRDL
     class Instance
       include Common
 
-      def initialize(inst, parent)
-        super(inst, inst.element_name, parent, inst.token_range)
+      def initialize(inst, parent, model_map)
+        super(inst, inst.element_name, parent, inst.token_range, model_map)
         @layer = inst.layer
-        @types = build_types(inst).freeze
-        @instances = build_sub_instances(inst).freeze
+        @types = build_types(inst, model_map).freeze
+        @instances = build_sub_instances(inst, model_map).freeze
+        @properties = build_properties(inst, model_map).freeze
         @signature = Signature.generate(inst)
         freeze
       end
@@ -49,18 +50,18 @@ module SystemRDL
 
       private
 
-      def build_types(inst)
-        inst.types.map { |type| Enum.new(type, self) }
+      def build_types(inst, model_map)
+        inst.types.map { |type| Enum.new(type, self, model_map) }
       end
 
-      def build_sub_instances(inst)
+      def build_sub_instances(inst, model_map)
         inst.instances.map do |sub_inst|
           case sub_inst.layer
-          when :addrmap then AddrMap.new(sub_inst, self)
-          when :mem then Mem.new(sub_inst, self)
-          when :regfile then RegFile.new(sub_inst, self)
-          when :reg then Reg.new(sub_inst, self)
-          when :field then Field.new(sub_inst, self)
+          when :addrmap then AddrMap.new(sub_inst, self, model_map)
+          when :mem then Mem.new(sub_inst, self, model_map)
+          when :regfile then RegFile.new(sub_inst, self, model_map)
+          when :reg then Reg.new(sub_inst, self, model_map)
+          when :field then Field.new(sub_inst, self, model_map)
           end
         end
       end

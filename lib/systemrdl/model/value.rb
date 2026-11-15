@@ -2,7 +2,7 @@
 
 module SystemRDL
   module Model
-    Value = Struct.new(:name, :value, :instance, :token_range) do
+    Value = Data.define(:name, :value, :instance, :token_range) do
       def full_name(exclude_addrmap: false)
         [instance.full_name(exclude_addrmap:), name].reject(&:empty?).join('.')
       end
