@@ -121,7 +121,7 @@ module SystemRDL
         [:alignment].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "string type not supported by #{prop_name} property: expected longint"
+            "string type not supported by #{prop_name} property: expected bit"
           )
         end
 
@@ -166,7 +166,7 @@ module SystemRDL
         [:alignment].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "accesstype type not supported by #{prop_name} property: expected longint"
+            "accesstype type not supported by #{prop_name} property: expected bit"
           )
         end
 
@@ -211,7 +211,7 @@ module SystemRDL
         [:alignment].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "onreadtype type not supported by #{prop_name} property: expected longint"
+            "onreadtype type not supported by #{prop_name} property: expected bit"
           )
         end
 
@@ -256,7 +256,7 @@ module SystemRDL
         [:alignment].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "onwritetype type not supported by #{prop_name} property: expected longint"
+            "onwritetype type not supported by #{prop_name} property: expected bit"
           )
         end
 
@@ -301,7 +301,7 @@ module SystemRDL
         [:alignment].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "precedencetype type not supported by #{prop_name} property: expected longint"
+            "precedencetype type not supported by #{prop_name} property: expected bit"
           )
         end
 
@@ -360,7 +360,7 @@ module SystemRDL
         [:alignment].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "addressingtype type not supported by #{prop_name} property: expected longint"
+            "addressingtype type not supported by #{prop_name} property: expected bit"
           )
         end
 
@@ -375,7 +375,7 @@ module SystemRDL
         end
       end
 
-      def test_assigning_property_reference_value_to_not_supported_property_is_rejected
+      def test_assigning_prop_ref_value_to_not_supported_property_is_rejected
         template = proc do |prop_name|
           <<~RDL
             addrmap my_map {
@@ -393,14 +393,14 @@ module SystemRDL
         [:name, :desc].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "property_reference type not supported by #{prop_name} property: expected string"
+            "prop_ref type not supported by #{prop_name} property: expected string"
           )
         end
 
         [:alignment].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "property_reference type not supported by #{prop_name} property: expected longint"
+            "prop_ref type not supported by #{prop_name} property: expected bit"
           )
         end
 
@@ -410,19 +410,19 @@ module SystemRDL
         ].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "property_reference type not supported by #{prop_name} property: expected boolean"
+            "prop_ref type not supported by #{prop_name} property: expected boolean"
           )
         end
 
         [:addressing].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "property_reference type not supported by #{prop_name} property: expected addressingtype"
+            "prop_ref type not supported by #{prop_name} property: expected addressingtype"
           )
         end
       end
 
-      def test_assigning_container_reference_value_to_not_supported_property_is_rejected
+      def test_assigning_container_ref_value_to_not_supported_property_is_rejected
         template = proc do |layer, prop_name|
           case layer
           when :addrmap, :regfile
@@ -472,14 +472,14 @@ module SystemRDL
           [:name, :desc].each do |prop_name|
             assert_raises_evaluation_error(
               template[layer, prop_name],
-              "#{layer}_reference type not supported by #{prop_name} property: expected string"
+              "#{layer}_ref type not supported by #{prop_name} property: expected string"
             )
           end
 
           [:alignment].each do |prop_name|
             assert_raises_evaluation_error(
               template[layer, prop_name],
-              "#{layer}_reference type not supported by #{prop_name} property: expected longint"
+              "#{layer}_ref type not supported by #{prop_name} property: expected bit"
             )
           end
 
@@ -489,14 +489,14 @@ module SystemRDL
           ].each do |prop_name|
             assert_raises_evaluation_error(
               template[layer, prop_name],
-              "#{layer}_reference type not supported by #{prop_name} property: expected boolean"
+              "#{layer}_ref type not supported by #{prop_name} property: expected boolean"
             )
           end
 
           [:addressing].each do |prop_name|
             assert_raises_evaluation_error(
               template[layer, prop_name],
-              "#{layer}_reference type not supported by #{prop_name} property: expected addressingtype"
+              "#{layer}_ref type not supported by #{prop_name} property: expected addressingtype"
             )
           end
         end

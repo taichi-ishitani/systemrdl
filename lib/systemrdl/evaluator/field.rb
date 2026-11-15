@@ -14,6 +14,7 @@ module SystemRDL
         check_swwe_swwel_exclusivity(instance)
         check_we_wel_exclusivity(instance)
         check_we_required(instance)
+        check_encode_width(instance)
       end
 
       def revalidate(instance)
@@ -26,6 +27,7 @@ module SystemRDL
         check_swwe_swwel_exclusivity(instance)
         check_we_wel_exclusivity(instance)
         check_we_required(instance)
+        check_encode_width(instance)
       end
 
       def layer
@@ -64,7 +66,7 @@ module SystemRDL
           if (fieldwidth = instance.property_value(:fieldwidth))
             return fieldwidth
           else
-            return Value.new(1, :bit, 64, nil)
+            return Value.new(1, Type.longint, nil)
           end
         end
 
@@ -120,7 +122,7 @@ module SystemRDL
         reset_value = instance.property_value(:reset)
         return unless reset_value
 
-        if reset_value.type in :field_reference | :property_reference
+        if reset_value.type.kind in :field_ref | :prop_ref
           # TODO
           # check width of the specified instance or property
         else
@@ -130,13 +132,13 @@ module SystemRDL
 
       def check_reset_value(instance, reset_value)
         width, _ = extract_width(instance)
-        range = 0..((2**width) - 1)
+        range = 0...(2**width)
         return if range.include?(reset_value.value)
 
         message =
           format(
-            'reset value out of range: value 0x%<reset_value>x range 0x%<begin>x..0x%<end>x',
-            reset_value: reset_value.value, begin: range.begin, end: range.end
+            'reset value exceeding fieldwidth: value 0x%<reset_value>x fieldwidth %<width>d',
+            reset_value: reset_value.value, width:
           )
         raise_evaluation_error message, reset_value.token_range
       end
@@ -227,6 +229,22 @@ module SystemRDL
 
         message = "hw write enable required: sw = #{sw} hw = #{hw}"
         raise_evaluation_error message, sw.token_range, hw.token_range
+      end
+
+      def check_encode_width(instance)
+        encode = instance.property_value(:encode)
+        return unless encode
+
+        width, _ = extract_width(instance)
+        range = 0...(2**width)
+        encode.value.members.each do |member|
+          next if range.include?(member.value.value)
+
+          message =
+            "enum member value exceeding fieldwidth: #{member.scoped_name} " \
+            "(value #{member.value} fieldwidth #{width})"
+          raise_evaluation_error message, encode.token_range
+        end
       end
     end
 

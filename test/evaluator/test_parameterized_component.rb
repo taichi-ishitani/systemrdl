@@ -7,36 +7,57 @@ module SystemRDL
     class TestParameterizedComponent < TestCase
       def test_instantiating_parameterized_component
         fields = evaluate(<<~'RDL').instances[0].instances[0].instances
+          enum abc {
+            A;
+            B;
+            C;
+          };
           addrmap my_map {
             field my_field #(
               onwritetype       ONWRITE     = woset,
-              longint unsigned  FIELDWIDTH  = 1
+              longint unsigned  FIELDWIDTH  = 1,
+              abc               ABC         = abc::A
             ) {
               sw = rw;
               hw = r;
               onwrite = ONWRITE;
               fieldwidth = FIELDWIDTH;
+              reset = ABC;
             };
             reg {
               my_field a;
               my_field #(.ONWRITE(woclr)) b;
               my_field #(.FIELDWIDTH(2)) c;
-              my_field #(.ONWRITE(wot), .FIELDWIDTH(3)) d;
+              my_field #(.FIELDWIDTH(abc::C)) d;
+              my_field #(.ABC(abc::B)) e;
+              my_field #(.ONWRITE(wot), .FIELDWIDTH(3), .ABC(abc::C)) f;
             } a;
           };
         RDL
 
         assert_property_value(fields[0], :onwrite, :woset)
         assert_property_value(fields[0], :fieldwidth, 1)
+        assert_property_value(fields[0], :reset, 0)
 
         assert_property_value(fields[1], :onwrite, :woclr)
         assert_property_value(fields[1], :fieldwidth, 1)
+        assert_property_value(fields[1], :reset, 0)
 
         assert_property_value(fields[2], :onwrite, :woset)
         assert_property_value(fields[2], :fieldwidth, 2)
+        assert_property_value(fields[2], :reset, 0)
 
-        assert_property_value(fields[3], :onwrite, :wot)
-        assert_property_value(fields[3], :fieldwidth, 3)
+        assert_property_value(fields[3], :onwrite, :woset)
+        assert_property_value(fields[3], :fieldwidth, 2)
+        assert_property_value(fields[3], :reset, 0)
+
+        assert_property_value(fields[4], :onwrite, :woset)
+        assert_property_value(fields[4], :fieldwidth, 1)
+        assert_property_value(fields[4], :reset, 1)
+
+        assert_property_value(fields[5], :onwrite, :wot)
+        assert_property_value(fields[5], :fieldwidth, 3)
+        assert_property_value(fields[5], :reset, 2)
       end
 
       def test_parameter_dependency
@@ -212,22 +233,29 @@ module SystemRDL
       def test_type_mismatch
         types = [
           :longint, :bit, :string, :boolean, :accesstype, :addressingtype,
-          :onreadtype, :onwritetype
+          :onreadtype, :onwritetype, :foo
         ]
         values = [
           ['1', :longint], ["1'b1", :bit], ['"FOO"', :string], ['true', :boolean],
-          ['rw', :accesstype], ['compact', :addressingtype], ['rclr', :onreadtype], ['woclr', :onwritetype]
+          ['rw', :accesstype], ['compact', :addressingtype], ['rclr', :onreadtype], ['woclr', :onwritetype],
+          ['bar::BAR', :bar]
         ]
 
         types.product(values) do |param_type, (value, value_type)|
           next if param_type == value_type
-          next if (param_type in :longint | :bit | :boolean) && (value_type in :longint | :bit | :boolean)
+          next if (param_type in :longint | :bit | :boolean) && (value_type in :longint | :bit | :boolean | :bar)
 
           expected_type = param_type == :longint ? :bit : param_type
           actual_type = value_type == :longint ? :bit : value_type
 
           assert_raises_evaluation_error(
             <<~RDL,
+              enum foo {
+                FOO;
+              };
+              enum bar {
+                BAR;
+              };
               addrmap my_map {
                 reg my_reg #(#{param_type} A) {
                   field { sw = rw; hw = r; } a;
@@ -240,6 +268,12 @@ module SystemRDL
 
           assert_raises_evaluation_error(
             <<~RDL,
+              enum foo {
+                FOO;
+              };
+              enum bar {
+                BAR;
+              };
               addrmap my_map {
                 reg my_reg #(#{param_type} A = #{value}) {
                   field { sw = rw; hw = r; } a;

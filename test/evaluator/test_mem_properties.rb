@@ -137,7 +137,7 @@ module SystemRDL
         [:mementries, :memwidth].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "string type not supported by #{prop_name} property: expected longint"
+            "string type not supported by #{prop_name} property: expected bit"
           )
         end
 
@@ -188,7 +188,7 @@ module SystemRDL
         [:mementries, :memwidth].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "accesstype type not supported by #{prop_name} property: expected longint"
+            "accesstype type not supported by #{prop_name} property: expected bit"
           )
         end
       end
@@ -218,7 +218,7 @@ module SystemRDL
         [:mementries, :memwidth].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "#{proop_type} type not supported by #{prop_name} property: expected longint"
+            "#{proop_type} type not supported by #{prop_name} property: expected bit"
           )
         end
 
@@ -248,7 +248,7 @@ module SystemRDL
         run_property_assignment_test_with_unsupported_type(:addressingtype, [:compact, :regalign, :fullalign])
       end
 
-      def test_assigning_property_reference_value_to_not_supported_property_is_rejected
+      def test_assigning_prop_ref_value_to_not_supported_property_is_rejected
         template = proc do |prop_name|
           <<~RDL
             addrmap my_map {
@@ -268,14 +268,14 @@ module SystemRDL
         [:name, :desc].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "property_reference type not supported by #{prop_name} property: expected string"
+            "prop_ref type not supported by #{prop_name} property: expected string"
           )
         end
 
         [:sw].each do |prop_name|
           assert_raises_evaluation_error(
             template[prop_name],
-            "property_reference type not supported by #{prop_name} property: expected accesstype"
+            "prop_ref type not supported by #{prop_name} property: expected accesstype"
           )
         end
 
@@ -283,7 +283,7 @@ module SystemRDL
         # because dynamic assignment to these properties is not allowed.
       end
 
-      def test_assigning_container_reference_value_to_not_supported_property_is_rejected
+      def test_assigning_container_ref_value_to_not_supported_property_is_rejected
         template = proc do |layer, prop_name|
           case layer
           when :addrmap, :regfile
@@ -353,14 +353,14 @@ module SystemRDL
           [:name, :desc].each do |prop_name|
             assert_raises_evaluation_error(
               template[layer, prop_name],
-              "#{layer}_reference type not supported by #{prop_name} property: expected string"
+              "#{layer}_ref type not supported by #{prop_name} property: expected string"
             )
           end
 
           [:sw].each do |prop_name|
             assert_raises_evaluation_error(
               template[layer, prop_name],
-              "#{layer}_reference type not supported by #{prop_name} property: expected accesstype"
+              "#{layer}_ref type not supported by #{prop_name} property: expected accesstype"
             )
           end
 

@@ -147,38 +147,38 @@ module SystemRDL
           };
         RDL
 
-        addrmaps = build_model(template[0, addrmap_def, 'addrmap_a'])[1].regs
+        addrmaps = build_model(template[0, addrmap_def, 'addrmap_a']).addrmaps[1].regs
         assert_signature(addrmaps[1], addrmaps[0])
 
-        regfiles = build_model(template[0, regfile_def, 'regfile_a'])[0].regs
+        regfiles = build_model(template[0, regfile_def, 'regfile_a']).addrmaps[0].regs
         assert_signature(regfiles[1], regfiles[0])
 
-        mems = build_model(template[2, mem_def, 'mem_a'])[0].regs
+        mems = build_model(template[2, mem_def, 'mem_a']).addrmaps[0].regs
         assert_signature(mems[1], mems[0])
 
-        regs = build_model(template[0, reg_def, 'reg_a'])[0].regs
+        regs = build_model(template[0, reg_def, 'reg_a']).addrmaps[0].regs
         assert_signature(regs[1], regs[0])
 
-        fields = build_model(template[4, field_def, 'field_a'])[0].regs[0].fields
+        fields = build_model(template[4, field_def, 'field_a']).addrmaps[0].regs[0].fields
         assert_signature(fields[1], fields[0])
 
         [
           'A(0)', 'B(1\'b0)', 'C(false)', 'D("foo")', 'E(rw)',
           'F(compact)', 'G(rclr)', 'H(woclr)'
         ].each do |override|
-          addrmaps = build_model(template[1, addrmap_def, 'addrmap_a', override])[1].regs
+          addrmaps = build_model(template[1, addrmap_def, 'addrmap_a', override]).addrmaps[1].regs
           assert_signature(addrmaps[1], addrmaps[0])
 
-          regfiles = build_model(template[1, regfile_def, 'regfile_a', override])[0].regs
+          regfiles = build_model(template[1, regfile_def, 'regfile_a', override]).addrmaps[0].regs
           assert_signature(regfiles[1], regfiles[0])
 
-          mems = build_model(template[3, mem_def, 'mem_a', override])[0].regs
+          mems = build_model(template[3, mem_def, 'mem_a', override]).addrmaps[0].regs
           assert_signature(mems[1], mems[0])
 
-          regs = build_model(template[1, reg_def, 'reg_a', override])[0].regs
+          regs = build_model(template[1, reg_def, 'reg_a', override]).addrmaps[0].regs
           assert_signature(regs[1], regs[0])
 
-          fields = build_model(template[5, field_def, 'field_a', override])[0].regs[0].fields
+          fields = build_model(template[5, field_def, 'field_a', override]).addrmaps[0].regs[0].fields
           assert_signature(fields[1], fields[0])
         end
 
@@ -186,57 +186,57 @@ module SystemRDL
           'A(1)', 'B(2\'b0)', 'C(true)', 'D("bar")', 'E(r)',
           'F(regalign)', 'G(rset)', 'H(woset)'
         ].each do |override|
-          addrmaps = build_model(template[1, addrmap_def, 'addrmap_a', override])[1].regs
+          addrmaps = build_model(template[1, addrmap_def, 'addrmap_a', override]).addrmaps[1].regs
           refute_signature(addrmaps[1], addrmaps[0])
 
-          regfiles = build_model(template[1, regfile_def, 'regfile_a', override])[0].regs
+          regfiles = build_model(template[1, regfile_def, 'regfile_a', override]).addrmaps[0].regs
           refute_signature(regfiles[1], regfiles[0])
 
-          mems = build_model(template[3, mem_def, 'mem_a', override])[0].regs
+          mems = build_model(template[3, mem_def, 'mem_a', override]).addrmaps[0].regs
           refute_signature(mems[1], mems[0])
 
-          regs = build_model(template[1, reg_def, 'reg_a', override])[0].regs
+          regs = build_model(template[1, reg_def, 'reg_a', override]).addrmaps[0].regs
           refute_signature(regs[1], regs[0])
 
-          fields = build_model(template[5, field_def, 'field_a', override])[0].regs[0].fields
+          fields = build_model(template[5, field_def, 'field_a', override]).addrmaps[0].regs[0].fields
           refute_signature(fields[1], fields[0])
         end
 
         override = 'I(1)'
-        addrmaps = build_model(template[1, addrmap_def, 'addrmap_a', override])[1].regs
+        addrmaps = build_model(template[1, addrmap_def, 'addrmap_a', override]).addrmaps[1].regs
         assert_signature(addrmaps[1], addrmaps[0])
 
-        regfiles = build_model(template[1, regfile_def, 'regfile_a', override])[0].regs
+        regfiles = build_model(template[1, regfile_def, 'regfile_a', override]).addrmaps[0].regs
         assert_signature(regfiles[1], regfiles[0])
 
-        mems = build_model(template[3, mem_def, 'mem_a', override])[0].regs
+        mems = build_model(template[3, mem_def, 'mem_a', override]).addrmaps[0].regs
         assert_signature(mems[1], mems[0])
 
-        regs = build_model(template[1, reg_def, 'reg_a', override])[0].regs
+        regs = build_model(template[1, reg_def, 'reg_a', override]).addrmaps[0].regs
         assert_signature(regs[1], regs[0])
 
-        fields = build_model(template[5, field_def, 'field_a', override])[0].regs[0].fields
+        fields = build_model(template[5, field_def, 'field_a', override]).addrmaps[0].regs[0].fields
         assert_signature(fields[1], fields[0])
 
         override = 'I(2)'
-        addrmaps = build_model(template[1, addrmap_def, 'addrmap_a', override])[1].regs
+        addrmaps = build_model(template[1, addrmap_def, 'addrmap_a', override]).addrmaps[1].regs
         refute_signature(addrmaps[1], addrmaps[0])
 
-        regfiles = build_model(template[1, regfile_def, 'regfile_a', override])[0].regs
+        regfiles = build_model(template[1, regfile_def, 'regfile_a', override]).addrmaps[0].regs
         refute_signature(regfiles[1], regfiles[0])
 
-        mems = build_model(template[3, mem_def, 'mem_a', override])[0].regs
+        mems = build_model(template[3, mem_def, 'mem_a', override]).addrmaps[0].regs
         refute_signature(mems[1], mems[0])
 
-        regs = build_model(template[1, reg_def, 'reg_a', override])[0].regs
+        regs = build_model(template[1, reg_def, 'reg_a', override]).addrmaps[0].regs
         refute_signature(regs[1], regs[0])
 
-        fields = build_model(template[5, field_def, 'field_a', override])[0].regs[0].fields
+        fields = build_model(template[5, field_def, 'field_a', override]).addrmaps[0].regs[0].fields
         refute_signature(fields[1], fields[0])
       end
 
       def test_signature_for_non_parameterized_component
-        addrmaps = build_model(<<~RDL)[2].regs
+        addrmaps = build_model(<<~RDL).addrmaps[2].regs
           addrmap addrmap_a {
             reg {
               field { sw = rw; hw = r; } a;
@@ -256,7 +256,7 @@ module SystemRDL
         refute_signature(addrmaps[1], addrmaps[0])
         assert_signature(addrmaps[2], addrmaps[0])
 
-        regfiles = build_model(<<~RDL)[0].regs
+        regfiles = build_model(<<~RDL).addrmaps[0].regs
           regfile regfile_a {
             reg {
               field { sw = rw; hw = r; } a;
@@ -276,7 +276,7 @@ module SystemRDL
         refute_signature(regfiles[1], regfiles[0])
         assert_signature(regfiles[2], regfiles[0])
 
-        mems = build_model(<<~RDL)[0].regs
+        mems = build_model(<<~RDL).addrmaps[0].regs
           mem mem_a {
             memwidth = 32;
           };
@@ -292,7 +292,7 @@ module SystemRDL
         refute_signature(mems[1], mems[0])
         assert_signature(mems[2], mems[0])
 
-        regs = build_model(<<~RDL)[0].regs
+        regs = build_model(<<~RDL).addrmaps[0].regs
           reg reg_a {
             field { sw = rw; hw = r; } a;
           };
@@ -308,7 +308,7 @@ module SystemRDL
         refute_signature(regs[1], regs[0])
         assert_signature(regs[2], regs[0])
 
-        fields = build_model(<<~RDL)[0].regs[0].fields
+        fields = build_model(<<~RDL).addrmaps[0].regs[0].fields
           field field_a {
             sw = rw; hw = r;
           };
@@ -328,7 +328,7 @@ module SystemRDL
       end
 
       def test_signature_for_anonymous_component
-        addrmap = build_model(<<~RDL)[0]
+        addrmap = build_model(<<~RDL).addrmaps[0]
           addrmap my_map {
             addrmap {
               regfile {
@@ -360,7 +360,7 @@ module SystemRDL
       end
 
       def test_signature_differs_by_lexical_scope
-        addrmap = build_model(<<~RDL)[0]
+        addrmap = build_model(<<~RDL).addrmaps[0]
           regfile regfile_a {
             reg my_reg {
               field my_field #(longint unsigned WIDTH = 8) {

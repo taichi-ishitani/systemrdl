@@ -27,17 +27,20 @@ require_relative 'systemrdl/parser/preprocessor/preprocessor'
 require_relative 'systemrdl/parser/generated_parser'
 require_relative 'systemrdl/parser/parser'
 require_relative 'systemrdl/parser'
+require_relative 'systemrdl/evaluator/type'
 require_relative 'systemrdl/evaluator/value'
 require_relative 'systemrdl/evaluator/common'
 require_relative 'systemrdl/evaluator/list'
 require_relative 'systemrdl/evaluator/literal'
 require_relative 'systemrdl/evaluator/operation'
 require_relative 'systemrdl/evaluator/parameter'
-require_relative 'systemrdl/evaluator/instance'
-require_relative 'systemrdl/evaluator/reference'
 require_relative 'systemrdl/evaluator/property'
+require_relative 'systemrdl/evaluator/property_accessor'
 require_relative 'systemrdl/evaluator/property_assignment'
 require_relative 'systemrdl/evaluator/builtin_properties'
+require_relative 'systemrdl/evaluator/instance'
+require_relative 'systemrdl/evaluator/reference'
+require_relative 'systemrdl/evaluator/enum'
 require_relative 'systemrdl/evaluator/component_insts'
 require_relative 'systemrdl/evaluator/component_definition'
 require_relative 'systemrdl/evaluator/address_operation'
@@ -55,6 +58,8 @@ require_relative 'systemrdl/evaluator/root'
 require_relative 'systemrdl/evaluator/processor'
 require_relative 'systemrdl/evaluator'
 require_relative 'systemrdl/model/value'
+require_relative 'systemrdl/model/common'
+require_relative 'systemrdl/model/enum'
 require_relative 'systemrdl/model/signature'
 require_relative 'systemrdl/model/instance'
 require_relative 'systemrdl/model'
@@ -70,8 +75,7 @@ module SystemRDL
     end
 
     def compile_source(rdl, filename: 'unknown')
-      _, models = __compile(rdl, filename, nil, nil)
-      models
+      __compile_single(rdl, filename)
     end
 
     private
@@ -86,26 +90,24 @@ module SystemRDL
     end
 
     def __compile_multiple(inputs, reader)
-      _, models = inputs.inject([nil, nil]) do |(root, results), input|
+      evaluated = inputs.each_with_index.inject(nil) do |root, (input, i)|
         __send__(reader, *input) do |rdl, filename|
-          __compile(rdl, filename, root, results)
+          finalize = (i + 1) == inputs.size
+          __compile(rdl, filename, root, finalize)
         end
       end
 
-      models
+      Model.build(evaluated)
     end
 
-    def __compile(rdl, filename, root, results)
-      ast = Parser.parse(rdl, filename:)
-      evaluated = Evaluator.evaluate(ast, root)
-      models = Model.build(evaluated)
+    def __compile_single(rdl, filename)
+      evaluated = __compile(rdl, filename, nil, true)
+      Model.build(evaluated)
+    end
 
-      if results
-        results.concat(models)
-        [evaluated, results]
-      else
-        [evaluated, models]
-      end
+    def __compile(rdl, filename, root, finalize)
+      ast = Parser.parse(rdl, filename:)
+      Evaluator.evaluate(ast, root, finalize:)
     end
   end
 end

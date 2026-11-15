@@ -41,19 +41,19 @@ module SystemRDL
       def test_constant_cast
         code = "boolean'(1+2)"
         assert_parses_expression(
-          cast(data_type(:boolean), bop('+', number(1), number(2))),
+          cast(builtin_type(:boolean), bop('+', number(1), number(2))),
           code
         )
 
         code = "bit'(1+2)"
         assert_parses_expression(
-          cast(data_type(:bit), bop('+', number(1), number(2))),
+          cast(builtin_type(:bit), bop('+', number(1), number(2))),
           code
         )
 
         code = "longint'(1+2)"
         assert_parses_expression(
-          cast(data_type(:longint), bop('+', number(1), number(2))),
+          cast(builtin_type(:longint), bop('+', number(1), number(2))),
           code
         )
 
@@ -81,7 +81,7 @@ module SystemRDL
         code = "longint'(1+2)'(3+4)"
         assert_parses_expression(
           cast(
-            cast(data_type(:longint), bop('+', number(1), number(2))),
+            cast(builtin_type(:longint), bop('+', number(1), number(2))),
             bop('+', number(3), number(4))
           ),
           code
@@ -532,8 +532,8 @@ module SystemRDL
         s(:verilog_number, number)
       end
 
-      def data_type(type)
-        s(:data_type, type.to_s)
+      def builtin_type(type)
+        s(:builtin_type, type.to_s)
       end
 
       def cast(casting_type, expression)

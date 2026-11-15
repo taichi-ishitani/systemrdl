@@ -6,6 +6,15 @@ module SystemRDL
       class << self
         attr_reader :properties
 
+        def init_properties(element_type, element)
+          properties.each do |prop_def|
+            prop = prop_def.create(element_type, element)
+            next unless prop
+
+            element.properties << prop
+          end
+        end
+
         def find(name)
           properties.find { |prop| prop.name == name }
         end
@@ -24,7 +33,7 @@ module SystemRDL
       def_property :accesswidth do |prop|
         prop.targets = [:reg]
         prop.exist = true
-        prop.types = [:longint]
+        prop.types = [Type.longint]
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = false
@@ -33,7 +42,7 @@ module SystemRDL
       def_property :addressing do |prop|
         prop.targets = [:addrmap]
         prop.exist = true
-        prop.types = [:addressingtype]
+        prop.types = [Type.addressingtype]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -43,7 +52,7 @@ module SystemRDL
       def_property :alignment do |prop|
         prop.targets = [:addrmap, :regfile]
         prop.exist = true
-        prop.types = [:longint]
+        prop.types = [Type.longint]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -55,7 +64,7 @@ module SystemRDL
       def_property :anded do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = true
         prop.ref_target = true
         prop.per_element_assign = false
@@ -65,7 +74,7 @@ module SystemRDL
       def_property :bigendian do |prop|
         prop.targets = [:addrmap]
         prop.exist = true
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = false
@@ -73,7 +82,7 @@ module SystemRDL
       end
 
       def_property :desc do |prop|
-        prop.types = [:string]
+        prop.types = [Type.string]
         prop.exist = true
         prop.dynamic_assign = true
         prop.ref_target = false
@@ -81,10 +90,17 @@ module SystemRDL
         prop.default_value = proc { '' }
       end
 
+      def_property :encode do |prop|
+        prop.targets = [:field]
+        prop.exist = true
+        prop.types = [Type.enum_ref]
+        prop.dynamic_assign = true
+      end
+
       def_property :errextbus do |prop|
         prop.targets = [:addrmap, :regfile, :reg]
         prop.exist = true
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -94,7 +110,7 @@ module SystemRDL
       def_property :fieldwidth do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:longint]
+        prop.types = [Type.longint]
         prop.dynamic_assign = false
         prop.per_element_assign = false
         prop.ref_target = false
@@ -103,7 +119,7 @@ module SystemRDL
       def_property :hw do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:accesstype]
+        prop.types = [Type.accesstype]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -113,7 +129,7 @@ module SystemRDL
       def_property :hwclr do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:boolean, :field_reference, :property_reference]
+        prop.types = [Type.boolean, Type.field_ref, Type.prop_ref]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
         prop.per_element_assign = false
@@ -123,7 +139,7 @@ module SystemRDL
       def_property :hwenable do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:field_reference, :property_reference]
+        prop.types = [Type.field_ref, Type.prop_ref]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
         prop.per_element_assign = false
@@ -132,7 +148,7 @@ module SystemRDL
       def_property :hwmask do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:field_reference, :property_reference]
+        prop.types = [Type.field_ref, Type.prop_ref]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
         prop.per_element_assign = false
@@ -141,7 +157,7 @@ module SystemRDL
       def_property :hwset do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:boolean, :field_reference, :property_reference]
+        prop.types = [Type.boolean, Type.field_ref, Type.prop_ref]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
         prop.per_element_assign = false
@@ -151,7 +167,7 @@ module SystemRDL
       def_property :littleendian do |prop|
         prop.targets = [:addrmap]
         prop.exist = true
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = false
@@ -161,7 +177,7 @@ module SystemRDL
       def_property :lsb0 do |prop|
         prop.targets = [:addrmap]
         prop.exist = true
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -171,7 +187,7 @@ module SystemRDL
       def_property :mementries do |prop|
         prop.targets = [:mem]
         prop.exist = true
-        prop.types = [:longint]
+        prop.types = [Type.longint]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -181,7 +197,7 @@ module SystemRDL
       def_property :memwidth do |prop|
         prop.targets = [:mem]
         prop.exist = true
-        prop.types = [:longint]
+        prop.types = [Type.longint]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -190,7 +206,7 @@ module SystemRDL
       def_property :msb0 do |prop|
         prop.targets = [:addrmap]
         prop.exist = true
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -198,18 +214,18 @@ module SystemRDL
       end
 
       def_property :name do |prop|
-        prop.types = [:string]
+        prop.types = [Type.string]
         prop.exist = true
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = true
-        prop.default_value = proc { |inst| inst.name.to_s }
+        prop.default_value = proc { |element| element.name.to_s }
       end
 
       def_property :next do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:field_reference, :property_reference]
+        prop.types = [Type.field_ref, Type.prop_ref]
         prop.dynamic_assign = true
         prop.per_element_assign = false
         prop.ref_target = proc { set? }
@@ -218,7 +234,7 @@ module SystemRDL
       def_property :onread do |prop|
         prop.targets = [:field]
         prop.exist = proc { |inst| !inst.virtual_field? }
-        prop.types = [:onreadtype]
+        prop.types = [Type.onreadtype]
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = false
@@ -227,7 +243,7 @@ module SystemRDL
       def_property :onwrite do |prop|
         prop.targets = [:field]
         prop.exist = proc { |inst| !inst.virtual_field? }
-        prop.types = [:onwritetype]
+        prop.types = [Type.onwritetype]
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = false
@@ -236,7 +252,7 @@ module SystemRDL
       def_property :ored do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = true
         prop.ref_target = true
         prop.per_element_assign = false
@@ -246,7 +262,7 @@ module SystemRDL
       def_property :paritycheck do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -256,7 +272,7 @@ module SystemRDL
       def_property :precedence do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:precedencetype]
+        prop.types = [Type.precedencetype]
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = false
@@ -266,7 +282,7 @@ module SystemRDL
       def_property :rclr do |prop|
         prop.targets = [:field]
         prop.exist = proc { |inst| !inst.virtual_field? }
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = false
@@ -276,7 +292,7 @@ module SystemRDL
       def_property :regwidth do |prop|
         prop.targets = [:reg]
         prop.exist = true
-        prop.types = [:longint]
+        prop.types = [Type.longint]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -286,7 +302,7 @@ module SystemRDL
       def_property :reset do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:bit, :field_reference, :property_reference]
+        prop.types = [Type.unsized_bit, Type.field_ref, Type.prop_ref]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
         prop.per_element_assign = false
@@ -295,7 +311,7 @@ module SystemRDL
       def_property :resetsignal do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:field_reference, :property_reference]
+        prop.types = [Type.field_ref, Type.prop_ref]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
         prop.per_element_assign = false
@@ -304,7 +320,7 @@ module SystemRDL
       def_property :rset do |prop|
         prop.targets = [:field]
         prop.exist = proc { |inst| !inst.virtual_field? }
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = false
@@ -314,7 +330,7 @@ module SystemRDL
       def_property :rsvdset do |prop|
         prop.targets = [:addrmap]
         prop.exist = true
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -324,7 +340,7 @@ module SystemRDL
       def_property :rsvdsetX do |prop|
         prop.targets = [:addrmap]
         prop.exist = true
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -334,7 +350,7 @@ module SystemRDL
       def_property :shared do |prop|
         prop.targets = [:reg]
         prop.exist = true
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -344,7 +360,7 @@ module SystemRDL
       def_property :sharedextbus do |prop|
         prop.targets = [:addrmap, :regfile]
         prop.exist = true
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = false
         prop.ref_target = false
         prop.per_element_assign = false
@@ -354,7 +370,7 @@ module SystemRDL
       def_property :singlepulse do |prop|
         prop.targets = [:field]
         prop.exist = proc { |inst| !inst.virtual_field? }
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = false
@@ -364,7 +380,7 @@ module SystemRDL
       def_property :sw do |prop|
         prop.targets = [:mem, :field]
         prop.exist = true
-        prop.types = [:accesstype]
+        prop.types = [Type.accesstype]
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = false
@@ -374,7 +390,7 @@ module SystemRDL
       def_property :swacc do |prop|
         prop.targets = [:field]
         prop.exist = proc { |inst| !inst.virtual_field? }
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = true
         prop.ref_target = true
         prop.per_element_assign = false
@@ -384,7 +400,7 @@ module SystemRDL
       def_property :swmod do |prop|
         prop.targets = [:field]
         prop.exist = proc { |inst| !inst.virtual_field? }
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = true
         prop.ref_target = true
         prop.per_element_assign = false
@@ -394,7 +410,7 @@ module SystemRDL
       def_property :swwe do |prop|
         prop.targets = [:field]
         prop.exist = proc { |inst| !inst.virtual_field? }
-        prop.types = [:boolean, :field_reference, :property_reference]
+        prop.types = [Type.boolean, Type.field_ref, Type.prop_ref]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
         prop.per_element_assign = false
@@ -404,7 +420,7 @@ module SystemRDL
       def_property :swwel do |prop|
         prop.targets = [:field]
         prop.exist = proc { |inst| !inst.virtual_field? }
-        prop.types = [:boolean, :field_reference, :property_reference]
+        prop.types = [Type.boolean, Type.field_ref, Type.prop_ref]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
         prop.per_element_assign = false
@@ -414,7 +430,7 @@ module SystemRDL
       def_property :we do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:boolean, :field_reference, :property_reference]
+        prop.types = [Type.boolean, Type.field_ref, Type.prop_ref]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
         prop.per_element_assign = false
@@ -424,7 +440,7 @@ module SystemRDL
       def_property :wel do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:boolean, :field_reference, :property_reference]
+        prop.types = [Type.boolean, Type.field_ref, Type.prop_ref]
         prop.dynamic_assign = true
         prop.ref_target = proc { set? }
         prop.per_element_assign = false
@@ -434,7 +450,7 @@ module SystemRDL
       def_property :woclr do |prop|
         prop.targets = [:field]
         prop.exist = proc { |inst| !inst.virtual_field? }
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = false
@@ -444,7 +460,7 @@ module SystemRDL
       def_property :woset do |prop|
         prop.targets = [:field]
         prop.exist = proc { |inst| !inst.virtual_field? }
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = true
         prop.ref_target = false
         prop.per_element_assign = false
@@ -454,7 +470,7 @@ module SystemRDL
       def_property :xored do |prop|
         prop.targets = [:field]
         prop.exist = true
-        prop.types = [:boolean]
+        prop.types = [Type.boolean]
         prop.dynamic_assign = true
         prop.ref_target = true
         prop.per_element_assign = false

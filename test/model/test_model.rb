@@ -6,7 +6,14 @@ module SystemRDL
   module Model
     class TestModel < TestCase
       def setup
-        @addrmaps = build_model(<<~'RDL')
+        @root = build_model(<<~'RDL')
+          enum ab {
+            A;
+            B {
+              name = "ab::B";
+              desc = "Member B";
+            };
+          };
           addrmap my_map {
             name = "Sample";
 
@@ -21,8 +28,13 @@ module SystemRDL
             } r1[2];
 
             reg {
-              field { sw = r; hw = w; } a;
+              enum cd {
+                C = 1'b1;
+                D = 1'b0;
+              };
+              field { sw = r; hw = w; encode = ab; } a;
               field { sw = r; hw = rw; hwclr; } b;
+              b->encode = cd;
             } r2;
 
             regfile {
@@ -49,7 +61,7 @@ module SystemRDL
       end
 
       def test_addrmap_accessors
-        addrmap = @addrmaps[0]
+        addrmap = @root.addrmaps[0]
         assert_value('my_map', addrmap.name)
         assert_value('Sample', addrmap.display_name)
         assert_value('', addrmap.desc)
@@ -64,7 +76,7 @@ module SystemRDL
         assert_value(false, addrmap.rsvdsetX)
         assert_value(false, addrmap.msb0)
 
-        addrmap = @addrmaps[0].regs[6]
+        addrmap = @root.addrmaps[0].regs[6]
         assert_value('sub0', addrmap.name)
         assert_value('sub0', addrmap.display_name)
         assert_value('', addrmap.desc)
@@ -81,7 +93,7 @@ module SystemRDL
       end
 
       def test_addrmap_properties
-        addrmap = @addrmaps[0]
+        addrmap = @root.addrmaps[0]
         assert_property_value(addrmap, :display_name, 'Sample')
         assert_property_value(addrmap, :desc, '')
         assert_property_value(addrmap, :sharedextbus, false)
@@ -92,7 +104,7 @@ module SystemRDL
         assert_property_value(addrmap, :rsvdsetX, false)
         assert_property_value(addrmap, :msb0, false)
 
-        addrmap = @addrmaps[0].regs[6]
+        addrmap = @root.addrmaps[0].regs[6]
         assert_property_value(addrmap, :display_name, 'sub0')
         assert_property_value(addrmap, :desc, '')
         assert_property_value(addrmap, :sharedextbus, false)
@@ -105,7 +117,7 @@ module SystemRDL
       end
 
       def test_addrmap_dropped_properties
-        [@addrmaps[0], @addrmaps[0].regs[6]].each do |addrmap|
+        [@root.addrmaps[0], @root.addrmaps[0].regs[6]].each do |addrmap|
           refute_property(addrmap, :alignment)
           refute_property(addrmap, :addressing)
           refute_property(addrmap, :lsb0)
@@ -113,7 +125,7 @@ module SystemRDL
       end
 
       def test_mem_accessors
-        mem = @addrmaps[0].regs[5]
+        mem = @root.addrmaps[0].regs[5]
         assert_value('mem0', mem.name)
         assert_value('mem0', mem.display_name)
         assert_value('', mem.desc)
@@ -127,7 +139,7 @@ module SystemRDL
       end
 
       def test_mem_propertyes
-        mem = @addrmaps[0].regs[5]
+        mem = @root.addrmaps[0].regs[5]
         assert_property_value(mem, :display_name, 'mem0')
         assert_property_value(mem, :desc, '')
         assert_property_value(mem, :memwidth, 24)
@@ -136,7 +148,7 @@ module SystemRDL
       end
 
       def test_regfile_accessors
-        regfile = @addrmaps[0].regs[4]
+        regfile = @root.addrmaps[0].regs[4]
         assert_value('rf0', regfile.name)
         assert_value('rf0', regfile.display_name)
         assert_value('', regfile.desc)
@@ -149,7 +161,7 @@ module SystemRDL
       end
 
       def test_regfile_properties
-        regfile = @addrmaps[0].regs[4]
+        regfile = @root.addrmaps[0].regs[4]
         assert_property_value(regfile, :display_name, 'rf0')
         assert_property_value(regfile, :desc, '')
         assert_property_value(regfile, :sharedextbus, false)
@@ -157,12 +169,12 @@ module SystemRDL
       end
 
       def test_regfile_dropped_properties
-        regfile = @addrmaps[0].regs[4]
+        regfile = @root.addrmaps[0].regs[4]
         refute_property(regfile, :alignment)
       end
 
       def test_reg_accessors
-        regs = collect_regs(@addrmaps[0])
+        regs = collect_regs(@root.addrmaps[0])
 
         ['r0', 'r1[0]', 'r1[1]', 'r2', 'r0', 'r0'].each_with_index do |name, i|
           assert_value(name, regs[i].name)
@@ -202,7 +214,7 @@ module SystemRDL
       end
 
       def test_reg_properties
-        regs = collect_regs(@addrmaps[0])
+        regs = collect_regs(@root.addrmaps[0])
 
         ['r0', 'r1', 'r1', 'r2', 'r0', 'r0'].each_with_index do |display_name, i|
           assert_property_value(regs[i], :display_name, display_name)
@@ -230,7 +242,7 @@ module SystemRDL
       end
 
       def test_reg_dropped_properties
-        regs = collect_regs(@addrmaps[0])
+        regs = collect_regs(@root.addrmaps[0])
 
         regs.each do |reg|
           refute_property(reg, :regwidth)
@@ -239,7 +251,7 @@ module SystemRDL
       end
 
       def test_field_accessors
-        fields = collect_fields(@addrmaps[0])
+        fields = collect_fields(@root.addrmaps[0])
 
         ['a', 'b', 'a', 'b', 'a', 'b', 'a', 'b', 'a', 'a'].each_with_index do |v, i|
           assert_value(v, fields[i].name)
@@ -373,6 +385,14 @@ module SystemRDL
           assert_value(v, fields[i].hwmask)
         end
 
+        [nil, nil, nil, nil, nil, nil, 'ab', 'my_map.r2::cd', nil, nil].each_with_index do |expected, i|
+          if expected
+            assert_reference_value(expected, fields[i].encode)
+          else
+            assert_nil(fields[i].encode)
+          end
+        end
+
         [:sw, :sw, :sw, :hw, :sw, :hw, :sw, :sw, :sw, :sw].each_with_index do |v, i|
           assert_value(v, fields[i].precedence)
         end
@@ -383,7 +403,7 @@ module SystemRDL
       end
 
       def test_field_properties
-        fields = collect_fields(@addrmaps[0])
+        fields = collect_fields(@root.addrmaps[0])
 
         ['a', 'b', 'a', 'b', 'a', 'b', 'a', 'b', 'a', 'a'].each_with_index do |v, i|
           assert_property_value(fields[i], :display_name, v)
@@ -483,7 +503,7 @@ module SystemRDL
 
         [false, false, false, false, false, false, false, 'my_map.r0.a.anded', false, false].each_with_index do |expected, i|
           if expected
-            assert_property_reference_value(fields[i], :hwset, expected)
+            assert_prop_ref_value(fields[i], :hwset, expected)
           else
             assert_property_value(fields[i], :hwset, expected)
           end
@@ -491,7 +511,7 @@ module SystemRDL
 
         [nil, nil, nil, nil, nil, nil, 'my_map.r0.b', nil, nil, nil].each_with_index do |expected, i|
           if expected
-            assert_property_reference_value(fields[i], :hwenable, expected)
+            assert_prop_ref_value(fields[i], :hwenable, expected)
           else
             assert_property_value(fields[i], :hwenable, expected)
           end
@@ -499,6 +519,14 @@ module SystemRDL
 
         [nil, nil, nil, nil, nil, nil, nil, nil, nil, nil].each_with_index do |v, i|
           assert_property_value(fields[i], :hwmask, v)
+        end
+
+        [nil, nil, nil, nil, nil, nil, 'ab', 'my_map.r2::cd', nil, nil].each_with_index do |expected, i|
+          if expected
+            assert_prop_ref_value(fields[i], :encode, expected)
+          else
+            assert_property_value(fields[i], :encode, expected)
+          end
         end
 
         [:sw, :sw, :sw, :hw, :sw, :hw, :sw, :sw, :sw, :sw].each_with_index do |v, i|
@@ -511,31 +539,75 @@ module SystemRDL
       end
 
       def test_field_dropped_properties
-        fields = collect_fields(@addrmaps[0])
+        fields = collect_fields(@root.addrmaps[0])
 
         fields.each do |field|
           refute_property(field, :fieldwidth)
         end
       end
 
+      def test_enum_accessors
+        enums = collect_enums(@root)
+
+        enum = enums[0]
+        assert_value('ab', enum.name)
+
+        [
+          ['A', 0, 'A', ''],
+          ['B', 1, 'ab::B', 'Member B']
+        ].each_with_index do |(name, value, display_name, desc), i|
+          assert_value(name, enum.members[i].name)
+          assert_value(value, enum.members[i].value)
+          assert_value(display_name, enum.members[i].display_name)
+          assert_value(desc, enum.members[i].desc)
+        end
+
+        enum = enums[1]
+        assert_value('cd', enum.name)
+
+        [
+          ['C', 1, 'C', ''],
+          ['D', 0, 'D', ''],
+        ].each_with_index do |(name, value, display_name, desc), i|
+          assert_value(name, enum.members[i].name)
+          assert_value(value, enum.members[i].value)
+          assert_value(display_name, enum.members[i].display_name)
+          assert_value(desc, enum.members[i].desc)
+        end
+      end
+
+      def test_enum_properties
+        enums = collect_enums(@root)
+
+        [['A', ''], ['ab::B', 'Member B']].each_with_index do |(display_name, desc), i|
+          assert_property_value(enums[0].members[i], :display_name, display_name)
+          assert_property_value(enums[0].members[i], :desc, desc)
+        end
+
+        [['C', ''], ['D', '']].each_with_index do |(display_name, desc), i|
+          assert_property_value(enums[1].members[i], :display_name, display_name)
+          assert_property_value(enums[1].members[i], :desc, desc)
+        end
+      end
+
       def test_full_name
-        addrmap = @addrmaps[0]
+        addrmap = @root.addrmaps[0]
         assert_value('my_map', addrmap.full_name)
         assert_value('', addrmap.full_name(exclude_addrmap: true))
 
-        addrmap = @addrmaps[0].regs[6]
+        addrmap = @root.addrmaps[0].regs[6]
         assert_value('my_map.sub0', addrmap.full_name)
         assert_value('', addrmap.full_name(exclude_addrmap: true))
 
-        mem = @addrmaps[0].regs[5]
+        mem = @root.addrmaps[0].regs[5]
         assert_value('my_map.mem0', mem.full_name)
         assert_value('mem0', mem.full_name(exclude_addrmap: true))
 
-        regfile = @addrmaps[0].regs[4]
+        regfile = @root.addrmaps[0].regs[4]
         assert_value('my_map.rf0', regfile.full_name)
         assert_value('rf0', regfile.full_name(exclude_addrmap: true))
 
-        regs = collect_regs(@addrmaps[0])
+        regs = collect_regs(@root.addrmaps[0])
         [
           'my_map.r0', 'my_map.r1[0]', 'my_map.r1[1]', 'my_map.r2', 'my_map.rf0.r0', 'my_map.sub0.r0'
         ].each_with_index do |full_name, i|
@@ -547,7 +619,7 @@ module SystemRDL
           assert_value(full_name, regs[i].full_name(exclude_addrmap: true))
         end
 
-        fields = collect_fields(@addrmaps[0])
+        fields = collect_fields(@root.addrmaps[0])
         [
           'my_map.r0.a', 'my_map.r0.b', 'my_map.r1[0].a', 'my_map.r1[0].b',
           'my_map.r1[1].a', 'my_map.r1[1].b', 'my_map.r2.a', 'my_map.r2.b',
@@ -563,421 +635,75 @@ module SystemRDL
           assert_value(v, fields[i].full_name(exclude_addrmap: true))
         end
 
-        mem = @addrmaps[0].regs[5]
+        mem = @root.addrmaps[0].regs[5]
         assert_value('my_map.mem0', mem.full_name)
         assert_value('mem0', mem.full_name(exclude_addrmap: true))
 
-        anded = @addrmaps[0].regs[0].fields[0].property(:anded)
+        anded = @root.addrmaps[0].regs[0].fields[0].property(:anded)
         assert_value('my_map.r0.a.anded', anded.full_name)
         assert_value('r0.a.anded', anded.full_name(exclude_addrmap: true))
+
+        enums = collect_enums(@root)
+        assert_value('ab', enums[0].full_name)
+        assert_value('ab::A', enums[0].members[0].full_name)
+        assert_value('ab::B', enums[0].members[1].full_name)
+
+        assert_value('my_map.r2::cd', enums[1].full_name)
+        assert_value('my_map.r2::cd::C', enums[1].members[0].full_name)
+        assert_value('my_map.r2::cd::D', enums[1].members[1].full_name)
       end
 
       def test_type_identifier
-        fields = collect_fields(@addrmaps[0])
+        fields = collect_fields(@root.addrmaps[0])
 
         prop = fields[0].property(:hwset)
         assert(prop.value?)
-        refute(prop.instance_ref?)
-        refute(prop.property_ref?)
+        refute(prop.inst_ref?)
+        refute(prop.prop_ref?)
+        refute(prop.enum_ref?)
 
         prop = fields[0].property(:reset)
         assert(prop.value?)
-        refute(prop.instance_ref?)
-        refute(prop.property_ref?)
+        refute(prop.inst_ref?)
+        refute(prop.prop_ref?)
+        refute(prop.enum_ref?)
 
         prop = fields[6].property(:hwenable)
         refute(prop.value?)
-        assert(prop.instance_ref?)
-        refute(prop.property_ref?)
+        assert(prop.inst_ref?)
+        refute(prop.prop_ref?)
+        refute(prop.enum_ref?)
 
         prop = fields[7].property(:hwset)
         refute(prop.value?)
-        refute(prop.instance_ref?)
-        assert(prop.property_ref?)
+        refute(prop.inst_ref?)
+        assert(prop.prop_ref?)
+        refute(prop.enum_ref?)
+
+        prop = fields[6].property(:encode)
+        refute(prop.value?)
+        refute(prop.inst_ref?)
+        refute(prop.prop_ref?)
+        assert(prop.enum_ref?)
+
+        prop = fields[7].property(:encode)
+        refute(prop.value?)
+        refute(prop.inst_ref?)
+        refute(prop.prop_ref?)
+        assert(prop.enum_ref?)
       end
 
       def test_pp
-        addrmap = @addrmaps[0]
-        assert_output(<<~'PP') { pp addrmap }
-          my_map (addrmap) {
-            display_name: "Sample"
-            desc: ""
-            address: nil
-            size: 52
-            accesswidth: 32
-            sharedextbus: false
-            errextbus: false
-            bigendian: false
-            littleendian: false
-            rsvdset: false
-            rsvdsetX: false
-            msb0: false
-            r0 (reg) {
-              display_name: "r0"
+        assert_output(<<~'PP') { pp @root }
+          root (root) {
+            ab (enum) {
+              A { value: 0 display_name: "A" desc: ""}
+              B { value: 1 display_name: "ab::B" desc: "Member B"}}
+            my_map (addrmap) {
+              display_name: "Sample"
               desc: ""
-              external: false
-              address: 0x0
-              size: 4
-              accesswidth: 32
-              errextbus: false
-              shared: false
-              a (field) {
-                display_name: "a"
-                desc: ""
-                msb: 0
-                lsb: 0
-                width: 1
-                hw: :w
-                sw: :r
-                next: nil
-                reset: 0x0
-                resetsignal: nil
-                rclr: false
-                rset: false
-                onread: nil
-                woset: false
-                woclr: false
-                onwrite: nil
-                swwe: false
-                swwel: false
-                swmod: false
-                swacc: false
-                singlepulse: false
-                we: false
-                wel: false
-                anded: true
-                ored: false
-                xored: false
-                hwclr: false
-                hwset: false
-                hwenable: nil
-                hwmask: nil
-                precedence: :sw
-                paritycheck: false}
-              b (field) {
-                display_name: "b"
-                desc: ""
-                msb: 4
-                lsb: 1
-                width: 4
-                hw: :r
-                sw: :rw
-                next: nil
-                reset: 0x0
-                resetsignal: nil
-                rclr: false
-                rset: false
-                onread: nil
-                woset: false
-                woclr: false
-                onwrite: nil
-                swwe: false
-                swwel: false
-                swmod: false
-                swacc: false
-                singlepulse: false
-                we: true
-                wel: false
-                anded: false
-                ored: false
-                xored: false
-                hwclr: false
-                hwset: false
-                hwenable: nil
-                hwmask: nil
-                precedence: :sw
-                paritycheck: false}}
-            r1[0] (reg) {
-              display_name: "r1"
-              desc: ""
-              external: false
-              address: 0x4
-              size: 4
-              accesswidth: 32
-              errextbus: false
-              shared: false
-              a (field) {
-                display_name: "a"
-                desc: ""
-                msb: 0
-                lsb: 0
-                width: 1
-                hw: :w
-                sw: :r
-                next: nil
-                reset: nil
-                resetsignal: nil
-                rclr: false
-                rset: false
-                onread: nil
-                woset: false
-                woclr: false
-                onwrite: nil
-                swwe: false
-                swwel: false
-                swmod: false
-                swacc: false
-                singlepulse: false
-                we: false
-                wel: false
-                anded: false
-                ored: false
-                xored: false
-                hwclr: false
-                hwset: false
-                hwenable: nil
-                hwmask: nil
-                precedence: :sw
-                paritycheck: false}
-              b (field) {
-                display_name: "b"
-                desc: ""
-                msb: 1
-                lsb: 1
-                width: 1
-                hw: :rw
-                sw: :r
-                next: nil
-                reset: nil
-                resetsignal: nil
-                rclr: false
-                rset: false
-                onread: nil
-                woset: false
-                woclr: false
-                onwrite: nil
-                swwe: false
-                swwel: false
-                swmod: false
-                swacc: false
-                singlepulse: false
-                we: false
-                wel: false
-                anded: false
-                ored: false
-                xored: false
-                hwclr: true
-                hwset: false
-                hwenable: nil
-                hwmask: nil
-                precedence: :hw
-                paritycheck: false}}
-            r1[1] (reg) {
-              display_name: "r1"
-              desc: ""
-              external: false
-              address: 0x8
-              size: 4
-              accesswidth: 32
-              errextbus: false
-              shared: false
-              a (field) {
-                display_name: "a"
-                desc: ""
-                msb: 0
-                lsb: 0
-                width: 1
-                hw: :w
-                sw: :r
-                next: nil
-                reset: nil
-                resetsignal: nil
-                rclr: false
-                rset: false
-                onread: nil
-                woset: false
-                woclr: false
-                onwrite: nil
-                swwe: false
-                swwel: false
-                swmod: false
-                swacc: false
-                singlepulse: false
-                we: false
-                wel: false
-                anded: false
-                ored: false
-                xored: false
-                hwclr: false
-                hwset: false
-                hwenable: nil
-                hwmask: nil
-                precedence: :sw
-                paritycheck: false}
-              b (field) {
-                display_name: "b"
-                desc: ""
-                msb: 1
-                lsb: 1
-                width: 1
-                hw: :rw
-                sw: :r
-                next: nil
-                reset: nil
-                resetsignal: nil
-                rclr: false
-                rset: false
-                onread: nil
-                woset: false
-                woclr: false
-                onwrite: nil
-                swwe: false
-                swwel: false
-                swmod: false
-                swacc: false
-                singlepulse: false
-                we: false
-                wel: false
-                anded: false
-                ored: false
-                xored: false
-                hwclr: true
-                hwset: false
-                hwenable: nil
-                hwmask: nil
-                precedence: :hw
-                paritycheck: false}}
-            r2 (reg) {
-              display_name: "r2"
-              desc: ""
-              external: false
-              address: 0xc
-              size: 4
-              accesswidth: 32
-              errextbus: false
-              shared: false
-              a (field) {
-                display_name: "a"
-                desc: ""
-                msb: 0
-                lsb: 0
-                width: 1
-                hw: :w
-                sw: :r
-                next: nil
-                reset: nil
-                resetsignal: nil
-                rclr: false
-                rset: false
-                onread: nil
-                woset: false
-                woclr: false
-                onwrite: nil
-                swwe: false
-                swwel: false
-                swmod: false
-                swacc: false
-                singlepulse: false
-                we: false
-                wel: false
-                anded: false
-                ored: false
-                xored: false
-                hwclr: false
-                hwset: false
-                hwenable: my_map.r0.b
-                hwmask: nil
-                precedence: :sw
-                paritycheck: false}
-              b (field) {
-                display_name: "b"
-                desc: ""
-                msb: 1
-                lsb: 1
-                width: 1
-                hw: :rw
-                sw: :r
-                next: nil
-                reset: nil
-                resetsignal: nil
-                rclr: false
-                rset: false
-                onread: nil
-                woset: false
-                woclr: false
-                onwrite: nil
-                swwe: false
-                swwel: false
-                swmod: false
-                swacc: false
-                singlepulse: false
-                we: false
-                wel: false
-                anded: false
-                ored: false
-                xored: false
-                hwclr: true
-                hwset: my_map.r0.a.anded
-                hwenable: nil
-                hwmask: nil
-                precedence: :sw
-                paritycheck: false}}
-            rf0 (regfile) {
-              display_name: "rf0"
-              desc: ""
-              external: false
-              address: 0x10
-              size: 4
-              accesswidth: 32
-              sharedextbus: false
-              errextbus: false
-              r0 (reg) {
-                display_name: "r0"
-                desc: ""
-                external: false
-                address: 0x0
-                size: 4
-                accesswidth: 32
-                errextbus: false
-                shared: false
-                a (field) {
-                  display_name: "a"
-                  desc: ""
-                  msb: 0
-                  lsb: 0
-                  width: 1
-                  hw: :r
-                  sw: :rw
-                  next: nil
-                  reset: nil
-                  resetsignal: nil
-                  rclr: false
-                  rset: false
-                  onread: nil
-                  woset: false
-                  woclr: false
-                  onwrite: nil
-                  swwe: false
-                  swwel: false
-                  swmod: false
-                  swacc: false
-                  singlepulse: false
-                  we: false
-                  wel: false
-                  anded: false
-                  ored: false
-                  xored: false
-                  hwclr: false
-                  hwset: false
-                  hwenable: nil
-                  hwmask: nil
-                  precedence: :sw
-                  paritycheck: false}}}
-            mem0 (mem) {
-              display_name: "mem0"
-              desc: ""
-              address: 0x20
-              size: 16
-              accesswidth: 32
-              entrywidth: 32
-              memwidth: 24
-              mementries: 4
-              sw: :rw}
-            sub0 (addrmap) {
-              display_name: "sub0"
-              desc: ""
-              address: 0x30
-              size: 4
+              address: nil
+              size: 52
               accesswidth: 32
               sharedextbus: false
               errextbus: false
@@ -1001,8 +727,85 @@ module SystemRDL
                   msb: 0
                   lsb: 0
                   width: 1
+                  hw: :w
+                  sw: :r
+                  next: nil
+                  reset: 0x0
+                  resetsignal: nil
+                  rclr: false
+                  rset: false
+                  onread: nil
+                  woset: false
+                  woclr: false
+                  onwrite: nil
+                  swwe: false
+                  swwel: false
+                  swmod: false
+                  swacc: false
+                  singlepulse: false
+                  we: false
+                  wel: false
+                  anded: true
+                  ored: false
+                  xored: false
+                  hwclr: false
+                  hwset: false
+                  hwenable: nil
+                  hwmask: nil
+                  encode: nil
+                  precedence: :sw
+                  paritycheck: false}
+                b (field) {
+                  display_name: "b"
+                  desc: ""
+                  msb: 4
+                  lsb: 1
+                  width: 4
                   hw: :r
                   sw: :rw
+                  next: nil
+                  reset: 0x0
+                  resetsignal: nil
+                  rclr: false
+                  rset: false
+                  onread: nil
+                  woset: false
+                  woclr: false
+                  onwrite: nil
+                  swwe: false
+                  swwel: false
+                  swmod: false
+                  swacc: false
+                  singlepulse: false
+                  we: true
+                  wel: false
+                  anded: false
+                  ored: false
+                  xored: false
+                  hwclr: false
+                  hwset: false
+                  hwenable: nil
+                  hwmask: nil
+                  encode: nil
+                  precedence: :sw
+                  paritycheck: false}}
+              r1[0] (reg) {
+                display_name: "r1"
+                desc: ""
+                external: false
+                address: 0x4
+                size: 4
+                accesswidth: 32
+                errextbus: false
+                shared: false
+                a (field) {
+                  display_name: "a"
+                  desc: ""
+                  msb: 0
+                  lsb: 0
+                  width: 1
+                  hw: :w
+                  sw: :r
                   next: nil
                   reset: nil
                   resetsignal: nil
@@ -1026,8 +829,318 @@ module SystemRDL
                   hwset: false
                   hwenable: nil
                   hwmask: nil
+                  encode: nil
                   precedence: :sw
-                  paritycheck: false}}}}
+                  paritycheck: false}
+                b (field) {
+                  display_name: "b"
+                  desc: ""
+                  msb: 1
+                  lsb: 1
+                  width: 1
+                  hw: :rw
+                  sw: :r
+                  next: nil
+                  reset: nil
+                  resetsignal: nil
+                  rclr: false
+                  rset: false
+                  onread: nil
+                  woset: false
+                  woclr: false
+                  onwrite: nil
+                  swwe: false
+                  swwel: false
+                  swmod: false
+                  swacc: false
+                  singlepulse: false
+                  we: false
+                  wel: false
+                  anded: false
+                  ored: false
+                  xored: false
+                  hwclr: true
+                  hwset: false
+                  hwenable: nil
+                  hwmask: nil
+                  encode: nil
+                  precedence: :hw
+                  paritycheck: false}}
+              r1[1] (reg) {
+                display_name: "r1"
+                desc: ""
+                external: false
+                address: 0x8
+                size: 4
+                accesswidth: 32
+                errextbus: false
+                shared: false
+                a (field) {
+                  display_name: "a"
+                  desc: ""
+                  msb: 0
+                  lsb: 0
+                  width: 1
+                  hw: :w
+                  sw: :r
+                  next: nil
+                  reset: nil
+                  resetsignal: nil
+                  rclr: false
+                  rset: false
+                  onread: nil
+                  woset: false
+                  woclr: false
+                  onwrite: nil
+                  swwe: false
+                  swwel: false
+                  swmod: false
+                  swacc: false
+                  singlepulse: false
+                  we: false
+                  wel: false
+                  anded: false
+                  ored: false
+                  xored: false
+                  hwclr: false
+                  hwset: false
+                  hwenable: nil
+                  hwmask: nil
+                  encode: nil
+                  precedence: :sw
+                  paritycheck: false}
+                b (field) {
+                  display_name: "b"
+                  desc: ""
+                  msb: 1
+                  lsb: 1
+                  width: 1
+                  hw: :rw
+                  sw: :r
+                  next: nil
+                  reset: nil
+                  resetsignal: nil
+                  rclr: false
+                  rset: false
+                  onread: nil
+                  woset: false
+                  woclr: false
+                  onwrite: nil
+                  swwe: false
+                  swwel: false
+                  swmod: false
+                  swacc: false
+                  singlepulse: false
+                  we: false
+                  wel: false
+                  anded: false
+                  ored: false
+                  xored: false
+                  hwclr: true
+                  hwset: false
+                  hwenable: nil
+                  hwmask: nil
+                  encode: nil
+                  precedence: :hw
+                  paritycheck: false}}
+              r2 (reg) {
+                cd (enum) {
+                  C { value: 1 display_name: "C" desc: ""}
+                  D { value: 0 display_name: "D" desc: ""}}
+                display_name: "r2"
+                desc: ""
+                external: false
+                address: 0xc
+                size: 4
+                accesswidth: 32
+                errextbus: false
+                shared: false
+                a (field) {
+                  display_name: "a"
+                  desc: ""
+                  msb: 0
+                  lsb: 0
+                  width: 1
+                  hw: :w
+                  sw: :r
+                  next: nil
+                  reset: nil
+                  resetsignal: nil
+                  rclr: false
+                  rset: false
+                  onread: nil
+                  woset: false
+                  woclr: false
+                  onwrite: nil
+                  swwe: false
+                  swwel: false
+                  swmod: false
+                  swacc: false
+                  singlepulse: false
+                  we: false
+                  wel: false
+                  anded: false
+                  ored: false
+                  xored: false
+                  hwclr: false
+                  hwset: false
+                  hwenable: my_map.r0.b
+                  hwmask: nil
+                  encode: ab
+                  precedence: :sw
+                  paritycheck: false}
+                b (field) {
+                  display_name: "b"
+                  desc: ""
+                  msb: 1
+                  lsb: 1
+                  width: 1
+                  hw: :rw
+                  sw: :r
+                  next: nil
+                  reset: nil
+                  resetsignal: nil
+                  rclr: false
+                  rset: false
+                  onread: nil
+                  woset: false
+                  woclr: false
+                  onwrite: nil
+                  swwe: false
+                  swwel: false
+                  swmod: false
+                  swacc: false
+                  singlepulse: false
+                  we: false
+                  wel: false
+                  anded: false
+                  ored: false
+                  xored: false
+                  hwclr: true
+                  hwset: my_map.r0.a.anded
+                  hwenable: nil
+                  hwmask: nil
+                  encode: my_map.r2::cd
+                  precedence: :sw
+                  paritycheck: false}}
+              rf0 (regfile) {
+                display_name: "rf0"
+                desc: ""
+                external: false
+                address: 0x10
+                size: 4
+                accesswidth: 32
+                sharedextbus: false
+                errextbus: false
+                r0 (reg) {
+                  display_name: "r0"
+                  desc: ""
+                  external: false
+                  address: 0x0
+                  size: 4
+                  accesswidth: 32
+                  errextbus: false
+                  shared: false
+                  a (field) {
+                    display_name: "a"
+                    desc: ""
+                    msb: 0
+                    lsb: 0
+                    width: 1
+                    hw: :r
+                    sw: :rw
+                    next: nil
+                    reset: nil
+                    resetsignal: nil
+                    rclr: false
+                    rset: false
+                    onread: nil
+                    woset: false
+                    woclr: false
+                    onwrite: nil
+                    swwe: false
+                    swwel: false
+                    swmod: false
+                    swacc: false
+                    singlepulse: false
+                    we: false
+                    wel: false
+                    anded: false
+                    ored: false
+                    xored: false
+                    hwclr: false
+                    hwset: false
+                    hwenable: nil
+                    hwmask: nil
+                    encode: nil
+                    precedence: :sw
+                    paritycheck: false}}}
+              mem0 (mem) {
+                display_name: "mem0"
+                desc: ""
+                address: 0x20
+                size: 16
+                accesswidth: 32
+                entrywidth: 32
+                memwidth: 24
+                mementries: 4
+                sw: :rw}
+              sub0 (addrmap) {
+                display_name: "sub0"
+                desc: ""
+                address: 0x30
+                size: 4
+                accesswidth: 32
+                sharedextbus: false
+                errextbus: false
+                bigendian: false
+                littleendian: false
+                rsvdset: false
+                rsvdsetX: false
+                msb0: false
+                r0 (reg) {
+                  display_name: "r0"
+                  desc: ""
+                  external: false
+                  address: 0x0
+                  size: 4
+                  accesswidth: 32
+                  errextbus: false
+                  shared: false
+                  a (field) {
+                    display_name: "a"
+                    desc: ""
+                    msb: 0
+                    lsb: 0
+                    width: 1
+                    hw: :r
+                    sw: :rw
+                    next: nil
+                    reset: nil
+                    resetsignal: nil
+                    rclr: false
+                    rset: false
+                    onread: nil
+                    woset: false
+                    woclr: false
+                    onwrite: nil
+                    swwe: false
+                    swwel: false
+                    swmod: false
+                    swacc: false
+                    singlepulse: false
+                    we: false
+                    wel: false
+                    anded: false
+                    ored: false
+                    xored: false
+                    hwclr: false
+                    hwset: false
+                    hwenable: nil
+                    hwmask: nil
+                    encode: nil
+                    precedence: :sw
+                    paritycheck: false}}}}}
         PP
       end
     end

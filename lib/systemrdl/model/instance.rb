@@ -3,131 +3,86 @@
 module SystemRDL
   module Model
     class Instance
-      def initialize(inst, parent)
-        @name = inst.element_name
+      include Common
+
+      def initialize(inst, parent, model_map)
+        super(inst, inst.element_name, parent, inst.token_range, model_map)
         @layer = inst.layer
-        @parent = parent
-        @instances = build_sub_instances(inst).freeze
-        @properties = build_properties(inst).freeze
+        @types = build_types(inst, model_map).freeze
+        @instances = build_sub_instances(inst, model_map).freeze
+        @properties = build_properties(inst, model_map).freeze
         @signature = Signature.generate(inst)
-        @token_range = inst.token_range
         freeze
       end
 
-      attr_reader :name
       attr_reader :layer
-      attr_reader :parent
+      attr_reader :types
       attr_reader :instances
-      attr_reader :properties
       attr_reader :signature
-      attr_reader :token_range
-
-      class << self
-        attr_reader :properties
-
-        private
-
-        def def_property(property_name, value_class = nil, &body)
-          (@properties ||= {})[property_name] = [value_class, body]
-          class_eval(<<~M, __FILE__, __LINE__ + 1)
-            # def display_name
-            #   @properties[:display_name]&.value
-            # end
-            def #{property_name}
-              @properties[:#{property_name}]&.value
-            end
-          M
-        end
-      end
 
       def to_s
         "#{name} (#{layer})"
       end
 
       def full_name(exclude_addrmap: false)
-        elements = []
-        current = self
-        while current
-          break if exclude_addrmap && current.layer == :addrmap
+        hierarchy(exclude_root: true, exclude_addrmap:).map(&:name).join('.')
+      end
 
-          elements.unshift(current)
-          current = current.parent
+      def hierarchy(exclude_root: false, exclude_addrmap: false)
+        if (layer == :root && exclude_root) || (layer == :addrmap && exclude_addrmap)
+          []
+        elsif layer == :root
+          [self]
+        else
+          instances = parent.hierarchy(exclude_root:, exclude_addrmap:)
+          instances << self
+          instances
         end
-
-        elements.map(&:name).join('.')
       end
 
       def pretty_print(pp)
         pp.group(2, "#{self} {", '}') do
-          @properties.each_value do |prop_value|
-            pp.breakable
-            pp.pp(prop_value)
-          end
-          @instances.each do |inst|
-            pp.breakable
-            pp.pp(inst)
-          end
+          pp_types(pp)
+          pp_properties(pp)
+          pp_instances(pp)
         end
-      end
-
-      def property(property_name)
-        @properties[property_name]
       end
 
       private
 
-      def build_sub_instances(inst)
+      def build_types(inst, model_map)
+        inst.types.map { |type| Enum.new(type, self, model_map) }
+      end
+
+      def build_sub_instances(inst, model_map)
         inst.instances.map do |sub_inst|
           case sub_inst.layer
-          when :addrmap then AddrMap.new(sub_inst, self)
-          when :mem then Mem.new(sub_inst, self)
-          when :regfile then RegFile.new(sub_inst, self)
-          when :reg then Reg.new(sub_inst, self)
-          when :field then Field.new(sub_inst, self)
+          when :addrmap then AddrMap.new(sub_inst, self, model_map)
+          when :mem then Mem.new(sub_inst, self, model_map)
+          when :regfile then RegFile.new(sub_inst, self, model_map)
+          when :reg then Reg.new(sub_inst, self, model_map)
+          when :field then Field.new(sub_inst, self, model_map)
           end
         end
       end
 
-      def build_properties(inst)
-        self.class.properties.to_h do |prop_name, (default_class, body)|
-          prop_value, prop_value_class, token_range =
-            if body
-              value, klass = body.call(inst)
-              [value, klass || Value]
-            else
-              value = eval_prop_value(prop_name, inst)
-              klass = select_value_class(value, default_class)
-              [value&.value, klass, value&.token_range]
-            end
-          [prop_name, prop_value_class.new(prop_name.to_s, prop_value, self, token_range)]
+      def pp_types(pp)
+        @types.each do |type|
+          pp.breakable
+          pp.pp(type)
         end
       end
 
-      def eval_prop_value(prop_name, inst)
-        if prop_name == :display_name
-          inst.property_value(:name)
-        elsif (property = inst.property(prop_name))
-          property.value
-        else
-          inst.__send__(prop_name)
+      def pp_instances(pp)
+        @instances.each do |inst|
+          pp.breakable
+          pp.pp(inst)
         end
       end
+    end
 
-      def select_value_class(value, default_class)
-        if reference_value?(value)
-          ReferenceValue
-        elsif default_class && value&.value
-          default_class
-        else
-          Value
-        end
-      end
-
-      def reference_value?(value)
-        return false unless value.respond_to?(:type)
-
-        value.type in :property_reference | :field_reference
-      end
+    class Root < Instance
+      alias_method :addrmaps, :instances
     end
 
     class AddrMap < Instance
@@ -222,6 +177,7 @@ module SystemRDL
       def_property :hwset
       def_property :hwenable
       def_property :hwmask
+      def_property :encode, RefValue
       def_property :precedence
       def_property :paritycheck
     end

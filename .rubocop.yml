@@ -14,13 +14,13 @@ Layout/EndOfLine:
   EnforcedStyle: lf
 
 Metrics/ClassLength:
-  Max: 200
+  Max: 500
 
 Metrics/MethodLength:
   Max: 30
 
 Metrics/ModuleLength:
-  Max: 400
+  Max: 500
 
 Metrics/AbcSize:
   Max: 40
@@ -50,6 +50,9 @@ Style/AccessorGrouping:
 
 Style/Alias:
   EnforcedStyle: prefer_alias_method
+
+Style/ArgumentsForwarding:
+  Enabled: false
 
 Style/ArrayIntersect:
   Enabled: false

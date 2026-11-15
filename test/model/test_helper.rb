@@ -31,6 +31,13 @@ module SystemRDL
         end
       end
 
+      def collect_enums(model)
+        [
+          *model.types,
+          *model.instances.flat_map { |inst| collect_enums(inst) }
+        ]
+      end
+
       def assert_value(expected, value)
         if !expected.nil?
           assert_equal(expected, value)
@@ -52,7 +59,7 @@ module SystemRDL
         end
       end
 
-      def assert_property_reference_value(instance, name, full_name)
+      def assert_prop_ref_value(instance, name, full_name)
         property = instance.property(name)
         assert_equal(full_name, property.value.full_name)
       end

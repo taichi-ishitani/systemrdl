@@ -13,12 +13,12 @@ module SystemRDL
         @param_def = param_def
         @elements = elements
         @insts = insts
-        @default_properties = {}
       end
 
       attr_reader :id
       attr_reader :param_def
       attr_reader :definitions
+      attr_reader :current_inst
 
       def anonymous_def?
         @anonymous_def
@@ -31,10 +31,18 @@ module SystemRDL
         @insts&.connect(self, self)
       end
 
-      def upper_layers(include_self: false)
-        layers = (layer == :root && []) || component.upper_layers(include_self: true)
-        layers << self if include_self
-        layers
+      def upper_layers(include_root: true, include_self: false)
+        if layer == :root
+          (include_root && [self]) || []
+        else
+          layers = component.upper_layers(include_root:, include_self: true)
+          layers << self if include_self
+          layers
+        end
+      end
+
+      def component_name?(name)
+        @definitions.key?(name)
       end
 
       def evaluate(instance, **optargs)
@@ -55,25 +63,6 @@ module SystemRDL
       end
 
       def finalize(_instance)
-      end
-
-      def assign_default_property(name, value, token_range)
-        if @default_properties.key?(name)
-          message = "#{name} already assigned in this scope"
-          raise_evaluation_error message, token_range
-        end
-
-        @default_properties[name] = value
-      end
-
-      def find_default_property(name)
-        upper_layers.reverse_each do |component|
-          if (prop = component.default_properties[name])
-            return prop
-          end
-        end
-
-        nil
       end
 
       private
@@ -122,18 +111,10 @@ module SystemRDL
           raise_evaluation_error message, token_range
         end
 
-        instance = instance_class.new(self, parent_instance, inst_args.name, token_range)
+        instance = new_instance(parent_instance, inst_args, token_range)
+        build_instance(instance, inst_args, array_info, **optargs)
 
-        apply_param_values(instance, @param_def, inst_args.param_inst, **optargs)
-        init_properties(instance)
-        eval_body(instance, **optargs)
-        apply_array(instance, array_info)
-        apply_inst_values(instance, inst_args.values)
-        apply_inst_type(instance, inst_args.type)
-        post_build(instance)
-        instance.validate
-
-        parent_instance.instances << instance if parent_instance
+        parent_instance&.add_instance(instance)
         instance
       end
 
@@ -158,22 +139,39 @@ module SystemRDL
         end
       end
 
+      def new_instance(parent_instance, inst_args, token_range)
+        instance_class.new(self, parent_instance, inst_args.name, token_range)
+      end
+
+      def build_instance(instance, inst_args, array_info, **optargs)
+        @current_inst = instance
+
+        apply_param_values(instance, @param_def, inst_args.param_inst, **optargs)
+        init_properties(instance)
+        eval_body(instance, **optargs)
+        apply_array(instance, array_info)
+        apply_inst_values(instance, inst_args.values)
+        apply_inst_type(instance, inst_args.type)
+        post_build(instance)
+        instance.validate
+
+        @current_inst = nil unless instance.root?
+        instance.clear_default_properties
+
+        instance
+      end
+
       def apply_param_values(instance, param_def, param_inst, **optargs)
         param_def&.evaluate(instance, param_inst, **optargs)
       end
 
       def init_properties(instance)
-        prop_defs = BuiltinProperties.properties
-        prop_defs.each do |prop_def|
-          prop = prop_def.create(instance)
-          next unless prop
+        return if instance.root?
 
-          instance.properties << prop
-        end
+        BuiltinProperties.init_properties(instance.layer, instance)
       end
 
       def eval_body(instance, **optargs)
-        @default_properties.clear
         @elements.each { |element| element.evaluate(instance, **optargs) }
       end
 
@@ -193,15 +191,13 @@ module SystemRDL
 
       def add_definition(definition)
         id = definition.id.value
-        if @definitions.key?(id)
-          message = "duplicated component: #{id}"
+        if component_name?(id)
+          message = "duplicated component identifier: #{id}"
           raise_evaluation_error message, definition.token_range
         end
 
         @definitions[id] = definition
       end
-
-      attr_reader :default_properties
     end
   end
 end

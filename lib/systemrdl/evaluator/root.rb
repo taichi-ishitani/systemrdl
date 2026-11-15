@@ -8,14 +8,18 @@ module SystemRDL
       end
 
       def initialize(elements, token_range)
-        super(Value.new(:root, nil, nil, nil), nil, elements, nil, token_range)
+        super(Value.new(:root, nil, nil), nil, elements, nil, token_range)
         connect(nil, nil)
       end
 
-      def evaluate(instance, **optargs)
-        inherit(instance) if instance&.root?
-        root = create_instance(nil, InstArgs.new(:root, nil, nil, nil), nil, nil, **optargs)
-        root.finalize
+      def evaluate(instance, finalize: true, **optargs)
+        inst_args = InstArgs.new(:root, nil, nil, nil)
+        root = instance || new_instance(nil, inst_args, nil)
+
+        inherit(instance) if instance
+        build_instance(root, inst_args, nil, **optargs)
+
+        root.finalize if finalize
         root
       end
 
@@ -26,7 +30,7 @@ module SystemRDL
       end
 
       def inherit(instance)
-        definitions.merge!(instance.definition.definitions)
+        definitions.merge!(instance.component_def.definitions)
       end
     end
 
