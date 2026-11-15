@@ -1,5 +1,6 @@
 [![Gem Version](https://badge.fury.io/rb/systemrdl.svg)](https://badge.fury.io/rb/systemrdl)
 [![Regression](https://github.com/taichi-ishitani/systemrdl/actions/workflows/regression.yml/badge.svg?branch=master)](https://github.com/taichi-ishitani/systemrdl/actions/workflows/regression.yml)
+[![codecov](https://codecov.io/gh/taichi-ishitani/systemrdl/graph/badge.svg?token=BFVPvZVMOD)](https://codecov.io/gh/taichi-ishitani/systemrdl)
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/A0A231E3I)
 
