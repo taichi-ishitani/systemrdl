@@ -3,10 +3,10 @@
 ## Overview
 
 This document records this implementation's policy on user-defined
-enumerations, covering the scope of enum type checking and the width of an
-enum type. It identifies the silent and inconsistent areas in the
-specification and states the chosen interpretation together with its
-justification.
+enumerations, covering the scope of enum type checking, the width of an enum
+type, and the expressions that may appear inside an enum definition. It
+identifies the silent and inconsistent areas in the specification and states
+the chosen interpretation together with its justification.
 
 ---
 
@@ -85,7 +85,10 @@ notion of width, and the specification provides none.
 ### 2.3 Chosen Interpretation
 
 The width of an enum type is the maximum of the self-determined widths of the
-expressions that give the values of its enumerators.
+expressions that explicitly give the values of its enumerators. An enumerator
+whose value is assigned automatically contributes no width of its own; it
+takes the width of the enum it belongs to. When no enumerator carries an
+explicit value, the width is 64, matching an unsized literal.
 
 ```systemrdl
 enum ab {
@@ -94,26 +97,90 @@ enum ab {
 };                  // ab is 128 bits wide
 ```
 
-- An enumerator such as `128'd0`, whose declared width exceeds what its value
-  requires, retains its declared width. The bit count is not recomputed from
-  the value.
-- An automatically assigned enumerator is treated as `longint unsigned`, i.e.
-  64 bits (6.2.5.2).
-- An ordinary enum, whose enumerators are all unsized literals or
-  automatically assigned, is therefore 64 bits wide.
+An enumerator such as `128'd0`, whose declared width exceeds what its value
+requires, retains its declared width. The bit count is not recomputed from the
+value, since a sized literal is the only way to state the width of an enum in
+a language that has no base type specification.
+
+The treatment of automatically assigned enumerators follows from the two
+examples in 6.2.5.2. In `myAutoEnum`, where every enumerator is assigned
+automatically, the resulting values are written unsized (`first_value = 0`).
+In `myPartiallyAssignedEnum`, where some enumerators carry explicit 8-bit
+values, the automatically assigned ones are written as 8-bit values
+(`a = 8'h0`, `d = 8'h7`). The same enumerator form therefore yields a
+different width depending on what the other enumerators declare, which is
+only consistent with the width being a property of the enum rather than of
+the individual enumerator. Were an automatically assigned enumerator to
+contribute 64 bits of its own, a single valueless enumerator would defeat the
+only means the language offers for stating a narrower width.
+
+An enumerator whose value is assigned automatically may fall outside the
+width so determined, as in `enum e { A = 8'hFF; B; }`, where `B` becomes
+`0x100` while the enum is 8 bits wide. 6.2.5.2 constrains automatic
+assignment only with respect to uniqueness and says nothing about width.
+This implementation rejects such a description. Truncating would silently
+produce a value the author did not write, and would in this example collide
+with `A`; accepting an out-of-range value would contradict the width the
+author stated explicitly.
 
 ### 2.4 Extent of the Deviation
 
 Only two points lack a basis in the specification: that an enum type has a
 width at all, and that the width is the maximum of the declared widths of its
-enumerators. The width of each individual enumerator follows directly from
-the self-determined width rule of 7.3.1.
+enumerators. The width of each explicitly assigned enumerator follows directly
+from the self-determined width rule of 7.3.1, and the treatment of
+automatically assigned enumerators follows the examples in 6.2.5.2.
 
 ---
 
-## 3. Remaining Silent Areas
+## 3. Expressions Inside an Enum Definition
 
-### 3.1 The Width of `A = 0;`
+### 3.1 Silent Area
+
+The values of enumerators and the right-hand sides of their property
+assignments are constant expressions, and the specification places no
+restriction on what may appear in them. An enum may be defined inside any
+component (9.1, 10.1, 11.1, 12.1), so the enclosing component's parameters
+are visible from the enum's scope, and so, on the same reading, are the
+instances declared alongside it.
+
+### 3.2 Chosen Interpretation
+
+A parameter of the enclosing component may be referenced. An instance
+reference, whether to the instance itself or to one of its properties, is
+rejected.
+
+```systemrdl
+reg my_reg #(longint unsigned BASE = 0) {
+    enum e { A = BASE; };       // accepted
+    field { sw = rw; hw = r; } f;
+    enum g { A = f->fieldwidth; };  // rejected
+};
+```
+
+### 3.3 Rationale
+
+A parameter belongs to the lexical scope in which the enum is defined and is
+part of the type; an instance reference reaches into the elaborated instance
+tree, which an enum, being a definition that is never instantiated (6.2.5.1),
+sits outside of. 5.1.4 keeps the two in separate namespaces.
+
+The decisive consideration is that an enum defined at the root scope has no
+instance tree to reach into at all. Permitting instance references would make
+the same enum definition legal or illegal depending on where it is written,
+and a definition intended to be shared across scopes would silently acquire
+that restriction. Rejecting them uniformly keeps an enum definition to mean
+the same thing wherever it appears.
+
+In this implementation the restriction falls out of the type check on
+enumerator values: an instance reference and a property reference each carry a
+reference type, which is not integral, so 6.2.5.1 b-2 rejects it.
+
+---
+
+## 4. Remaining Silent Areas
+
+### 4.1 The Width of `A = 0;`
 
 Table 7 defines `bit` as an unsigned integer with the value 0 or a
 Verilog-style number, and `longint unsigned` as an unsized number (4.6 a-b),
@@ -122,8 +189,11 @@ treats unsized integer literals, including `0`, as `longint unsigned`, i.e.
 64 bits wide. This follows the general policy for expression evaluation and
 is not specific to enums.
 
-### 3.2 Collisions During Automatic Value Assignment
+### 4.2 Collisions During Automatic Value Assignment
 
 6.2.5.2 states that automatically assigned values cannot break the unique
-value constraint, but does not specify the treatment of a case such as
-`{ A = 1; B = 0; C; }`, where the collision arises.
+value constraint, but does not specify what happens when they do, as in
+`{ A = 1; B = 0; C; }`, where `C` is assigned `1` and collides with `A`. This
+implementation rejects such a description rather than searching for the next
+free value, since any other value would be one the author neither wrote nor
+could predict from the text.
